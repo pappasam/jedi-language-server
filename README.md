@@ -4,8 +4,7 @@
 [![image-license](https://img.shields.io/pypi/l/jedi-language-server.svg)](https://python.org/pypi/jedi-language-server)
 [![image-python-versions](https://img.shields.io/pypi/pyversions/jedi-language-server.svg)](https://python.org/pypi/jedi-language-server)
 
-A Python language server that uses
-A language server for Jedi. Requires Python 3.6 or greater.
+A [Language Server](https://microsoft.github.io/language-server-protocol/) for [Jedi](https://jedi.readthedocs.io/en/latest/).
 
 ## Installation
 
@@ -22,6 +21,8 @@ poetry add jedi-language-server
 My motivation goes here...
 
 ## Usage
+
+It currently works only over IO.
 
 ```bash
 jedi-language-server
