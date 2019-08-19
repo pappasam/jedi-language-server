@@ -4,6 +4,7 @@ from typing import Union, List
 
 from jedi import Script
 from jedi.api.classes import Definition
+from jedi.api.environment import get_cached_default_environment
 
 from pygls.server import LanguageServer
 from pygls.uris import from_fs_path
@@ -34,6 +35,7 @@ def get_jedi_script(
         path=text_doc.path,
         line=params.position.line + 1,
         column=params.position.character,
+        environment=get_cached_default_environment(),
     )
 
 
