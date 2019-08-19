@@ -1,0 +1,73 @@
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
+[tool.black]
+line-length = 79
+
+[tool.poetry]
+name = "jedi-language-server"
+version = "0.1.0"
+description = "Toml sorting library"
+authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
+readme = "README.md"
+homepage = "https://github.com/pappasam/jedi-language-server"
+repository = "https://github.com/pappasam/jedi-language-server"
+keywords = [
+  "python",
+  "completion",
+  "refactoring",
+  "vim",
+  "neovim",
+  "lsp",
+  "language-server-protocol",
+]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Code Generators",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Text Editors :: Integrated Development Environments (IDE)",
+  "Topic :: Utilities",
+  "Topic :: Utilities",
+  "Typing :: Typed",
+]
+include = ["README.md"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+click = "^7.0"
+jedi = "^0.15.1"
+pygls = "^0.8.0"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.3"
+black = {version = "^19.3b0", allows-prereleases = true}
+mypy = "^0.720.0"
+pre-commit = "^1.18"
+tox = "^3.13"
+pytest = "^5.0"
+toml-sort = "^0.15.1"
+
+[tool.poetry.scripts]
+jedi-language-server = 'jedi_language_server.cli:cli'
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py36,py37
+isolated_build = true
+skipsdist = true
+[testenv]
+platform = linux
+whitelist_externals = poetry
+skip_install = true
+commands =
+  poetry install
+  poetry run black --check --diff jedi_language_server tests
+  poetry run mypy jedi_language_server
+  poetry run pylint jedi_language_server tests
+  poetry run pytest
+"""
