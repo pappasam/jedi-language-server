@@ -16,13 +16,9 @@ pip install jedi-language-server
 poetry add jedi-language-server
 ```
 
-## Motivation
-
-My motivation goes here...
-
 ## Usage
 
-It currently works only over IO.
+It currently works only over IO. This may change in the future.
 
 ```bash
 jedi-language-server
@@ -54,6 +50,14 @@ make setup
 ```bash
 make test
 ```
+
+## Inspiration
+
+[Palantir's python-language-server](https://github.com/palantir/python-language-server) inspired this project. Jedi Language Server differs from Palantir's language server; JLS:
+
+* Uses [pygls](https://github.com/openlawlibrary/pygls) instead of creating its own low-level LSP bindings
+* Supports one powerful 3rd party library, [Jedi](https://github.com/davidhalter/jedi). By only supporting Jedi, I can focus on ironing out any issues I find with Jedi.
+* Is super simple. Given the above scope, I hope you're convinced that it will continue to be super simple. Leave the complexity to the [Jedi master](https://github.com/davidhalter).
 
 ## Written by
 
