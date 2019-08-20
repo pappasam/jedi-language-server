@@ -9,21 +9,11 @@ Official language server spec:
 from typing import List, Optional
 
 from pygls.server import LanguageServer
-from pygls.features import (
-    COMPLETION,
-    DEFINITION,
-    HOVER,
-    REFERENCES,
-    RENAME,
-    TEXT_DOCUMENT_DID_CHANGE,
-    TEXT_DOCUMENT_DID_OPEN,
-)
+from pygls.features import COMPLETION, DEFINITION, HOVER, REFERENCES, RENAME
 from pygls.types import (
     CompletionItem,
     CompletionList,
     CompletionParams,
-    DidChangeTextDocumentParams,
-    DidOpenTextDocumentParams,
     Hover,
     Location,
     RenameParams,
@@ -40,8 +30,7 @@ from .server_utils import get_jedi_script, locations_from_definitions
 
 SERVER = LanguageServer()
 
-# NOTE: neovim LanguageClient doesn't support incremental completions. When it
-# does, I may consider relaxing this constraint
+# NOTE: Incremental completions appear to be broken for me. Currently debugging
 SERVER.sync_kind = TextDocumentSyncKind.FULL
 
 
@@ -121,25 +110,3 @@ def lsp_rename(
         else:
             changes[location.uri].append(text_edit)
     return WorkspaceEdit(changes=changes)
-
-
-@SERVER.feature(TEXT_DOCUMENT_DID_CHANGE)
-def lsp_did_change(
-    server: LanguageServer, params: DidChangeTextDocumentParams
-) -> None:
-    """Updates file when the file changes on server"""
-    workspace = server.workspace
-    if params.contentChanges:
-        for change in params.contentChanges:
-            workspace.update_document(
-                text_doc=params.textDocument, change=change
-            )
-
-
-@SERVER.feature(TEXT_DOCUMENT_DID_OPEN)
-def lsp_did_open(
-    server: LanguageServer, params: DidOpenTextDocumentParams
-) -> None:
-    """Text document did, in fact, open"""
-    workspace = server.workspace
-    workspace.put_document(params.textDocument)
