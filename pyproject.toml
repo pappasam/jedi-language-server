@@ -7,7 +7,7 @@ line-length = 79
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.1.2"
+version = "0.2.0"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -38,9 +38,9 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-click = "^7.0"
-jedi = "^0.15.1"
-pygls = "^0.8.0"
+click = ">=7.0"
+jedi = ">=0.15.1"
+pygls = ">=0.8.1"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.3"

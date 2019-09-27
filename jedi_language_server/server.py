@@ -18,7 +18,6 @@ from pygls.types import (
     Location,
     RenameParams,
     TextDocumentPositionParams,
-    TextDocumentSyncKind,
     TextEdit,
     WorkspaceEdit,
 )
@@ -29,9 +28,6 @@ from .server_utils import get_jedi_script, locations_from_definitions
 
 
 SERVER = LanguageServer()
-
-# NOTE: Incremental completions appear to be broken for me. Currently debugging
-SERVER.sync_kind = TextDocumentSyncKind.FULL
 
 
 @SERVER.feature(COMPLETION, triggerCharacters=["."])
