@@ -2,14 +2,14 @@
 
 import itertools
 import os
-from glob import glob
+import subprocess
 from typing import List, Optional, Union
 
 import jedi.api
 from jedi import Script
 from jedi.api.classes import Definition
 from jedi.api.environment import get_cached_default_environment
-from pygls.server import LanguageServer
+from pygls.server import LanguageServer, Workspace
 from pygls.types import (
     DocumentSymbolParams,
     Location,
@@ -62,22 +62,47 @@ def get_jedi_document_names(
     )
 
 
+class WorkspaceDocuments:
+    """A class to manage one-time gathering of workspace documents"""
+
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self) -> None:
+        self.gathered_names = False
+
+    def gather_workspace_names(self, workspace: Workspace) -> None:
+        """Collect the workspace names"""
+        if not self.gathered_names:
+            git_command = (
+                "git --git-dir="
+                + os.path.join(workspace.root_path, ".git")
+                + " ls-files --full-name"
+            )
+            project_paths = (
+                subprocess.check_output(git_command, shell=True)
+                .decode("utf-8")
+                .splitlines()
+            )
+            for doc_path in project_paths:
+                if os.path.splitext(doc_path)[1] == ".py":
+                    new_doc = workspace.get_document(
+                        from_fs_path(
+                            os.path.join(workspace.root_path, doc_path)
+                        )
+                    )
+                    workspace._docs[  # pylint: disable=protected-access
+                        new_doc.uri
+                    ] = new_doc
+        self.gathered_names = True
+
+
+_WORKSPACE_DOCUMENTS = WorkspaceDocuments()
+
+
 def get_jedi_workspace_names(server: LanguageServer) -> List[Definition]:
     """Get a list of workspace names from Jedi"""
     workspace = server.workspace
-    python_paths = (
-        os.path.abspath(path)
-        for path in itertools.chain.from_iterable(
-            glob(os.path.join(x[0], "*.py"))
-            for x in os.walk(workspace.root_path)
-        )
-    )
-    documents = (
-        workspace.get_document(from_fs_path(python_path))
-        for python_path in python_paths
-        if os.getenv("VIRTUAL_ENV")
-        and not python_path.startswith(os.getenv("VIRTUAL_ENV"))
-    )
+    _WORKSPACE_DOCUMENTS.gather_workspace_names(workspace)
     definitions_by_document = (
         jedi.api.names(
             source=text_doc.source,
@@ -87,7 +112,7 @@ def get_jedi_workspace_names(server: LanguageServer) -> List[Definition]:
             references=False,
             environment=get_cached_default_environment(),
         )
-        for text_doc in documents
+        for text_doc in workspace.documents.values()
         if text_doc and os.path.splitext(text_doc.path)[1] == ".py"
     )
     return list(
