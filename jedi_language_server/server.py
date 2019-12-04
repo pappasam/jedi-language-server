@@ -114,7 +114,10 @@ def lsp_rename(
 ) -> Optional[WorkspaceEdit]:
     """Optional workspace edit"""
     script = get_jedi_script(server, params)
-    definitions = script.usages()
+    try:
+        definitions = script.usages()
+    except Exception:  # pylint: disable=broad-except
+        return None
     locations = [
         get_location_from_definition(definition) for definition in definitions
     ]
