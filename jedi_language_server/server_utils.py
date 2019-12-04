@@ -1,5 +1,8 @@
 """Utility functions used by the language server"""
 
+import itertools
+import os
+from glob import glob
 from typing import List, Optional, Union
 
 import jedi.api
@@ -13,9 +16,12 @@ from pygls.types import (
     Position,
     Range,
     RenameParams,
+    SymbolInformation,
     TextDocumentPositionParams,
 )
 from pygls.uris import from_fs_path
+
+from .type_map import get_lsp_type
 
 
 def get_jedi_script(
@@ -40,10 +46,10 @@ def get_jedi_script(
     )
 
 
-def get_jedi_names(
-    server: LanguageServer, params: Union[DocumentSymbolParams],
+def get_jedi_document_names(
+    server: LanguageServer, params: DocumentSymbolParams,
 ) -> List[Definition]:
-    """Get a list of names from Jedi"""
+    """Get a list of document names from Jedi"""
     workspace = server.workspace
     text_doc = workspace.get_document(params.textDocument.uri)
     return jedi.api.names(
@@ -53,6 +59,42 @@ def get_jedi_names(
         definitions=True,
         references=False,
         environment=get_cached_default_environment(),
+    )
+
+
+def get_jedi_workspace_names(server: LanguageServer) -> List[Definition]:
+    """Get a list of workspace names from Jedi"""
+    workspace = server.workspace
+    python_paths = (
+        os.path.abspath(path)
+        for path in itertools.chain.from_iterable(
+            glob(os.path.join(x[0], "*.py"))
+            for x in os.walk(workspace.root_path)
+        )
+    )
+    documents = (
+        workspace.get_document(from_fs_path(python_path))
+        for python_path in python_paths
+        if os.getenv("VIRTUAL_ENV")
+        and not python_path.startswith(os.getenv("VIRTUAL_ENV"))
+    )
+    definitions_by_document = (
+        jedi.api.names(
+            source=text_doc.source,
+            path=text_doc.path,
+            all_scopes=True,
+            definitions=True,
+            references=False,
+            environment=get_cached_default_environment(),
+        )
+        for text_doc in documents
+        if text_doc and os.path.splitext(text_doc.path)[1] == ".py"
+    )
+    return list(
+        itertools.chain.from_iterable(
+            definitions if definitions else []
+            for definitions in definitions_by_document
+        )
     )
 
 
@@ -75,6 +117,18 @@ def get_location_from_definition(definition: Definition) -> Location:
                 character=definition.column + len(definition.name),
             ),
         ),
+    )
+
+
+def get_symbol_information_from_definition(
+    definition: Definition,
+) -> SymbolInformation:
+    """Get LSP SymbolInformation from Jedi definition"""
+    return SymbolInformation(
+        name=definition.name,
+        kind=get_lsp_type(definition.type),
+        location=get_location_from_definition(definition),
+        container_name=get_jedi_parent_name(definition),
     )
 
 

@@ -16,6 +16,7 @@ from pygls.features import (
     HOVER,
     REFERENCES,
     RENAME,
+    WORKSPACE_SYMBOL,
 )
 from pygls.server import LanguageServer
 from pygls.types import (
@@ -30,13 +31,15 @@ from pygls.types import (
     TextDocumentPositionParams,
     TextEdit,
     WorkspaceEdit,
+    WorkspaceSymbolParams,
 )
 
 from .server_utils import (
-    get_jedi_names,
-    get_jedi_parent_name,
+    get_jedi_document_names,
     get_jedi_script,
+    get_jedi_workspace_names,
     get_location_from_definition,
+    get_symbol_information_from_definition,
 )
 from .type_map import get_lsp_type
 
@@ -138,13 +141,21 @@ def lsp_document_symbol(
     server: LanguageServer, params: DocumentSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python document symbols"""
-    jedi_names = get_jedi_names(server, params)
+    jedi_names = get_jedi_document_names(server, params)
     return [
-        SymbolInformation(
-            name=definition.name,
-            kind=get_lsp_type(definition.type),
-            location=get_location_from_definition(definition),
-            container_name=get_jedi_parent_name(definition),
-        )
+        get_symbol_information_from_definition(definition)
+        for definition in jedi_names
+    ]
+
+
+@SERVER.feature(WORKSPACE_SYMBOL)
+def lsp_workspace_symbol(
+    server: LanguageServer,
+    params: WorkspaceSymbolParams,  # pylint: disable=unused-argument
+) -> List[SymbolInformation]:
+    """Document Python workspace symbols"""
+    jedi_names = get_jedi_workspace_names(server)
+    return [
+        get_symbol_information_from_definition(definition)
         for definition in jedi_names
     ]

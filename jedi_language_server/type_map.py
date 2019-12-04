@@ -1,6 +1,5 @@
 """Jedi types mapped to LSP types"""
 
-from typing import Optional
 from pygls.types import CompletionItemKind
 
 # Taken from: https://github.com/palantir/python-language-server
@@ -38,6 +37,6 @@ _JEDI_LSP_TYPE_MAP = {
 }
 
 
-def get_lsp_type(jedi_type: str) -> Optional[int]:
-    """Get type map"""
-    return _JEDI_LSP_TYPE_MAP.get(jedi_type)
+def get_lsp_type(jedi_type: str) -> int:
+    """Get type map. Always return a value."""
+    return _JEDI_LSP_TYPE_MAP.get(jedi_type, CompletionItemKind.Text)
