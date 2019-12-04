@@ -5,6 +5,12 @@ build-backend = "poetry.masonry.api"
 [tool.black]
 line-length = 79
 
+[tool.isort]
+line_length = 79
+indent = '    '
+multi_line_output = 3
+include_trailing_comma = true
+
 [tool.poetry]
 name = "jedi-language-server"
 version = "0.2.0"
@@ -44,12 +50,14 @@ pygls = ">=0.8.1"
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.3"
-black = {version = "^19.3b0", allows-prereleases = true}
+black = {version = "^19.10b0", allow-prereleases = true}
 mypy = "^0.720.0"
 pre-commit = "^1.18"
 tox = "^3.13"
 pytest = "^5.0"
-toml-sort = "^0.15.1"
+isort = "^4.3.21"
+tox-asdf = "^0.1.0"
+toml-sort = "^0.17.0"
 
 [tool.poetry.scripts]
 jedi-language-server = 'jedi_language_server.cli:cli'
@@ -57,7 +65,7 @@ jedi-language-server = 'jedi_language_server.cli:cli'
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py36,py37
+envlist = py36,py37,py38
 isolated_build = true
 skipsdist = true
 [testenv]
