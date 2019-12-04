@@ -13,7 +13,7 @@ include_trailing_comma = true
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.3.1"
+version = "0.4.0"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
