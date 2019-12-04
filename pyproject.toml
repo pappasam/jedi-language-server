@@ -13,7 +13,7 @@ include_trailing_comma = true
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.2.0"
+version = "0.3.0"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -29,7 +29,7 @@ keywords = [
   "language-server-protocol",
 ]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Topic :: Software Development :: Code Generators",
