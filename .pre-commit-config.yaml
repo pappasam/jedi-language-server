@@ -2,13 +2,6 @@ fail_fast: true
 repos:
   - repo: local
     hooks:
-    - id: toml-sort
-      name: toml-sort
-      entry: poetry run toml-sort
-      language: system
-      types: [toml]
-  - repo: local
-    hooks:
     - id: black
       name: black
       entry: poetry run black --check --diff
@@ -16,8 +9,30 @@ repos:
       types: [python]
   - repo: local
     hooks:
+    - id: isort
+      name: isort
+      entry: poetry run isort --check-only
+      language: system
+      types: [python]
+  - repo: local
+    hooks:
+    - id: toml-sort
+      name: toml-sort
+      entry: poetry run toml-sort --check
+      language: system
+      types: [toml]
+  - repo: local
+    hooks:
     - id: pylint
       name: PyLint
       entry: poetry run pylint
       language: system
       types: [python]
+  - repo: local
+    hooks:
+    - id: mypy
+      name: Mypy
+      entry: poetry run mypy
+      language: system
+      types: [python]
+      exclude: ^tests/
