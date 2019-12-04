@@ -17,6 +17,7 @@ from pygls.types import (
     Range,
     RenameParams,
     SymbolInformation,
+    TextDocumentItem,
     TextDocumentPositionParams,
 )
 from pygls.uris import from_fs_path
@@ -73,26 +74,28 @@ class WorkspaceDocuments:
     def gather_workspace_names(self, workspace: Workspace) -> None:
         """Collect the workspace names"""
         if not self.gathered_names:
-            git_command = (
-                "git --git-dir="
-                + os.path.join(workspace.root_path, ".git")
-                + " ls-files --full-name"
-            )
-            project_paths = (
-                subprocess.check_output(git_command, shell=True)
-                .decode("utf-8")
-                .splitlines()
-            )
+            git_path = os.path.join(workspace.root_path, ".git")
+            git_command = "git --git-dir=" + git_path + " ls-files --full-name"
+            try:
+                git_output = subprocess.check_output(git_command, shell=True)
+            except subprocess.CalledProcessError:
+                self.gathered_names = True
+                return
+            project_paths = git_output.decode("utf-8").splitlines()
             for doc_path in project_paths:
                 if os.path.splitext(doc_path)[1] == ".py":
-                    new_doc = workspace.get_document(
-                        from_fs_path(
-                            os.path.join(workspace.root_path, doc_path)
+                    full_doc_path = os.path.join(workspace.root_path, doc_path)
+                    doc_uri = from_fs_path(full_doc_path)
+                    with open(full_doc_path) as infile:
+                        text = infile.read()
+                    workspace.put_document(
+                        TextDocumentItem(
+                            uri=doc_uri,
+                            language_id="python",
+                            version=0,
+                            text=text,
                         )
                     )
-                    workspace._docs[  # pylint: disable=protected-access
-                        new_doc.uri
-                    ] = new_doc
         self.gathered_names = True
 
 
