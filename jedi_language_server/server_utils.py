@@ -22,7 +22,7 @@ from pygls.types import (
 )
 from pygls.uris import from_fs_path
 
-from .type_map import get_lsp_type
+from .type_map import get_lsp_symbol_type
 
 
 def get_jedi_script(
@@ -154,7 +154,7 @@ def get_symbol_information_from_definition(
     """Get LSP SymbolInformation from Jedi definition"""
     return SymbolInformation(
         name=definition.name,
-        kind=get_lsp_type(definition.type),
+        kind=get_lsp_symbol_type(definition.type),
         location=get_location_from_definition(definition),
         container_name=get_jedi_parent_name(definition),
     )

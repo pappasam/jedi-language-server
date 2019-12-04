@@ -41,7 +41,7 @@ from .server_utils import (
     get_location_from_definition,
     get_symbol_information_from_definition,
 )
-from .type_map import get_lsp_type
+from .type_map import get_lsp_completion_type
 
 SERVER = LanguageServer()
 
@@ -56,7 +56,7 @@ def lsp_completion(server: LanguageServer, params: CompletionParams = None):
         items=[
             CompletionItem(
                 label=completion.name,
-                kind=get_lsp_type(completion.type),
+                kind=get_lsp_completion_type(completion.type),
                 detail=completion.description,
                 documentation=completion.docstring(),
                 insert_text=completion.name,
