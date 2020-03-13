@@ -115,7 +115,7 @@ def lsp_references(
 def lsp_rename(
     server: LanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
-    """Optional workspace edit"""
+    """Rename a symbol across a workspace"""
     script = get_jedi_script(server, params)
     try:
         definitions = script.usages()
