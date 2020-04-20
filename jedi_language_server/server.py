@@ -44,7 +44,7 @@ SERVER = LanguageServer()
 
 @SERVER.feature(COMPLETION, triggerCharacters=["."])
 def lsp_completion(server: LanguageServer, params: CompletionParams):
-    """Returns completion items."""
+    """Returns completion items"""
     script = get_jedi_script(server, params.textDocument.uri)
     jedi_completions = script.complete(
         line=params.position.line + 1, column=params.position.character,
@@ -83,16 +83,17 @@ def lsp_definition(
 def lsp_hover(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> Hover:
-    """Support the hover feature"""
+    """Support Hover"""
     script = get_jedi_script(server, params.textDocument.uri)
-    names = script.infer(
-        line=params.position.line + 1, column=params.position.character,
-    )
-    return Hover(
-        contents=(
-            names[0].docstring() if names else "No docstring definition found."
+    try:
+        _names = script.help(
+            line=params.position.line + 1, column=params.position.character,
         )
-    )
+    except Exception:  # pylint: disable=broad-except
+        names = []  # type: List[str]
+    else:
+        names = [name for name in (n.docstring() for n in _names) if name]
+    return Hover(contents=names if names else "jedi: no help docs found")
 
 
 @SERVER.feature(REFERENCES)
