@@ -1,41 +1,48 @@
 """Utility functions used by the language server"""
 
-from typing import Optional
+from typing import Dict, NamedTuple, Optional
 
 from jedi import Project, Script
 from jedi.api.classes import Name
 from jedi.api.environment import get_cached_default_environment
 from pygls.server import LanguageServer
-from pygls.types import Location, Position, Range, SymbolInformation
+from pygls.types import (
+    Location,
+    Position,
+    Range,
+    SymbolInformation,
+    TextDocumentIdentifier,
+)
 from pygls.uris import from_fs_path
 
 from .type_map import get_lsp_symbol_type
 
 
-def get_jedi_script(server: LanguageServer, doc_uri: str) -> Script:
-    """Simplifies getting jedi Script
+class JediTypes(NamedTuple):
+    """Jedi types container; return value from get_jedi_types"""
 
-    :param doc_uri: the uri for the LSP text document. Obtained through
-    params.textDocument.uri
+    script: Script
+    project: Project
 
-    NOTE:
-        * jedi is 1-indexed for lines and 0-indexed for columns
-        * LSP is 0-indexed for lines and 0-indexed for columns
-        * Therefore, add 1 to LSP's request for the line
-    """
+
+def get_jedi_types(
+    server: LanguageServer, text_document_identifier: TextDocumentIdentifier
+) -> JediTypes:
+    """Simplifies getting jedi Script"""
     workspace = server.workspace
-    text_doc = workspace.get_document(doc_uri)
+    document = workspace.get_document(text_document_identifier.uri)
     project = Project(
         path=workspace.root_path,
         smart_sys_path=True,
         load_unsafe_extensions=False,
     )
-    return Script(
-        code=text_doc.source,
-        path=text_doc.path,
+    script = Script(
+        code=document.source,
+        path=document.path,
         project=project,
         environment=get_cached_default_environment(),
     )
+    return JediTypes(script=script, project=project)
 
 
 def get_location_from_name(name: Name) -> Location:
@@ -77,3 +84,16 @@ def get_jedi_parent_name(name: Name) -> Optional[str]:
     except Exception:  # pylint: disable=broad-except
         return None
     return parent.name if parent and parent.parent() else None
+
+
+def get_jedi_line_column(position: Position) -> Dict[str, int]:
+    """Translate pygls Position to Jedi's line / column
+
+    Returns a dictionary because this return result should be unpacked as a
+    function argument to Jedi's functions.
+
+    Jedi is 1-indexed for lines and 0-indexed for columns. LSP is 0-indexed for
+    lines and 0-indexed for columns. Therefore, add 1 to LSP's request for the
+    line.
+    """
+    return dict(line=position.line + 1, column=position.character)

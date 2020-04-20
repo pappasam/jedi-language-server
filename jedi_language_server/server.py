@@ -33,7 +33,8 @@ from pygls.types import (
 )
 
 from .server_utils import (
-    get_jedi_script,
+    get_jedi_line_column,
+    get_jedi_types,
     get_location_from_name,
     get_symbol_information_from_name,
 )
@@ -45,10 +46,9 @@ SERVER = LanguageServer()
 @SERVER.feature(COMPLETION, triggerCharacters=["."])
 def lsp_completion(server: LanguageServer, params: CompletionParams):
     """Returns completion items"""
-    script = get_jedi_script(server, params.textDocument.uri)
-    jedi_completions = script.complete(
-        line=params.position.line + 1, column=params.position.character,
-    )
+    jedi_types = get_jedi_types(server, params.textDocument)
+    jedi_lines = get_jedi_line_column(params.position)
+    completions = jedi_types.script.complete(**jedi_lines)
     return CompletionList(
         is_incomplete=False,
         items=[
@@ -59,7 +59,7 @@ def lsp_completion(server: LanguageServer, params: CompletionParams):
                 documentation=completion.docstring(),
                 insert_text=completion.name,
             )
-            for completion in jedi_completions
+            for completion in completions
         ],
     )
 
@@ -69,12 +69,10 @@ def lsp_definition(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Support Goto Definition"""
-    script = get_jedi_script(server, params.textDocument.uri)
-    names = script.goto(
-        line=params.position.line + 1,
-        column=params.position.character,
-        follow_imports=True,
-        follow_builtin_imports=True,
+    jedi_types = get_jedi_types(server, params.textDocument)
+    jedi_lines = get_jedi_line_column(params.position)
+    names = jedi_types.script.goto(
+        follow_imports=True, follow_builtin_imports=True, **jedi_lines,
     )
     return [get_location_from_name(name) for name in names]
 
@@ -84,11 +82,10 @@ def lsp_hover(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> Hover:
     """Support Hover"""
-    script = get_jedi_script(server, params.textDocument.uri)
+    jedi_types = get_jedi_types(server, params.textDocument)
+    jedi_lines = get_jedi_line_column(params.position)
     try:
-        _names = script.help(
-            line=params.position.line + 1, column=params.position.character,
-        )
+        _names = jedi_types.script.help(**jedi_lines)
     except Exception:  # pylint: disable=broad-except
         names = []  # type: List[str]
     else:
@@ -101,11 +98,10 @@ def lsp_references(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Obtain all references to document"""
-    script = get_jedi_script(server, params.textDocument.uri)
+    jedi_types = get_jedi_types(server, params.textDocument)
+    jedi_lines = get_jedi_line_column(params.position)
     try:
-        names = script.get_references(
-            line=params.position.line + 1, column=params.position.character,
-        )
+        names = jedi_types.script.get_references(**jedi_lines)
     except Exception:  # pylint: disable=broad-except
         return []
     return [get_location_from_name(name) for name in names]
@@ -116,11 +112,10 @@ def lsp_rename(
     server: LanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace"""
-    script = get_jedi_script(server, params.textDocument.uri)
+    jedi_types = get_jedi_types(server, params.textDocument)
+    jedi_lines = get_jedi_line_column(params.position)
     try:
-        names = script.get_references(
-            line=params.position.line + 1, column=params.position.character,
-        )
+        names = jedi_types.script.get_references(**jedi_lines)
     except Exception:  # pylint: disable=broad-except
         return None
     locations = [get_location_from_name(name) for name in names]
@@ -141,11 +136,9 @@ def lsp_document_symbol(
     server: LanguageServer, params: DocumentSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python document symbols"""
-    script = get_jedi_script(server, params.textDocument.uri)
+    jedi_types = get_jedi_types(server, params.textDocument)
     try:
-        names = script.get_names(
-            line=params.position.line + 1, column=params.position.character,
-        )
+        names = jedi_types.script.get_names()
     except Exception:  # pylint: disable=broad-except
         return []
     return [get_symbol_information_from_name(name) for name in names]

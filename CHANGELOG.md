@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.5.2
+
+### Changed
+
+- Implementation details involving `Projects` and `Scripts` were re-organized in preparation for the next minor release.
+
+### Fixed
+
+- Fixed `DOCUMENT_SYMBOL`. Line and row numbers were incorrectly passed to this argument before which silently broke this function. These incorrect arguments were removed.
+
 ## 0.5.1
 
 ### Changed
