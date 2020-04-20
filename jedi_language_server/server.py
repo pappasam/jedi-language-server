@@ -16,7 +16,6 @@ from pygls.features import (
     HOVER,
     REFERENCES,
     RENAME,
-    WORKSPACE_SYMBOL,
 )
 from pygls.server import LanguageServer
 from pygls.types import (
@@ -31,15 +30,12 @@ from pygls.types import (
     TextDocumentPositionParams,
     TextEdit,
     WorkspaceEdit,
-    WorkspaceSymbolParams,
 )
 
 from .server_utils import (
-    get_jedi_document_names,
     get_jedi_script,
-    get_jedi_workspace_names,
-    get_location_from_definition,
-    get_symbol_information_from_definition,
+    get_location_from_name,
+    get_symbol_information_from_name,
 )
 from .type_map import get_lsp_completion_type
 
@@ -47,10 +43,12 @@ SERVER = LanguageServer()
 
 
 @SERVER.feature(COMPLETION, triggerCharacters=["."])
-def lsp_completion(server: LanguageServer, params: CompletionParams = None):
+def lsp_completion(server: LanguageServer, params: CompletionParams):
     """Returns completion items."""
-    script = get_jedi_script(server, params)
-    jedi_completions = script.completions()
+    script = get_jedi_script(server, params.textDocument.uri)
+    jedi_completions = script.complete(
+        line=params.position.line + 1, column=params.position.character,
+    )
     return CompletionList(
         is_incomplete=False,
         items=[
@@ -71,13 +69,14 @@ def lsp_definition(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Support Goto Definition"""
-    script = get_jedi_script(server, params)
-    definitions = script.goto_assignments(
-        follow_imports=True, follow_builtin_imports=True
+    script = get_jedi_script(server, params.textDocument.uri)
+    names = script.goto(
+        line=params.position.line + 1,
+        column=params.position.character,
+        follow_imports=True,
+        follow_builtin_imports=True,
     )
-    return [
-        get_location_from_definition(definition) for definition in definitions
-    ]
+    return [get_location_from_name(name) for name in names]
 
 
 @SERVER.feature(HOVER)
@@ -85,13 +84,13 @@ def lsp_hover(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> Hover:
     """Support the hover feature"""
-    script = get_jedi_script(server, params)
-    definitions = script.goto_definitions()
+    script = get_jedi_script(server, params.textDocument.uri)
+    names = script.infer(
+        line=params.position.line + 1, column=params.position.character,
+    )
     return Hover(
         contents=(
-            definitions[0].docstring()
-            if definitions
-            else "No docstring definition found."
+            names[0].docstring() if names else "No docstring definition found."
         )
     )
 
@@ -101,14 +100,14 @@ def lsp_references(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Obtain all references to document"""
-    script = get_jedi_script(server, params)
+    script = get_jedi_script(server, params.textDocument.uri)
     try:
-        definitions = script.usages()
+        names = script.get_references(
+            line=params.position.line + 1, column=params.position.character,
+        )
     except Exception:  # pylint: disable=broad-except
         return []
-    return [
-        get_location_from_definition(definition) for definition in definitions
-    ]
+    return [get_location_from_name(name) for name in names]
 
 
 @SERVER.feature(RENAME)
@@ -116,14 +115,14 @@ def lsp_rename(
     server: LanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace"""
-    script = get_jedi_script(server, params)
+    script = get_jedi_script(server, params.textDocument.uri)
     try:
-        definitions = script.usages()
+        names = script.get_references(
+            line=params.position.line + 1, column=params.position.character,
+        )
     except Exception:  # pylint: disable=broad-except
         return None
-    locations = [
-        get_location_from_definition(definition) for definition in definitions
-    ]
+    locations = [get_location_from_name(name) for name in names]
     if not locations:
         return None
     changes = {}  # type: Dict[str, List[TextEdit]]
@@ -141,21 +140,11 @@ def lsp_document_symbol(
     server: LanguageServer, params: DocumentSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python document symbols"""
-    jedi_names = get_jedi_document_names(server, params)
-    return [
-        get_symbol_information_from_definition(definition)
-        for definition in jedi_names
-    ]
-
-
-@SERVER.feature(WORKSPACE_SYMBOL)
-def lsp_workspace_symbol(
-    server: LanguageServer,
-    params: WorkspaceSymbolParams,  # pylint: disable=unused-argument
-) -> List[SymbolInformation]:
-    """Document Python workspace symbols"""
-    jedi_names = get_jedi_workspace_names(server)
-    return [
-        get_symbol_information_from_definition(definition)
-        for definition in jedi_names
-    ]
+    script = get_jedi_script(server, params.textDocument.uri)
+    try:
+        names = script.get_names(
+            line=params.position.line + 1, column=params.position.character,
+        )
+    except Exception:  # pylint: disable=broad-except
+        return []
+    return [get_symbol_information_from_name(name) for name in names]

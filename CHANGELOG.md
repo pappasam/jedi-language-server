@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.5.0
+
+### Added
+
+- Support for Jedi `0.17`
+
+### Changed
+
+- Major internal updates to helper functions. Jedi `0.17` has a different public API.
+
+### Removed
+
+- Remove support for Workspace symbols. I never used this feature and I figure we can do this better with Jedi's new project constructs.
+- Remove support for any version of Jedi before `0.17`. If you must use an older Jedi, stick to `0.4.2`.
+
 ## 0.4.2
 
 ### Changed
