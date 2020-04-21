@@ -13,10 +13,12 @@ A [Language Server](https://microsoft.github.io/language-server-protocol/) for t
 From your command line (bash / zsh), run:
 
 ```bash
-pip install -U jedi jedi-language-server
+pip install -U jedi-language-server
 ```
 
 `-U` ensures that you're pulling the latest version from pypi.
+
+Alternatively, consider using [pipx](https://github.com/pipxproject/pipx) to keep jedi-language-server isolated from your other Python dependencies.
 
 ## Overview
 
@@ -28,6 +30,7 @@ jedi-language-server aims to support all of Jedi's capabilities and expose them 
 - [textDocument/hover](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_hover)
 - [textDocument/references](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_references)
 - [textDocument/rename](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_rename)
+- [workspace/symbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspace_symbol)
 
 These language server requests are not currently configurable by the user, but we expect to relax this constraint in a future release.
 

@@ -1,6 +1,6 @@
 """Utility functions used by the language server"""
 
-from typing import Dict, NamedTuple, Optional
+from typing import Dict, Optional
 
 from jedi import Project, Script
 from jedi.api.classes import Name
@@ -18,16 +18,9 @@ from pygls.uris import from_fs_path
 from .type_map import get_lsp_symbol_type
 
 
-class JediTypes(NamedTuple):
-    """Jedi types container; return value from get_jedi_types"""
-
-    script: Script
-    project: Project
-
-
-def get_jedi_types(
+def get_jedi_script(
     server: LanguageServer, text_document_identifier: TextDocumentIdentifier
-) -> JediTypes:
+) -> Script:
     """Simplifies getting jedi Script"""
     workspace = server.workspace
     document = workspace.get_document(text_document_identifier.uri)
@@ -36,13 +29,22 @@ def get_jedi_types(
         smart_sys_path=True,
         load_unsafe_extensions=False,
     )
-    script = Script(
+    return Script(
         code=document.source,
         path=document.path,
         project=project,
         environment=get_cached_default_environment(),
     )
-    return JediTypes(script=script, project=project)
+
+
+def get_jedi_project(server: LanguageServer) -> Project:
+    """Simplifies getting jedi project"""
+    workspace = server.workspace
+    return Project(
+        path=workspace.root_path,
+        smart_sys_path=True,
+        load_unsafe_extensions=False,
+    )
 
 
 def get_location_from_name(name: Name) -> Location:
