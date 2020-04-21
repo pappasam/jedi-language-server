@@ -27,6 +27,7 @@ from pygls.types import (
     DocumentSymbolParams,
     Hover,
     Location,
+    Position,
     RenameParams,
     SymbolInformation,
     TextDocumentPositionParams,
@@ -34,6 +35,7 @@ from pygls.types import (
     WorkspaceEdit,
     WorkspaceSymbolParams,
 )
+from pygls.workspace import Document
 
 from .server_utils import (
     get_jedi_line_column,
@@ -47,12 +49,38 @@ from .type_map import get_lsp_completion_type
 SERVER = LanguageServer()
 
 
-@SERVER.feature(COMPLETION, triggerCharacters=["."])
+def _clean_completion_name(name: str, char: str) -> str:
+    """Clean the completion name, stripping bad surroundings
+
+    1. Remove all surrounding " and '. For
+    """
+    if char == "'":
+        return name.lstrip("'")
+    if char == '"':
+        return name.lstrip('"')
+    return name
+
+
+def _char_before_cursor(
+    document: Document, position: Position, default=""
+) -> str:
+    """Get the character directly before the cursor"""
+    try:
+        return document.lines[position.line][position.character - 1]
+    except IndexError:
+        return default
+
+
+@SERVER.feature(COMPLETION, trigger_characters=[".", "'", '"'])
 def lsp_completion(server: LanguageServer, params: CompletionParams):
     """Returns completion items"""
     jedi_script = get_jedi_script(server, params.textDocument)
     jedi_lines = get_jedi_line_column(params.position)
     completions = jedi_script.complete(**jedi_lines)
+    char = _char_before_cursor(
+        document=server.workspace.get_document(params.textDocument.uri),
+        position=params.position,
+    )
     return CompletionList(
         is_incomplete=False,
         items=[
@@ -61,7 +89,7 @@ def lsp_completion(server: LanguageServer, params: CompletionParams):
                 kind=get_lsp_completion_type(completion.type),
                 detail=completion.description,
                 documentation=completion.docstring(),
-                insert_text=completion.name,
+                insert_text=_clean_completion_name(completion.name, char),
             )
             for completion in completions
         ],
