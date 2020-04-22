@@ -9,7 +9,7 @@ Official language server spec:
 import itertools
 import uuid
 from typing import Dict  # pylint: disable=unused-import
-from typing import List, Optional
+from typing import List, NamedTuple, Optional
 
 from pygls.features import (
     COMPLETION,
@@ -54,33 +54,61 @@ from .type_map import get_lsp_completion_type
 
 SERVER = LanguageServer()
 
-COMPLETION_ID = str(uuid.uuid4())
+
+class Option(NamedTuple):
+    name_user: str
+    name_system: str
+    default: object
+
+
+class ServerConfig:
+    def __init__(
+        self, server: LanguageServer, initialization_options: object
+    ) -> None:
+        self.server = server
+        self.init_options = initialization_options
+
+    def get_options(self, options: List[Option]) -> Dict[str, object]:
+        """Obtain the object provided by the default"""
+        return {
+            option.name_system: getattr(
+                self.init_options, option.name_user, option.default
+            )
+            for option in options
+        }
+
+    async def register(self, method: str, options: List[Option]) -> None:
+        response = await self.server.register_capability_async(
+            RegistrationParams(
+                [
+                    Registration(
+                        str(uuid.uuid4()), method, self.get_options(options)
+                    )
+                ]
+            )
+        )
+        if response is not None:
+            server.show_message(
+                f"jedi-language-server: error during {method} registration",
+                MessageType.Error,
+            )
 
 
 @SERVER.feature(INITIALIZE)
 async def lsp_initialize(server: LanguageServer, params: InitializeParams):
     """Initialize language server"""
-    trigger_characters = getattr(
-        params.initializationOptions, "triggerCharacters", [".", "'", '"']
+    config = ServerConfig(server, params.initializationOptions)
+    await config.register(
+        COMPLETION,
+        [
+            Option(
+                name_user="completion_triggerCharacters",
+                name_system="triggerCharacters",
+                default=[".", "'", '"'],
+            )
+        ],
     )
-    completion_response = await server.register_capability_async(
-        RegistrationParams(
-            [
-                Registration(
-                    COMPLETION_ID,
-                    COMPLETION,
-                    {"triggerCharacters": trigger_characters},
-                )
-            ]
-        )
-    )
-    if completion_response is not None:
-        server.show_message(
-            "Error happened during completions registration.",
-            MessageType.Error,
-        )
-    else:
-        server.show_message("success!")
+    server.show_message("jedi-language-server: registration complete")
 
 
 def _clean_completion_name(name: str, char: str) -> str:
