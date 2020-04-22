@@ -7,6 +7,7 @@ Official language server spec:
 """
 
 import itertools
+import uuid
 from typing import Dict  # pylint: disable=unused-import
 from typing import List, Optional
 
@@ -15,6 +16,7 @@ from pygls.features import (
     DEFINITION,
     DOCUMENT_SYMBOL,
     HOVER,
+    INITIALIZE,
     REFERENCES,
     RENAME,
     WORKSPACE_SYMBOL,
@@ -26,8 +28,12 @@ from pygls.types import (
     CompletionParams,
     DocumentSymbolParams,
     Hover,
+    InitializeParams,
     Location,
+    MessageType,
     Position,
+    Registration,
+    RegistrationParams,
     RenameParams,
     SymbolInformation,
     TextDocumentPositionParams,
@@ -47,6 +53,34 @@ from .server_utils import (
 from .type_map import get_lsp_completion_type
 
 SERVER = LanguageServer()
+
+COMPLETION_ID = str(uuid.uuid4())
+
+
+@SERVER.feature(INITIALIZE)
+async def lsp_initialize(server: LanguageServer, params: InitializeParams):
+    """Initialize language server"""
+    trigger_characters = getattr(
+        params.initializationOptions, "triggerCharacters", [".", "'", '"']
+    )
+    completion_response = await server.register_capability_async(
+        RegistrationParams(
+            [
+                Registration(
+                    COMPLETION_ID,
+                    COMPLETION,
+                    {"triggerCharacters": trigger_characters},
+                )
+            ]
+        )
+    )
+    if completion_response is not None:
+        server.show_message(
+            "Error happened during completions registration.",
+            MessageType.Error,
+        )
+    else:
+        server.show_message("success!")
 
 
 def _clean_completion_name(name: str, char: str) -> str:
@@ -71,7 +105,7 @@ def _char_before_cursor(
         return default
 
 
-@SERVER.feature(COMPLETION, trigger_characters=[".", "'", '"'])
+@SERVER.feature(COMPLETION)
 def lsp_completion(server: LanguageServer, params: CompletionParams):
     """Returns completion items"""
     jedi_script = get_jedi_script(server, params.textDocument)
