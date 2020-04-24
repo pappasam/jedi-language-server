@@ -1,11 +1,13 @@
-"""Utility functions used by the language server"""
+"""Utilities to work with Jedi
+
+Translates pygls types back and forth with Jedi
+"""
 
 from typing import Dict, Optional
 
 from jedi import Project, Script
 from jedi.api.classes import Name
 from jedi.api.environment import get_cached_default_environment
-from pygls.server import LanguageServer
 from pygls.types import (
     Location,
     Position,
@@ -14,21 +16,17 @@ from pygls.types import (
     TextDocumentIdentifier,
 )
 from pygls.uris import from_fs_path
+from pygls.workspace import Workspace
 
 from .type_map import get_lsp_symbol_type
 
 
 def get_jedi_script(
-    server: LanguageServer, text_document_identifier: TextDocumentIdentifier
+    workspace: Workspace, text_document_identifier: TextDocumentIdentifier
 ) -> Script:
     """Simplifies getting jedi Script"""
-    workspace = server.workspace
+    project = get_jedi_project(workspace)
     document = workspace.get_document(text_document_identifier.uri)
-    project = Project(
-        path=workspace.root_path,
-        smart_sys_path=True,
-        load_unsafe_extensions=False,
-    )
     return Script(
         code=document.source,
         path=document.path,
@@ -37,9 +35,8 @@ def get_jedi_script(
     )
 
 
-def get_jedi_project(server: LanguageServer) -> Project:
+def get_jedi_project(workspace: Workspace) -> Project:
     """Simplifies getting jedi project"""
-    workspace = server.workspace
     return Project(
         path=workspace.root_path,
         smart_sys_path=True,

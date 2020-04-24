@@ -16,7 +16,7 @@ from pygls.features import (
     DEFINITION,
     DOCUMENT_SYMBOL,
     HOVER,
-    INITIALIZE,
+    INITIALIZED,
     REFERENCES,
     RENAME,
     WORKSPACE_SYMBOL,
@@ -43,7 +43,7 @@ from pygls.types import (
 )
 from pygls.workspace import Document
 
-from .server_utils import (
+from .jedi_utils import (
     get_jedi_line_column,
     get_jedi_project,
     get_jedi_script,
@@ -88,13 +88,13 @@ class ServerConfig:
             )
         )
         if response is not None:
-            server.show_message(
+            self.server.show_message(
                 f"jedi-language-server: error during {method} registration",
                 MessageType.Error,
             )
 
 
-@SERVER.feature(INITIALIZE)
+@SERVER.feature(INITIALIZED)
 async def lsp_initialize(server: LanguageServer, params: InitializeParams):
     """Initialize language server"""
     config = ServerConfig(server, params.initializationOptions)
@@ -136,7 +136,7 @@ def _char_before_cursor(
 @SERVER.feature(COMPLETION)
 def lsp_completion(server: LanguageServer, params: CompletionParams):
     """Returns completion items"""
-    jedi_script = get_jedi_script(server, params.textDocument)
+    jedi_script = get_jedi_script(server.workspace, params.textDocument)
     jedi_lines = get_jedi_line_column(params.position)
     completions = jedi_script.complete(**jedi_lines)
     char = _char_before_cursor(
@@ -163,7 +163,7 @@ def lsp_definition(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Support Goto Definition"""
-    jedi_script = get_jedi_script(server, params.textDocument)
+    jedi_script = get_jedi_script(server.workspace, params.textDocument)
     jedi_lines = get_jedi_line_column(params.position)
     names = jedi_script.goto(
         follow_imports=True, follow_builtin_imports=True, **jedi_lines,
@@ -176,7 +176,7 @@ def lsp_hover(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> Hover:
     """Support Hover"""
-    jedi_script = get_jedi_script(server, params.textDocument)
+    jedi_script = get_jedi_script(server.workspace, params.textDocument)
     jedi_lines = get_jedi_line_column(params.position)
     try:
         _names = jedi_script.help(**jedi_lines)
@@ -192,7 +192,7 @@ def lsp_references(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Obtain all references to document"""
-    jedi_script = get_jedi_script(server, params.textDocument)
+    jedi_script = get_jedi_script(server.workspace, params.textDocument)
     jedi_lines = get_jedi_line_column(params.position)
     try:
         names = jedi_script.get_references(**jedi_lines)
@@ -206,7 +206,7 @@ def lsp_rename(
     server: LanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace"""
-    jedi_script = get_jedi_script(server, params.textDocument)
+    jedi_script = get_jedi_script(server.workspace, params.textDocument)
     jedi_lines = get_jedi_line_column(params.position)
     try:
         names = jedi_script.get_references(**jedi_lines)
@@ -230,7 +230,7 @@ def lsp_document_symbol(
     server: LanguageServer, params: DocumentSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python document symbols"""
-    jedi_script = get_jedi_script(server, params.textDocument)
+    jedi_script = get_jedi_script(server.workspace, params.textDocument)
     try:
         names = jedi_script.get_names()
     except Exception:  # pylint: disable=broad-except
@@ -243,7 +243,7 @@ def lsp_workspace_symbol(
     server: LanguageServer, params: WorkspaceSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python workspace symbols"""
-    jedi_project = get_jedi_project(server)
+    jedi_project = get_jedi_project(server.workspace)
     if params.query.strip() == "":
         return []
     try:
