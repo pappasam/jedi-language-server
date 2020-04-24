@@ -130,8 +130,8 @@ def _char_before_cursor(
 @SERVER.feature(COMPLETION)
 def lsp_completion(server: LanguageServer, params: CompletionParams):
     """Returns completion items"""
-    jedi_script = jedi_utils.get_script(server.workspace, params.textDocument)
-    jedi_lines = jedi_utils.get_line_column(params.position)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_lines = jedi_utils.line_column(params.position)
     completions = jedi_script.complete(**jedi_lines)
     char = _char_before_cursor(
         document=server.workspace.get_document(params.textDocument.uri),
@@ -157,12 +157,12 @@ def lsp_definition(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Support Goto Definition"""
-    jedi_script = jedi_utils.get_script(server.workspace, params.textDocument)
-    jedi_lines = jedi_utils.get_line_column(params.position)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.goto(
         follow_imports=True, follow_builtin_imports=True, **jedi_lines,
     )
-    return [jedi_utils.get_lsp_location(name) for name in names]
+    return [jedi_utils.lsp_location(name) for name in names]
 
 
 @SERVER.feature(HOVER)
@@ -170,8 +170,8 @@ def lsp_hover(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> Hover:
     """Support Hover"""
-    jedi_script = jedi_utils.get_script(server.workspace, params.textDocument)
-    jedi_lines = jedi_utils.get_line_column(params.position)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_lines = jedi_utils.line_column(params.position)
     try:
         _names = jedi_script.help(**jedi_lines)
     except Exception:  # pylint: disable=broad-except
@@ -186,13 +186,13 @@ def lsp_references(
     server: LanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Obtain all references to document"""
-    jedi_script = jedi_utils.get_script(server.workspace, params.textDocument)
-    jedi_lines = jedi_utils.get_line_column(params.position)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_lines = jedi_utils.line_column(params.position)
     try:
         names = jedi_script.get_references(**jedi_lines)
     except Exception:  # pylint: disable=broad-except
         return []
-    return [jedi_utils.get_lsp_location(name) for name in names]
+    return [jedi_utils.lsp_location(name) for name in names]
 
 
 @SERVER.feature(RENAME)
@@ -200,13 +200,13 @@ def lsp_rename(
     server: LanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace"""
-    jedi_script = jedi_utils.get_script(server.workspace, params.textDocument)
-    jedi_lines = jedi_utils.get_line_column(params.position)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_lines = jedi_utils.line_column(params.position)
     try:
         names = jedi_script.get_references(**jedi_lines)
     except Exception:  # pylint: disable=broad-except
         return None
-    locations = [jedi_utils.get_lsp_location(name) for name in names]
+    locations = [jedi_utils.lsp_location(name) for name in names]
     if not locations:
         return None
     changes = {}  # type: Dict[str, List[TextEdit]]
@@ -224,12 +224,12 @@ def lsp_document_symbol(
     server: LanguageServer, params: DocumentSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python document symbols"""
-    jedi_script = jedi_utils.get_script(server.workspace, params.textDocument)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
     try:
         names = jedi_script.get_names()
     except Exception:  # pylint: disable=broad-except
         return []
-    return [jedi_utils.get_lsp_symbol_information(name) for name in names]
+    return [jedi_utils.lsp_symbol_information(name) for name in names]
 
 
 @SERVER.feature(WORKSPACE_SYMBOL)
@@ -237,7 +237,7 @@ def lsp_workspace_symbol(
     server: LanguageServer, params: WorkspaceSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python workspace symbols"""
-    jedi_project = jedi_utils.get_project(server.workspace)
+    jedi_project = jedi_utils.project(server.workspace)
     if params.query.strip() == "":
         return []
     try:
@@ -245,6 +245,6 @@ def lsp_workspace_symbol(
     except Exception:  # pylint: disable=broad-except
         return []
     return [
-        jedi_utils.get_lsp_symbol_information(name)
+        jedi_utils.lsp_symbol_information(name)
         for name in itertools.islice(names, 20)
     ]

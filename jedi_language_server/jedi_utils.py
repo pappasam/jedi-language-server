@@ -21,11 +21,11 @@ from pygls.workspace import Workspace
 from .type_map import get_lsp_symbol_type
 
 
-def get_script(
+def script(
     workspace: Workspace, text_document_identifier: TextDocumentIdentifier
 ) -> Script:
     """Simplifies getting jedi Script"""
-    project = get_project(workspace)
+    project = project(workspace)
     document = workspace.get_document(text_document_identifier.uri)
     return Script(
         code=document.source,
@@ -35,7 +35,7 @@ def get_script(
     )
 
 
-def get_project(workspace: Workspace) -> Project:
+def project(workspace: Workspace) -> Project:
     """Simplifies getting jedi project"""
     return Project(
         path=workspace.root_path,
@@ -44,7 +44,7 @@ def get_project(workspace: Workspace) -> Project:
     )
 
 
-def get_lsp_location(name: Name) -> Location:
+def lsp_location(name: Name) -> Location:
     """Get LSP location from Jedi definition
 
     NOTE:
@@ -63,17 +63,17 @@ def get_lsp_location(name: Name) -> Location:
     )
 
 
-def get_lsp_symbol_information(name: Name) -> SymbolInformation:
+def lsp_symbol_information(name: Name) -> SymbolInformation:
     """Get LSP SymbolInformation from Jedi definition"""
     return SymbolInformation(
         name=name.name,
         kind=get_lsp_symbol_type(name.type),
-        location=get_lsp_location(name),
-        container_name=get_parent_name(name),
+        location=lsp_location(name),
+        container_name=parent_name(name),
     )
 
 
-def get_parent_name(name: Name) -> Optional[str]:
+def parent_name(name: Name) -> Optional[str]:
     """Retrieve the parent name from Jedi
 
     Error prone Jedi calls are wrapped in try/except to avoid
@@ -85,7 +85,7 @@ def get_parent_name(name: Name) -> Optional[str]:
     return parent.name if parent and parent.parent() else None
 
 
-def get_line_column(position: Position) -> Dict[str, int]:
+def line_column(position: Position) -> Dict[str, int]:
     """Translate pygls Position to Jedi's line / column
 
     Returns a dictionary because this return result should be unpacked as a
