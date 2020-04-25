@@ -25,12 +25,12 @@ def script(
     workspace: Workspace, text_document_identifier: TextDocumentIdentifier
 ) -> Script:
     """Simplifies getting jedi Script"""
-    project = project(workspace)
+    project_ = project(workspace)
     document = workspace.get_document(text_document_identifier.uri)
     return Script(
         code=document.source,
         path=document.path,
-        project=project,
+        project=project_,
         environment=get_cached_default_environment(),
     )
 
