@@ -124,7 +124,7 @@ description = "File identification library for Python"
 name = "identify"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
-version = "1.4.14"
+version = "1.4.15"
 
 [package.extras]
 license = ["editdistance"]
@@ -338,10 +338,10 @@ description = "a pythonic generic language server (pronounced like \"pie glass\"
 name = "pygls"
 optional = false
 python-versions = "*"
-version = "0.8.1"
+version = "0.9.0"
 
 [package.extras]
-dev = ["bandit (1.6.0)", "flake8 (3.7.7)"]
+dev = ["bandit (1.6.0)", "flake8 (3.7.7)", "mypy (0.761)"]
 docs = ["sphinx (2.0.1)", "sphinx-rtd-theme (0.4.3)"]
 test = ["mock (3.0.5)", "pytest (4.5.0)", "pytest-asyncio (0.10.0)"]
 
@@ -605,8 +605,8 @@ filelock = [
     {file = "filelock-3.0.12.tar.gz", hash = "sha256:18d82244ee114f543149c66a6e0c14e9c4f8a1044b5cdaadd0f82159d6a6ff59"},
 ]
 identify = [
-    {file = "identify-1.4.14-py2.py3-none-any.whl", hash = "sha256:2bb8760d97d8df4408f4e805883dad26a2d076f04be92a10a3e43f09c6060742"},
-    {file = "identify-1.4.14.tar.gz", hash = "sha256:faffea0fd8ec86bb146ac538ac350ed0c73908326426d387eded0bcc9d077522"},
+    {file = "identify-1.4.15-py2.py3-none-any.whl", hash = "sha256:88ed90632023e52a6495749c6732e61e08ec9f4f04e95484a5c37b9caf40283c"},
+    {file = "identify-1.4.15.tar.gz", hash = "sha256:23c18d97bb50e05be1a54917ee45cc61d57cb96aedc06aabb2b02331edf0dbf0"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-1.6.0-py2.py3-none-any.whl", hash = "sha256:2a688cbaa90e0cc587f1df48bdc97a6eadccdcd9c35fb3f976a09e3b5016d90f"},
@@ -700,8 +700,8 @@ py = [
     {file = "py-1.8.1.tar.gz", hash = "sha256:5e27081401262157467ad6e7f851b7aa402c5852dbcb3dae06768434de5752aa"},
 ]
 pygls = [
-    {file = "pygls-0.8.1-py3-none-any.whl", hash = "sha256:3ee878a828b7bc0873a2ea44208d6846a91aa7dbbbdc052e7fe8cc689f6644fa"},
-    {file = "pygls-0.8.1.tar.gz", hash = "sha256:780fd0c5ae95ad02ecaf70b071e43ff8ced8384b7d6bed19311a7b431d26fb88"},
+    {file = "pygls-0.9.0-py3-none-any.whl", hash = "sha256:8fab2fa1286ce23b9f33c5779950ce6293122f564d8cc4c669907f39953f5c89"},
+    {file = "pygls-0.9.0.tar.gz", hash = "sha256:0be0dce93745cba445b7a2568910ca7e45a3865347f01860eff9ed3e37e64e7b"},
 ]
 pylint = [
     {file = "pylint-2.4.4-py3-none-any.whl", hash = "sha256:886e6afc935ea2590b462664b161ca9a5e40168ea99e5300935f6591ad467df4"},

@@ -1,11 +1,13 @@
-"""Utility functions used by the language server"""
+"""Utilities to work with Jedi
+
+Translates pygls types back and forth with Jedi
+"""
 
 from typing import Dict, Optional
 
 from jedi import Project, Script
 from jedi.api.classes import Name
 from jedi.api.environment import get_cached_default_environment
-from pygls.server import LanguageServer
 from pygls.types import (
     Location,
     Position,
@@ -14,32 +16,27 @@ from pygls.types import (
     TextDocumentIdentifier,
 )
 from pygls.uris import from_fs_path
+from pygls.workspace import Workspace
 
 from .type_map import get_lsp_symbol_type
 
 
-def get_jedi_script(
-    server: LanguageServer, text_document_identifier: TextDocumentIdentifier
+def script(
+    workspace: Workspace, text_document_identifier: TextDocumentIdentifier
 ) -> Script:
     """Simplifies getting jedi Script"""
-    workspace = server.workspace
+    project_ = project(workspace)
     document = workspace.get_document(text_document_identifier.uri)
-    project = Project(
-        path=workspace.root_path,
-        smart_sys_path=True,
-        load_unsafe_extensions=False,
-    )
     return Script(
         code=document.source,
         path=document.path,
-        project=project,
+        project=project_,
         environment=get_cached_default_environment(),
     )
 
 
-def get_jedi_project(server: LanguageServer) -> Project:
+def project(workspace: Workspace) -> Project:
     """Simplifies getting jedi project"""
-    workspace = server.workspace
     return Project(
         path=workspace.root_path,
         smart_sys_path=True,
@@ -47,7 +44,7 @@ def get_jedi_project(server: LanguageServer) -> Project:
     )
 
 
-def get_location_from_name(name: Name) -> Location:
+def lsp_location(name: Name) -> Location:
     """Get LSP location from Jedi definition
 
     NOTE:
@@ -66,17 +63,17 @@ def get_location_from_name(name: Name) -> Location:
     )
 
 
-def get_symbol_information_from_name(name: Name,) -> SymbolInformation:
+def lsp_symbol_information(name: Name) -> SymbolInformation:
     """Get LSP SymbolInformation from Jedi definition"""
     return SymbolInformation(
         name=name.name,
         kind=get_lsp_symbol_type(name.type),
-        location=get_location_from_name(name),
-        container_name=get_jedi_parent_name(name),
+        location=lsp_location(name),
+        container_name=parent_name(name),
     )
 
 
-def get_jedi_parent_name(name: Name) -> Optional[str]:
+def parent_name(name: Name) -> Optional[str]:
     """Retrieve the parent name from Jedi
 
     Error prone Jedi calls are wrapped in try/except to avoid
@@ -88,7 +85,7 @@ def get_jedi_parent_name(name: Name) -> Optional[str]:
     return parent.name if parent and parent.parent() else None
 
 
-def get_jedi_line_column(position: Position) -> Dict[str, int]:
+def line_column(position: Position) -> Dict[str, int]:
     """Translate pygls Position to Jedi's line / column
 
     Returns a dictionary because this return result should be unpacked as a

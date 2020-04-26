@@ -34,7 +34,7 @@ jedi-language-server aims to support all of Jedi's capabilities and expose them 
 
 These language server requests are not currently configurable by the user, but we expect to relax this constraint in a future release.
 
-## Usage
+## Setup
 
 The following instructions show how to use jedi-language-server with your development tooling. The instructions assume you have already installed jedi-language-server.
 
@@ -56,7 +56,7 @@ Configure jedi-language-server with [coc.nvim](https://github.com/neoclide/coc.n
 
 ```json
 "languageserver": {
-  "jls": {
+  "jedi": {
     "command": "jedi-language-server",
     "args": [],
     "filetypes": ["python"]
@@ -98,6 +98,23 @@ Configure jedi-language-server with [coc.nvim](https://github.com/neoclide/coc.n
     "offsetColumn": 1,
     "formatLines": 1
   }
+}
+```
+
+## Configuration
+
+jedi-language-server supports the following top-level configuration items in your `settings.json` or editor-equivalent configuration file:
+
+`jedi.completion.triggerCharacters`: characters that trigger completion automatically when typed
+
+- type: `array<string>`
+- default: `[".", "'", "\""]`
+
+Example `settings.json` with defaults:
+
+```json
+{
+  "jedi.completion.triggerCharacters": [".", "'", "\""]
 }
 ```
 
