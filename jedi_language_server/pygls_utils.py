@@ -5,12 +5,30 @@ Helper functions that simplify working with pygls
 
 
 import functools
+from typing import Callable, NamedTuple, Tuple
 from uuid import uuid4
 
+from pygls.server import LanguageServer
 from pygls.types import Position
 from pygls.workspace import Document
 
 _SENTINEL = object()
+
+
+class FeatureConfig(NamedTuple):
+    """Configuration for a feature"""
+
+    arg: str
+    path: str
+    default: object
+
+
+class Feature(NamedTuple):
+    """Organize information about LanguageServer features"""
+
+    lsp_method: str
+    function: Callable[[LanguageServer, object], object]
+    config: Tuple[FeatureConfig, ...] = tuple()
 
 
 def rgetattr(obj: object, attr: str, default: object = None) -> object:

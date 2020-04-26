@@ -48,23 +48,8 @@ from pygls.types import (
 from pygls.workspace import Document
 
 from . import jedi_utils, pygls_utils
+from .pygls_utils import Feature, FeatureConfig
 from .type_map import get_lsp_completion_type
-
-
-class FeatureConfig(NamedTuple):
-    """Configuration for a feature"""
-
-    arg: str
-    path: str
-    default: object
-
-
-class Feature(NamedTuple):
-    """Organize information about LanguageServer features"""
-
-    lsp_method: str
-    function: Callable[[LanguageServer, object], object]
-    config: List[FeatureConfig]
 
 
 class JediLanguageServer(LanguageServer):
@@ -73,7 +58,7 @@ class JediLanguageServer(LanguageServer):
     lookup_feature_id = defaultdict(pygls_utils.uuid)  # type: Dict[str, str]
 
     async def re_register_feature(
-        self, feature: Feature, config: object,
+        self, feature: pygls_utils.Feature, config: object,
     ):
         """Unregister and register feature with new options"""
         if feature.lsp_method in self.lookup_feature_id:
@@ -201,11 +186,8 @@ async def initialized(server: JediLanguageServer, params):
         ConfigurationParams([ConfigurationItem(section="jedi")])
     )
     config = _config[0] if _config else object()
-    for feature in FEATURES:
+    for feature in _FEATURES:
         await server.re_register_feature(feature, config)
-
-
-# @SERVER.feature(COMPLETION)
 
 
 def completion(
@@ -236,9 +218,6 @@ def completion(
     )
 
 
-# @SERVER.feature(DEFINITION)
-
-
 def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
@@ -251,15 +230,14 @@ def definition(
     return [jedi_utils.lsp_location(name) for name in names]
 
 
-_CONFIG_DEFINITION = []
-_CONFIG_COMPLETION = [
+_CONFIG_COMPLETION = (
     FeatureConfig(
         "triggerCharacters", "completion.triggerCharacters", [".", "'", '"'],
     ),
-]
+)
 
-FEATURES = (
-    Feature(DEFINITION, definition, _CONFIG_DEFINITION),
+_FEATURES = (
+    Feature(DEFINITION, definition),
     Feature(COMPLETION, completion, _CONFIG_COMPLETION),
 )
 
