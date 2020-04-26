@@ -7,7 +7,6 @@ Official language server spec:
 """
 
 import itertools
-import uuid
 from collections import defaultdict
 from typing import Callable, Dict, List, NamedTuple, Optional
 
@@ -49,35 +48,7 @@ from pygls.types import (
 from pygls.workspace import Document
 
 from . import jedi_utils, pygls_utils
-# from .features import FEATURES, Feature
-from .pygls_utils import rgetattr
 from .type_map import get_lsp_completion_type
-
-
-def _clean_completion_name(name: str, char: str) -> str:
-    """Clean the completion name, stripping bad surroundings
-
-    1. Remove all surrounding " and '. For
-    """
-    if char == "'":
-        return name.lstrip("'")
-    if char == '"':
-        return name.lstrip('"')
-    return name
-
-
-def _char_before_cursor(
-    document: Document, position: Position, default=""
-) -> str:
-    """Get the character directly before the cursor"""
-    try:
-        return document.lines[position.line][position.character - 1]
-    except IndexError:
-        return default
-
-
-def _uuid() -> str:
-    return str(uuid.uuid4())
 
 
 class FeatureConfig(NamedTuple):
@@ -99,7 +70,7 @@ class Feature(NamedTuple):
 class JediLanguageServer(LanguageServer):
     """The Jedi Language Server"""
 
-    lookup_feature_id = defaultdict(_uuid)  # type: Dict[str, str]
+    lookup_feature_id = defaultdict(pygls_utils.uuid)  # type: Dict[str, str]
 
     async def re_register_feature(
         self, feature: Feature, config: object,
@@ -120,7 +91,7 @@ class JediLanguageServer(LanguageServer):
         # )
 
         registration_options = {
-            cfg.arg: rgetattr(config, cfg.path, cfg.default)
+            cfg.arg: pygls_utils.rgetattr(config, cfg.path, cfg.default)
             for cfg in feature.config
         }
 
@@ -244,7 +215,7 @@ def completion(
     jedi_script = jedi_utils.script(server.workspace, params.textDocument)
     jedi_lines = jedi_utils.line_column(params.position)
     completions = jedi_script.complete(**jedi_lines)
-    char = _char_before_cursor(
+    char = pygls_utils.char_before_cursor(
         document=server.workspace.get_document(params.textDocument.uri),
         position=params.position,
     )
@@ -256,7 +227,9 @@ def completion(
                 kind=get_lsp_completion_type(completion.type),
                 detail=completion.description,
                 documentation=completion.docstring(),
-                insert_text=_clean_completion_name(completion.name, char),
+                insert_text=pygls_utils.clean_completion_name(
+                    completion.name, char
+                ),
             )
             for completion in completions
         ],
