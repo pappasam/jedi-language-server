@@ -15,7 +15,31 @@ _SENTINEL = object()
 
 
 class FeatureConfig(NamedTuple):
-    """Configuration for a feature"""
+    """Configuration item for a feature with associated defaults
+
+    :attr arg: the name of the option within the feature
+    :attr path: the lookup path, rooted at `jedi`, to the user configuration
+    :attr default: the value used if no value is found in the path
+
+    Example:
+
+        settings.json:
+
+        {
+          "jedi.completion.triggerCharacters": [".", "'", "\""]
+        }
+
+        python code associated with this configuration:
+
+        FeatureConfig(
+            "triggerCharacters",
+            "completion.triggerCharacters",
+            [".", "'", '"'],
+        )
+
+    NOTE: all paths are rooted at "jedi". Do not specify the top-level jedi in
+    the path.
+    """
 
     arg: str
     path: str
@@ -23,7 +47,12 @@ class FeatureConfig(NamedTuple):
 
 
 class Feature(NamedTuple):
-    """Organize information about LanguageServer features"""
+    """Organize information about LanguageServer features
+
+    :attr lsp_method: exact name of the feature's LSP method
+    :attr function: python function to be associated with the method
+    :attr config: collection of FeatureConfig supported by this feature
+    """
 
     lsp_method: str
     function: Callable
@@ -31,7 +60,18 @@ class Feature(NamedTuple):
 
 
 def rgetattr(obj: object, attr: str, default: object = None) -> object:
-    """Get nested attributes, recursively"""
+    """Get nested attributes, recursively
+
+    Usage:
+        >> repr(my_object)
+            Object(hello=Object(world=2))
+        >> rgetattr(my_object, "hello.world")
+            2
+        >> rgetattr(my_object, "hello.world.space")
+            None
+        >> rgetattr(my_object, "hello.world.space", 20)
+            20
+    """
     result = _rgetattr(obj, attr)
     return default if result is _SENTINEL else result
 
