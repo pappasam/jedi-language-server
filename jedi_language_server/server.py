@@ -49,6 +49,8 @@ from pygls.types import (
 from pygls.workspace import Document
 
 from . import jedi_utils, pygls_utils
+# from .features import FEATURES, Feature
+from .pygls_utils import rgetattr
 from .type_map import get_lsp_completion_type
 
 
@@ -78,41 +80,56 @@ def _uuid() -> str:
     return str(uuid.uuid4())
 
 
+class FeatureConfig(NamedTuple):
+    """Configuration for a feature"""
+
+    arg: str
+    path: str
+    default: object
+
+
+class Feature(NamedTuple):
+    """Organize information about LanguageServer features"""
+
+    lsp_method: str
+    function: Callable[[LanguageServer, object], object]
+    config: List[FeatureConfig]
+
+
 class JediLanguageServer(LanguageServer):
     """The Jedi Language Server"""
 
     lookup_feature_id = defaultdict(_uuid)  # type: Dict[str, str]
 
     async def re_register_feature(
-        self,
-        feature_name: str,
-        callback: Callable,
-        config_section: str,
-        options: Dict[str, str],
+        self, feature: Feature, config: object,
     ):
         """Unregister and register feature with new options"""
-        if feature_name in self.lookup_feature_id:
+        if feature.lsp_method in self.lookup_feature_id:
             params = UnregistrationParams(
                 [
                     Unregistration(
-                        self.lookup_feature_id[feature_name], feature_name
+                        self.lookup_feature_id[feature.lsp_method],
+                        feature.lsp_method,
                     )
                 ]
             )
             await self.unregister_capability_async(params)
-        config = await self.get_configuration_async(
-            ConfigurationParams([ConfigurationItem(section=config_section)])
-        )
+        # config = await self.get_configuration_async(
+        #     ConfigurationParams([ConfigurationItem(section=config_section)])
+        # )
 
         registration_options = {
-            name: getattr(config[0], name, default)
-            for name, default in options.items()
-        } if config else {}
+            cfg.arg: rgetattr(config, cfg.path, cfg.default)
+            for cfg in feature.config
+        }
+
+        self.show_message(str(registration_options))
         register_params = RegistrationParams(
             [
                 Registration(
-                    self.lookup_feature_id[feature_name],
-                    feature_name,
+                    self.lookup_feature_id[feature.lsp_method],
+                    feature.lsp_method,
                     registration_options,
                 )
             ]
@@ -120,7 +137,7 @@ class JediLanguageServer(LanguageServer):
         response = await self.register_capability_async(register_params)
         if response is None:
             try:
-                self.feature(feature_name)(callback)
+                self.feature(feature.lsp_method)(feature.function)
             except FeatureAlreadyRegisteredError:
                 pass
 
@@ -207,19 +224,19 @@ SERVER = JediLanguageServer()
 
 
 @SERVER.feature(INITIALIZED)
-async def feature_initialized(server: JediLanguageServer, params):
+async def initialized(server: JediLanguageServer, params):
     """Register features that could be changed in the future"""
-    # server.show_message("entered")
-    await server.re_register_feature(
-        COMPLETION,
-        completion,
-        "jls.completion",
-        {"triggerCharacters": [".", "'", '"']},
+    _config = await server.get_configuration_async(
+        ConfigurationParams([ConfigurationItem(section="jedi")])
     )
-    # server.show_message("done")
+    config = _config[0] if _config else object()
+    for feature in FEATURES:
+        await server.re_register_feature(feature, config)
 
 
-@SERVER.feature(COMPLETION)
+# @SERVER.feature(COMPLETION)
+
+
 def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> CompletionList:
@@ -246,7 +263,9 @@ def completion(
     )
 
 
-@SERVER.feature(DEFINITION)
+# @SERVER.feature(DEFINITION)
+
+
 def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
@@ -257,6 +276,19 @@ def definition(
         follow_imports=True, follow_builtin_imports=True, **jedi_lines,
     )
     return [jedi_utils.lsp_location(name) for name in names]
+
+
+_CONFIG_DEFINITION = []
+_CONFIG_COMPLETION = [
+    FeatureConfig(
+        "triggerCharacters", "completion.triggerCharacters", [".", "'", '"'],
+    ),
+]
+
+FEATURES = (
+    Feature(DEFINITION, definition, _CONFIG_DEFINITION),
+    Feature(COMPLETION, completion, _CONFIG_COMPLETION),
+)
 
 
 # SERVER = LanguageServer()
