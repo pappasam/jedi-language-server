@@ -8,7 +8,7 @@ Official language server spec:
 
 import itertools
 from collections import defaultdict
-from typing import Callable, Dict, List, NamedTuple, Optional
+from typing import Dict, List, Optional
 
 from pygls.exceptions import FeatureAlreadyRegisteredError
 from pygls.features import (
@@ -30,10 +30,7 @@ from pygls.types import (
     ConfigurationParams,
     DocumentSymbolParams,
     Hover,
-    InitializeParams,
     Location,
-    MessageType,
-    Position,
     Registration,
     RegistrationParams,
     RenameParams,
@@ -45,7 +42,6 @@ from pygls.types import (
     WorkspaceEdit,
     WorkspaceSymbolParams,
 )
-from pygls.workspace import Document
 
 from . import jedi_utils, pygls_utils
 from .pygls_utils import Feature, FeatureConfig
@@ -71,9 +67,6 @@ class JediLanguageServer(LanguageServer):
                 ]
             )
             await self.unregister_capability_async(params)
-        # config = await self.get_configuration_async(
-        #     ConfigurationParams([ConfigurationItem(section=config_section)])
-        # )
 
         registration_options = {
             cfg.arg: pygls_utils.rgetattr(config, cfg.path, cfg.default)
@@ -96,98 +89,6 @@ class JediLanguageServer(LanguageServer):
                 self.feature(feature.lsp_method)(feature.function)
             except FeatureAlreadyRegisteredError:
                 pass
-
-    # @SERVER.feature(COMPLETION)
-
-    # @SERVER.feature(HOVER)
-    def feature_hover(self, params: TextDocumentPositionParams) -> Hover:
-        """Support Hover"""
-        jedi_script = jedi_utils.script(server.workspace, params.textDocument)
-        jedi_lines = jedi_utils.line_column(params.position)
-        try:
-            _names = jedi_script.help(**jedi_lines)
-        except Exception:  # pylint: disable=broad-except
-            names = []  # type: List[str]
-        else:
-            names = [name for name in (n.docstring() for n in _names) if name]
-        return Hover(contents=names if names else "jedi: no help docs found")
-
-    # @SERVER.feature(REFERENCES)
-    def feature_references(
-        self, params: TextDocumentPositionParams
-    ) -> List[Location]:
-        """Obtain all references to document"""
-        jedi_script = jedi_utils.script(server.workspace, params.textDocument)
-        jedi_lines = jedi_utils.line_column(params.position)
-        try:
-            names = jedi_script.get_references(**jedi_lines)
-        except Exception:  # pylint: disable=broad-except
-            return []
-        return [jedi_utils.lsp_location(name) for name in names]
-
-    # @SERVER.feature(RENAME)
-    def feature_rename(self, params: RenameParams) -> Optional[WorkspaceEdit]:
-        """Rename a symbol across a workspace"""
-        jedi_script = jedi_utils.script(server.workspace, params.textDocument)
-        jedi_lines = jedi_utils.line_column(params.position)
-        try:
-            names = jedi_script.get_references(**jedi_lines)
-        except Exception:  # pylint: disable=broad-except
-            return None
-        locations = [jedi_utils.lsp_location(name) for name in names]
-        if not locations:
-            return None
-        changes = {}  # type: Dict[str, List[TextEdit]]
-        for location in locations:
-            text_edit = TextEdit(location.range, new_text=params.newName)
-            if location.uri not in changes:
-                changes[location.uri] = [text_edit]
-            else:
-                changes[location.uri].append(text_edit)
-        return WorkspaceEdit(changes=changes)
-
-    # @SERVER.feature(DOCUMENT_SYMBOL)
-    def feature_document_symbol(
-        self, params: DocumentSymbolParams
-    ) -> List[SymbolInformation]:
-        """Document Python document symbols"""
-        jedi_script = jedi_utils.script(server.workspace, params.textDocument)
-        try:
-            names = jedi_script.get_names()
-        except Exception:  # pylint: disable=broad-except
-            return []
-        return [jedi_utils.lsp_symbol_information(name) for name in names]
-
-    # @SERVER.feature(WORKSPACE_SYMBOL)
-    def feature_workspace_symbol(
-        self, params: WorkspaceSymbolParams
-    ) -> List[SymbolInformation]:
-        """Document Python workspace symbols"""
-        jedi_project = jedi_utils.project(server.workspace)
-        if params.query.strip() == "":
-            return []
-        try:
-            names = jedi_project.search(params.query)
-        except Exception:  # pylint: disable=broad-except
-            return []
-        return [
-            jedi_utils.lsp_symbol_information(name)
-            for name in itertools.islice(names, 20)
-        ]
-
-
-SERVER = JediLanguageServer()
-
-
-@SERVER.feature(INITIALIZED)
-async def initialized(server: JediLanguageServer, params):
-    """Register features that could be changed in the future"""
-    _config = await server.get_configuration_async(
-        ConfigurationParams([ConfigurationItem(section="jedi")])
-    )
-    config = _config[0] if _config else object()
-    for feature in _FEATURES:
-        await server.re_register_feature(feature, config)
 
 
 def completion(
@@ -230,6 +131,86 @@ def definition(
     return [jedi_utils.lsp_location(name) for name in names]
 
 
+def hover(
+    server: JediLanguageServer, params: TextDocumentPositionParams
+) -> Hover:
+    """Support Hover"""
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_lines = jedi_utils.line_column(params.position)
+    try:
+        _names = jedi_script.help(**jedi_lines)
+    except Exception:  # pylint: disable=broad-except
+        names = []  # type: List[str]
+    else:
+        names = [name for name in (n.docstring() for n in _names) if name]
+    return Hover(contents=names if names else "jedi: no help docs found")
+
+
+def references(
+    server: JediLanguageServer, params: TextDocumentPositionParams
+) -> List[Location]:
+    """Obtain all references to document"""
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_lines = jedi_utils.line_column(params.position)
+    try:
+        names = jedi_script.get_references(**jedi_lines)
+    except Exception:  # pylint: disable=broad-except
+        return []
+    return [jedi_utils.lsp_location(name) for name in names]
+
+
+def rename(
+    server: JediLanguageServer, params: RenameParams
+) -> Optional[WorkspaceEdit]:
+    """Rename a symbol across a workspace"""
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_lines = jedi_utils.line_column(params.position)
+    try:
+        names = jedi_script.get_references(**jedi_lines)
+    except Exception:  # pylint: disable=broad-except
+        return None
+    locations = [jedi_utils.lsp_location(name) for name in names]
+    if not locations:
+        return None
+    changes = {}  # type: Dict[str, List[TextEdit]]
+    for location in locations:
+        text_edit = TextEdit(location.range, new_text=params.newName)
+        if location.uri not in changes:
+            changes[location.uri] = [text_edit]
+        else:
+            changes[location.uri].append(text_edit)
+    return WorkspaceEdit(changes=changes)
+
+
+def document_symbol(
+    server: JediLanguageServer, params: DocumentSymbolParams
+) -> List[SymbolInformation]:
+    """Document Python document symbols"""
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    try:
+        names = jedi_script.get_names()
+    except Exception:  # pylint: disable=broad-except
+        return []
+    return [jedi_utils.lsp_symbol_information(name) for name in names]
+
+
+def workspace_symbol(
+    server: JediLanguageServer, params: WorkspaceSymbolParams
+) -> List[SymbolInformation]:
+    """Document Python workspace symbols"""
+    jedi_project = jedi_utils.project(server.workspace)
+    if params.query.strip() == "":
+        return []
+    try:
+        names = jedi_project.search(params.query)
+    except Exception:  # pylint: disable=broad-except
+        return []
+    return [
+        jedi_utils.lsp_symbol_information(name)
+        for name in itertools.islice(names, 20)
+    ]
+
+
 _CONFIG_COMPLETION = (
     FeatureConfig(
         "triggerCharacters", "completion.triggerCharacters", [".", "'", '"'],
@@ -237,90 +218,28 @@ _CONFIG_COMPLETION = (
 )
 
 _FEATURES = (
-    Feature(DEFINITION, definition),
     Feature(COMPLETION, completion, _CONFIG_COMPLETION),
+    Feature(DEFINITION, definition),
+    Feature(HOVER, hover),
+    Feature(REFERENCES, references),
+    Feature(RENAME, rename),
+    Feature(DOCUMENT_SYMBOL, document_symbol),
+    Feature(WORKSPACE_SYMBOL, workspace_symbol),
 )
 
-
-# SERVER = LanguageServer()
-
-
-# class Option(NamedTuple):
-#     name_user: str
-#     name_system: str
-#     default: object
+SERVER = JediLanguageServer()
 
 
-# class ServerConfig:
-#     async def re_register_completions(self):
-#         """Unregister and register completions with new options."""
-#         config = await self.get_configuration_async(
-#             ConfigurationParams(
-#                 [
-#                     ConfigurationItem(
-#                         "", JsonLanguageServer.CONFIGURATION_SECTION
-#                     )
-#                 ]
-#             )
-#         )
-
-#         trigger_chars = config[0].triggerCharacters
-#         # register completions
-#         await self.re_register_feature(
-#             self.COMPLETION_ID,
-#             self.completions,
-#             COMPLETION,
-#             **dict(triggerCharacters=trigger_chars),
-#         )
-#         self.show_message(
-#             "Completion trigger characters are: {}".format(
-#                 " ".join(trigger_chars)
-#             )
-#         )
-
-#     def __init__(
-#         self, server: LanguageServer, initialization_options: object
-#     ) -> None:
-#         self.server = server
-#         self.init_options = initialization_options
-
-#     def get_options(self, options: List[Option]) -> Dict[str, object]:
-#         """Obtain the object provided by the default"""
-#         return {
-#             option.name_system: getattr(
-#                 self.init_options, option.name_user, option.default
-#             )
-#             for option in options
-#         }
-
-#     async def register(self, method: str, options: List[Option]) -> None:
-#         response = await self.server.register_capability_async(
-#             RegistrationParams(
-#                 [
-#                     Registration(
-#                         str(uuid.uuid4()), method, self.get_options(options)
-#                     )
-#                 ]
-#             )
-#         )
-#         if response is not None:
-#             self.server.show_message(
-#                 f"jedi-language-server: error during {method} registration",
-#                 MessageType.Error,
-#             )
-
-# @SERVER.feature(INITIALIZED)
-# async def lsp_initialize(server: LanguageServer, params: InitializeParams):
-#     """Initialize language server"""
-#     config = ServerConfig(server, params.initializationOptions)
-#     await config.register(
-#         COMPLETION,
-#         [
-#             Option(
-#                 name_user="completion_triggerCharacters",
-#                 name_system="triggerCharacters",
-#                 default=[".", "'", '"'],
-#             )
-#         ],
-#     )
-#     server.show_message("jedi-language-server: registration complete")
+@SERVER.feature(INITIALIZED)
+async def initialized(
+    server: JediLanguageServer,
+    params: Dict[str, object],  # pylint: disable=unused-argument
+):
+    """Register features that could be changed in the future"""
+    _config = await server.get_configuration_async(
+        ConfigurationParams([ConfigurationItem(section="jedi")])
+    )
+    config = _config[0] if _config else object()
+    for feature in _FEATURES:
+        await server.re_register_feature(feature, config)
+    server.show_message("jedi-language-server initialized")

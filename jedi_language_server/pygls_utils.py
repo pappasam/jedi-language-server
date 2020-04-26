@@ -8,7 +8,6 @@ import functools
 from typing import Callable, NamedTuple, Tuple
 from uuid import uuid4
 
-from pygls.server import LanguageServer
 from pygls.types import Position
 from pygls.workspace import Document
 
@@ -27,7 +26,7 @@ class Feature(NamedTuple):
     """Organize information about LanguageServer features"""
 
     lsp_method: str
-    function: Callable[[LanguageServer, object], object]
+    function: Callable
     config: Tuple[FeatureConfig, ...] = tuple()
 
 
@@ -37,13 +36,13 @@ def rgetattr(obj: object, attr: str, default: object = None) -> object:
     return default if result is _SENTINEL else result
 
 
-def _rgetattr(obj: object, attr: str):
+def _rgetattr(obj: object, attr: str) -> object:
     """Get nested attributes, recursively"""
 
     def _getattr(obj, attr):
         return getattr(obj, attr, _SENTINEL)
 
-    return functools.reduce(_getattr, [obj] + attr.split("."))
+    return functools.reduce(_getattr, [obj] + attr.split("."))  # type: ignore
 
 
 def clean_completion_name(name: str, char: str) -> str:
