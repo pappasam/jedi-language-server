@@ -234,11 +234,20 @@ async def initialized(
     server: JediLanguageServer,
     params: Dict[str, object],  # pylint: disable=unused-argument
 ):
-    """Register features that could be changed in the future"""
+    """Post-basic initialization actions
+
+    1. If server is not enabled, do not register any features
+    2. Otherwise, register all features
+    """
     _config = await server.get_configuration_async(
         ConfigurationParams([ConfigurationItem(section="jedi")])
     )
     config = _config[0] if _config else object()
+    if not getattr(config, "enabled", True):
+        server.show_message(
+            'jedi-language-server disabled {"jedi.enabled": false}'
+        )
+        return
     for feature in _FEATURES:
         await server.re_register_feature(feature, config)
     server.show_message("jedi-language-server initialized")
