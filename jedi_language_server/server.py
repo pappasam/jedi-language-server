@@ -8,7 +8,7 @@ Official language server spec:
 
 import itertools
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import DefaultDict, Dict, List, Optional
 
 from pygls.exceptions import FeatureAlreadyRegisteredError
 from pygls.features import (
@@ -19,6 +19,9 @@ from pygls.features import (
     INITIALIZED,
     REFERENCES,
     RENAME,
+    TEXT_DOCUMENT_DID_CHANGE,
+    TEXT_DOCUMENT_DID_OPEN,
+    TEXT_DOCUMENT_DID_SAVE,
     WORKSPACE_SYMBOL,
 )
 from pygls.server import LanguageServer
@@ -28,6 +31,9 @@ from pygls.types import (
     CompletionParams,
     ConfigurationItem,
     ConfigurationParams,
+    DidChangeTextDocumentParams,
+    DidOpenTextDocumentParams,
+    DidSaveTextDocumentParams,
     DocumentSymbolParams,
     Hover,
     Location,
@@ -44,33 +50,53 @@ from pygls.types import (
 )
 
 from . import jedi_utils, pygls_utils
-from .pygls_utils import Feature, FeatureConfig
+from .pygls_utils import Feature, FeatureConfig, rgetattr
 from .type_map import get_lsp_completion_type
 
 
 class JediLanguageServer(LanguageServer):
-    """The Jedi Language Server"""
+    """The Jedi Language Server
+
+    :attr lookup_feature_id: map feature name to feature id.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.lookup_feature_id: Dict[str, str] = defaultdict(pygls_utils.uuid)
+        self.lookup_feature_id: DefaultDict[str, str] = defaultdict(
+            pygls_utils.uuid
+        )
 
-    async def re_register_feature(
-        self, feature: pygls_utils.Feature, config: object,
-    ):
-        """Unregister and register feature with new options"""
-        if feature.lsp_method in self.lookup_feature_id:
-            params = UnregistrationParams(
+    def jls_message(self, message: str) -> None:
+        """Standardize `JediLanguageServer.show_message`"""
+        self.show_message(f"jedi-language-server {message}")
+
+    async def unregister_feature(self, feature: Feature) -> None:
+        """Unregister an LSP method if it has already been registered"""
+        lsp_method = feature.lsp_method
+        if lsp_method not in self.lookup_feature_id:
+            return
+        await self.unregister_capability_async(
+            UnregistrationParams(
                 [
                     Unregistration(
-                        self.lookup_feature_id[feature.lsp_method],
-                        feature.lsp_method,
+                        self.lookup_feature_id[lsp_method], lsp_method
                     )
                 ]
             )
-            await self.unregister_capability_async(params)
+        )
+        del self.lookup_feature_id[lsp_method]
+
+    async def register_feature(
+        self, feature: Feature, config: object,
+    ) -> None:
+        """(unregister and) register feature with new options
+
+        :param config: full configuration object, used to lookup relevant
+            feature configurations sent by the client
+        """
+        await self.unregister_feature(feature)
         registration_options = {
-            cfg.arg: pygls_utils.rgetattr(config, cfg.path, cfg.default)
+            cfg.arg: rgetattr(config, cfg.path, cfg.default)
             for cfg in feature.config
         }
         register_params = RegistrationParams(
@@ -94,7 +120,7 @@ def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> CompletionList:
     """Returns completion items"""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     completions = jedi_script.complete(**jedi_lines)
     char = pygls_utils.char_before_cursor(
@@ -122,7 +148,7 @@ def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Support Goto Definition"""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.goto(
         follow_imports=True, follow_builtin_imports=True, **jedi_lines,
@@ -134,7 +160,7 @@ def hover(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Hover:
     """Support Hover"""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     try:
         _names = jedi_script.help(**jedi_lines)
@@ -149,7 +175,7 @@ def references(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Obtain all references to document"""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     try:
         names = jedi_script.get_references(**jedi_lines)
@@ -162,7 +188,7 @@ def rename(
     server: JediLanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace"""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     try:
         names = jedi_script.get_references(**jedi_lines)
@@ -185,7 +211,7 @@ def document_symbol(
     server: JediLanguageServer, params: DocumentSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python document symbols"""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument)
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     try:
         names = jedi_script.get_names()
     except Exception:  # pylint: disable=broad-except
@@ -210,13 +236,41 @@ def workspace_symbol(
     ]
 
 
+def _publish_diagnostics(server: JediLanguageServer, uri: str):
+    """Helper function to publish diagnostics for a file"""
+    jedi_script = jedi_utils.script(server.workspace, uri)
+    errors = jedi_script.get_syntax_errors()
+    diagnostics = [jedi_utils.lsp_diagnostic(error) for error in errors]
+    server.publish_diagnostics(uri, diagnostics)
+
+
+def did_save(server: JediLanguageServer, params: DidSaveTextDocumentParams):
+    """Actions run on textDocument/didSave"""
+    _publish_diagnostics(server, params.textDocument.uri)
+
+
+def did_change(
+    server: JediLanguageServer, params: DidChangeTextDocumentParams
+):
+    """Actions run on textDocument/didChange"""
+    _publish_diagnostics(server, params.textDocument.uri)
+
+
+def did_open(server: JediLanguageServer, params: DidOpenTextDocumentParams):
+    """Actions run on textDocument/didOpen"""
+    _publish_diagnostics(server, params.textDocument.uri)
+
+
+# Feature constants
+
+
 _CONFIG_COMPLETION = (
     FeatureConfig(
         "triggerCharacters", "completion.triggerCharacters", [".", "'", '"'],
     ),
 )
 
-_FEATURES = (
+_FEATURES_STANDARD = (
     Feature(COMPLETION, completion, _CONFIG_COMPLETION),
     Feature(DEFINITION, definition),
     Feature(HOVER, hover),
@@ -225,8 +279,18 @@ _FEATURES = (
     Feature(DOCUMENT_SYMBOL, document_symbol),
     Feature(WORKSPACE_SYMBOL, workspace_symbol),
 )
+_FEATURE_DID_CHANGE = Feature(TEXT_DOCUMENT_DID_CHANGE, did_change)
+_FEATURE_DID_OPEN = Feature(TEXT_DOCUMENT_DID_OPEN, did_open)
+_FEATURE_DID_SAVE = Feature(TEXT_DOCUMENT_DID_SAVE, did_save)
+
+
+# Instantiate server singleton
+
 
 SERVER = JediLanguageServer()
+
+
+# Define post-initialization function to customize configuration
 
 
 @SERVER.feature(INITIALIZED)
@@ -244,10 +308,29 @@ async def initialized(
     )
     config = _config[0] if _config else object()
     if not getattr(config, "enabled", True):
-        server.show_message(
-            'jedi-language-server disabled {"jedi.enabled": false}'
-        )
+        server.jls_message("disabled; `jedi.enabled` set to `false`}")
         return
-    for feature in _FEATURES:
-        await server.re_register_feature(feature, config)
-    server.show_message("jedi-language-server initialized")
+    for feature in _FEATURES_STANDARD:
+        await server.register_feature(feature, config)
+
+    if rgetattr(config, "diagnostics.enabled", True):
+        if rgetattr(config, "diagnostics.didOpen", True):
+            await server.register_feature(_FEATURE_DID_OPEN, config)
+        else:
+            await server.unregister_feature(_FEATURE_DID_OPEN)
+
+        if rgetattr(config, "diagnostics.didChange", True):
+            await server.register_feature(_FEATURE_DID_CHANGE, config)
+        else:
+            await server.unregister_feature(_FEATURE_DID_CHANGE)
+
+        if rgetattr(config, "diagnostics.didSave", True):
+            await server.register_feature(_FEATURE_DID_SAVE, config)
+        else:
+            await server.unregister_feature(_FEATURE_DID_SAVE)
+    else:
+        await server.unregister_feature(_FEATURE_DID_OPEN)
+        await server.unregister_feature(_FEATURE_DID_CHANGE)
+        await server.unregister_feature(_FEATURE_DID_SAVE)
+
+    server.jls_message("initialized")

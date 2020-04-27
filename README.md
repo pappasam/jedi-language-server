@@ -28,13 +28,18 @@ jedi-language-server aims to support all of Jedi's capabilities and expose them 
 - [textDocument/definition](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_definition)
 - [textDocument/documentSymbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_documentSymbol)
 - [textDocument/hover](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_hover)
+- [textDocument/publishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)
 - [textDocument/references](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_references)
 - [textDocument/rename](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_rename)
 - [workspace/symbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspace_symbol)
 
-## Setup
+## Editor Setup
 
 The following instructions show how to use jedi-language-server with your development tooling. The instructions assume you have already installed jedi-language-server.
+
+### Neovim
+
+Use [coc.nvim](https://github.com/neoclide/coc.nvim/wiki/Language-servers#register-custom-language-servers) with [coc-jedi](https://github.com/pappasam/coc-jedi).
 
 ### Command line (bash / zsh)
 
@@ -46,18 +51,18 @@ jedi-language-server
 
 jedi-language-server currently works only over IO. This may change in the future.
 
-### Neovim
-
-Use [coc.nvim](https://github.com/neoclide/coc.nvim/wiki/Language-servers#register-custom-language-servers) with [coc-jedi](https://github.com/pappasam/coc-jedi).
-
 ## Configuration
 
-jedi-language-server supports top-level configuration items in `settings.json` (or editor-equivalent configuration file). The following is a snippet of `settings.json` with defaults:
+jedi-language-server supports top-level configuration items in `coc-settings.json` (or your editor-equivalent configuration file). The following is a snippet of `coc-settings.json` with defaults:
 
 ```json
 {
   "jedi.enabled": true,
-  "jedi.completion.triggerCharacters": [".", "'", "\""]
+  "jedi.completion.triggerCharacters": [".", "'", "\""],
+  "jedi.diagnostics.enabled": true,
+  "jedi.diagnostics.didOpen": true,
+  "jedi.diagnostics.didChange": true,
+  "jedi.diagnostics.didSave": true
 }
 ```
 
@@ -75,11 +80,39 @@ Defines characters that trigger completion automatically when typed
 - type: `array<string>`
 - default: `[".", "'", "\""]`
 
-### Diagnostics
+### jedi.diagnostics.enabled
 
-jedi-langugage-server does not currently provide diagnostics, although this is on the roadmap. That said, fear not; there are perfect workarounds!
+Enables (or disables) diagnostics provided by Jedi
 
-If using Neovim/coc, you can get diagnostic support with [coc-diagnostic](https://github.com/iamcco/coc-diagnostic). Configure with [pylint](https://github.com/PyCQA/pylint) in `~/.config/nvim/coc-settings.json`:
+- type: `boolean`
+- default: `true`
+
+### jedi.diagnostics.didOpen
+
+When diagnostics are enabled, run on document open
+
+- type: `boolean`
+- default: `true`
+
+### jedi.diagnostics.didChange
+
+When diagnostics are enabled, run on in-memory document change (eg, while you're editing, without needing to save to disk)
+
+- type: `boolean`
+- default: `true`
+
+### jedi.diagnostics.didSave
+
+When diagnostics are enabled, run on document save (to disk)
+
+- type: `boolean`
+- default: `true`
+
+## Additional Diagnostics
+
+jedi-langugage-server provides diagnostics about syntax errors, powered by Jedi. If you would like additional diagnostics, we suggest using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
+
+If using Neovim/coc, this can easily be done with [coc-diagnostic](https://github.com/iamcco/coc-diagnostic). Configure with [pylint](https://github.com/PyCQA/pylint) in your `coc-settings.json`:
 
 ```json
 "diagnostic-languageserver.filetypes": {
