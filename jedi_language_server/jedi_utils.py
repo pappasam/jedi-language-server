@@ -5,15 +5,17 @@ Translates pygls types back and forth with Jedi
 
 from typing import Dict, Optional
 
+import jedi.api.errors
 from jedi import Project, Script
 from jedi.api.classes import Name
 from jedi.api.environment import get_cached_default_environment
 from pygls.types import (
+    Diagnostic,
+    DiagnosticSeverity,
     Location,
     Position,
     Range,
     SymbolInformation,
-    TextDocumentIdentifier,
 )
 from pygls.uris import from_fs_path
 from pygls.workspace import Workspace
@@ -21,12 +23,10 @@ from pygls.workspace import Workspace
 from .type_map import get_lsp_symbol_type
 
 
-def script(
-    workspace: Workspace, text_document_identifier: TextDocumentIdentifier
-) -> Script:
+def script(workspace: Workspace, uri: str) -> Script:
     """Simplifies getting jedi Script"""
     project_ = project(workspace)
-    document = workspace.get_document(text_document_identifier.uri)
+    document = workspace.get_document(uri)
     return Script(
         code=document.source,
         path=document.path,
@@ -70,6 +70,19 @@ def lsp_symbol_information(name: Name) -> SymbolInformation:
         kind=get_lsp_symbol_type(name.type),
         location=lsp_location(name),
         container_name=parent_name(name),
+    )
+
+
+def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
+    """Get LSP Diagnostic from Jedi SyntaxError"""
+    return Diagnostic(
+        range=Range(
+            start=Position(line=error.line - 1, character=error.column),
+            end=Position(line=error.line - 1, character=error.column),
+        ),
+        message=str(error).strip("<>"),
+        severity=DiagnosticSeverity.Error,
+        source="jedi",
     )
 
 
