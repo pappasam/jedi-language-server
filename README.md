@@ -32,8 +32,6 @@ jedi-language-server aims to support all of Jedi's capabilities and expose them 
 - [textDocument/rename](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_rename)
 - [workspace/symbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspace_symbol)
 
-These language server requests are not currently configurable by the user, but we expect to relax this constraint in a future release.
-
 ## Setup
 
 The following instructions show how to use jedi-language-server with your development tooling. The instructions assume you have already installed jedi-language-server.
@@ -50,18 +48,40 @@ jedi-language-server currently works only over IO. This may change in the future
 
 ### Neovim
 
-Configure jedi-language-server with [coc.nvim](https://github.com/neoclide/coc.nvim/wiki/Language-servers#register-custom-language-servers). For diagnostics, we recommend installing and using the latest version of [coc-diagnostic](https://github.com/iamcco/coc-diagnostic) with [pylint](https://github.com/PyCQA/pylint).
+Use [coc.nvim](https://github.com/neoclide/coc.nvim/wiki/Language-servers#register-custom-language-servers) with [coc-jedi](https://github.com/pappasam/coc-jedi).
 
-~/.config/nvim/coc-settings.json:
+## Configuration
+
+jedi-language-server supports top-level configuration items in `settings.json` (or editor-equivalent configuration file). The following is a snippet of `settings.json` with defaults:
 
 ```json
-"languageserver": {
-  "jedi": {
-    "command": "jedi-language-server",
-    "args": [],
-    "filetypes": ["python"]
-  }
-},
+{
+  "jedi.enabled": true,
+  "jedi.completion.triggerCharacters": [".", "'", "\""]
+}
+```
+
+### jedi.enabled
+
+Enables (or disables) all jedi-language-server features (other than initialization)
+
+- type: `boolean`
+- default: `true`
+
+### jedi.completion.triggerCharacters
+
+Defines characters that trigger completion automatically when typed
+
+- type: `array<string>`
+- default: `[".", "'", "\""]`
+
+### Diagnostics
+
+jedi-langugage-server does not currently provide diagnostics, although this is on the roadmap. That said, fear not; there are perfect workarounds!
+
+If using Neovim/coc, you can get diagnostic support with [coc-diagnostic](https://github.com/iamcco/coc-diagnostic). Configure with [pylint](https://github.com/PyCQA/pylint) in `~/.config/nvim/coc-settings.json`:
+
+```json
 "diagnostic-languageserver.filetypes": {
   "python": "pylint"
 },
@@ -98,23 +118,6 @@ Configure jedi-language-server with [coc.nvim](https://github.com/neoclide/coc.n
     "offsetColumn": 1,
     "formatLines": 1
   }
-}
-```
-
-## Configuration
-
-jedi-language-server supports the following top-level configuration items in your `settings.json` or editor-equivalent configuration file:
-
-`jedi.completion.triggerCharacters`: characters that trigger completion automatically when typed
-
-- type: `array<string>`
-- default: `[".", "'", "\""]`
-
-Example `settings.json` with defaults:
-
-```json
-{
-  "jedi.completion.triggerCharacters": [".", "'", "\""]
 }
 ```
 
