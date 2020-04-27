@@ -51,7 +51,9 @@ from .type_map import get_lsp_completion_type
 class JediLanguageServer(LanguageServer):
     """The Jedi Language Server"""
 
-    lookup_feature_id = defaultdict(pygls_utils.uuid)  # type: Dict[str, str]
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lookup_feature_id: Dict[str, str] = defaultdict(pygls_utils.uuid)
 
     async def re_register_feature(
         self, feature: pygls_utils.Feature, config: object,
@@ -67,13 +69,10 @@ class JediLanguageServer(LanguageServer):
                 ]
             )
             await self.unregister_capability_async(params)
-
         registration_options = {
             cfg.arg: pygls_utils.rgetattr(config, cfg.path, cfg.default)
             for cfg in feature.config
         }
-
-        self.show_message(str(registration_options))
         register_params = RegistrationParams(
             [
                 Registration(
@@ -140,7 +139,7 @@ def hover(
     try:
         _names = jedi_script.help(**jedi_lines)
     except Exception:  # pylint: disable=broad-except
-        names = []  # type: List[str]
+        names: List[str] = []
     else:
         names = [name for name in (n.docstring() for n in _names) if name]
     return Hover(contents=names if names else "jedi: no help docs found")
@@ -172,7 +171,7 @@ def rename(
     locations = [jedi_utils.lsp_location(name) for name in names]
     if not locations:
         return None
-    changes = {}  # type: Dict[str, List[TextEdit]]
+    changes: Dict[str, List[TextEdit]] = {}
     for location in locations:
         text_edit = TextEdit(location.range, new_text=params.newName)
         if location.uri not in changes:
