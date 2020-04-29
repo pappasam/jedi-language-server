@@ -19,6 +19,7 @@ from pygls.features import (
     INITIALIZED,
     REFERENCES,
     RENAME,
+    SIGNATURE_HELP,
     TEXT_DOCUMENT_DID_CHANGE,
     TEXT_DOCUMENT_DID_OPEN,
     TEXT_DOCUMENT_DID_SAVE,
@@ -37,9 +38,12 @@ from pygls.types import (
     DocumentSymbolParams,
     Hover,
     Location,
+    ParameterInformation,
     Registration,
     RegistrationParams,
     RenameParams,
+    SignatureHelp,
+    SignatureInformation,
     SymbolInformation,
     TextDocumentPositionParams,
     TextEdit,
@@ -96,7 +100,7 @@ class JediLanguageServer(LanguageServer):
         """
         await self.unregister_feature(feature)
         registration_options = {
-            cfg.arg: rgetattr(config, cfg.path, cfg.default)
+            cfg.path.split(".")[-1]: rgetattr(config, cfg.path, cfg.default)
             for cfg in feature.config
         }
         register_params = RegistrationParams(
@@ -144,6 +148,32 @@ def completion(
     )
 
 
+def signature_help(
+    server: JediLanguageServer, params: TextDocumentPositionParams
+) -> SignatureHelp:
+    """Returns signature help"""
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    jedi_lines = jedi_utils.line_column(params.position)
+    signatures = jedi_script.get_signatures(**jedi_lines)
+    return SignatureHelp(
+        signatures=[
+            SignatureInformation(
+                label=signature.to_string(),
+                documentation=None,
+                parameters=[
+                    ParameterInformation(
+                        label=info.to_string(), documentation=None
+                    )
+                    for info in signature.params
+                ],
+            )
+            for signature in signatures
+        ],
+        active_signature=0,
+        active_parameter=signatures[0].index if signatures else 0,
+    )
+
+
 def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
@@ -162,25 +192,18 @@ def hover(
     """Support Hover"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
-    try:
-        _names = jedi_script.help(**jedi_lines)
-    except Exception:  # pylint: disable=broad-except
-        names: List[str] = []
-    else:
-        names = [name for name in (n.docstring() for n in _names) if name]
+    jedi_docstrings = (n.docstring() for n in jedi_script.help(**jedi_lines))
+    names = [name for name in jedi_docstrings if name]
     return Hover(contents=names if names else "jedi: no help docs found")
 
 
 def references(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
-    """Obtain all references to document"""
+    """Obtain all references to text"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
-    try:
-        names = jedi_script.get_references(**jedi_lines)
-    except Exception:  # pylint: disable=broad-except
-        return []
+    names = jedi_script.get_references(**jedi_lines)
     return [jedi_utils.lsp_location(name) for name in names]
 
 
@@ -190,13 +213,10 @@ def rename(
     """Rename a symbol across a workspace"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
-    try:
-        names = jedi_script.get_references(**jedi_lines)
-    except Exception:  # pylint: disable=broad-except
+    names = jedi_script.get_references(**jedi_lines)
+    if not names:
         return None
     locations = [jedi_utils.lsp_location(name) for name in names]
-    if not locations:
-        return None
     changes: Dict[str, List[TextEdit]] = {}
     for location in locations:
         text_edit = TextEdit(location.range, new_text=params.newName)
@@ -212,10 +232,7 @@ def document_symbol(
 ) -> List[SymbolInformation]:
     """Document Python document symbols"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    try:
-        names = jedi_script.get_names()
-    except Exception:  # pylint: disable=broad-except
-        return []
+    names = jedi_script.get_names()
     return [jedi_utils.lsp_symbol_information(name) for name in names]
 
 
@@ -226,10 +243,7 @@ def workspace_symbol(
     jedi_project = jedi_utils.project(server.workspace)
     if params.query.strip() == "":
         return []
-    try:
-        names = jedi_project.search(params.query)
-    except Exception:  # pylint: disable=broad-except
-        return []
+    names = jedi_project.search(params.query)
     return [
         jedi_utils.lsp_symbol_information(name)
         for name in itertools.islice(names, 20)
@@ -265,18 +279,21 @@ def did_open(server: JediLanguageServer, params: DidOpenTextDocumentParams):
 
 
 _CONFIG_COMPLETION = (
-    FeatureConfig(
-        "triggerCharacters", "completion.triggerCharacters", [".", "'", '"'],
-    ),
+    FeatureConfig("completion.triggerCharacters", [".", "'", '"']),
+)
+
+_CONFIG_SIGNATURE = (
+    FeatureConfig("signatureHelp.triggerCharacters", ["(", ",", ")"]),
 )
 
 _FEATURES_STANDARD = (
     Feature(COMPLETION, completion, _CONFIG_COMPLETION),
     Feature(DEFINITION, definition),
+    Feature(DOCUMENT_SYMBOL, document_symbol),
     Feature(HOVER, hover),
     Feature(REFERENCES, references),
     Feature(RENAME, rename),
-    Feature(DOCUMENT_SYMBOL, document_symbol),
+    Feature(SIGNATURE_HELP, signature_help, _CONFIG_SIGNATURE),
     Feature(WORKSPACE_SYMBOL, workspace_symbol),
 )
 _FEATURE_DID_CHANGE = Feature(TEXT_DOCUMENT_DID_CHANGE, did_change)

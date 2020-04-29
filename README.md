@@ -31,6 +31,7 @@ jedi-language-server aims to support all of Jedi's capabilities and expose them 
 - [textDocument/publishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)
 - [textDocument/references](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_references)
 - [textDocument/rename](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_rename)
+- [textDocument/signatureHelp](https://microsoft.github.io/language-server-protocol/specification#textDocument_signatureHelp)
 - [workspace/symbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspace_symbol)
 
 ## Editor Setup
@@ -59,6 +60,7 @@ jedi-language-server supports top-level configuration items in `coc-settings.jso
 {
   "jedi.enabled": true,
   "jedi.completion.triggerCharacters": [".", "'", "\""],
+  "jedi.signatureHelp.triggerCharacters": ["(", ",", ")"],
   "jedi.diagnostics.enabled": true,
   "jedi.diagnostics.didOpen": true,
   "jedi.diagnostics.didChange": true,
@@ -79,6 +81,13 @@ Defines characters that trigger completion automatically when typed
 
 - type: `array<string>`
 - default: `[".", "'", "\""]`
+
+### jedi.signatureHelp.triggerCharacters
+
+Defines characters that trigger signature help automatically when typed
+
+- type: `array<string>`
+- default: `["(", ",", ")"]`
 
 ### jedi.diagnostics.enabled
 

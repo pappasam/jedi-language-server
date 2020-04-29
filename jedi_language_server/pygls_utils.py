@@ -18,7 +18,8 @@ class FeatureConfig(NamedTuple):
     """Configuration item for a feature with associated defaults
 
     :attr arg: the name of the option within the feature
-    :attr path: the lookup path, rooted at `jedi`, to the user configuration
+    :attr path: the lookup path, rooted at `jedi`, to the user configuration.
+        The last item in the path must be the option associated with a feature
     :attr default: the value used if no value is found in the path
 
     Example:
@@ -31,17 +32,12 @@ class FeatureConfig(NamedTuple):
 
         python code associated with this configuration:
 
-        FeatureConfig(
-            "triggerCharacters",
-            "completion.triggerCharacters",
-            [".", "'", '"'],
-        )
+        FeatureConfig("completion.triggerCharacters", [".", "'", '"'])
 
     NOTE: all paths are rooted at "jedi". Do not specify the top-level jedi in
     the path.
     """
 
-    arg: str
     path: str
     default: object
 
