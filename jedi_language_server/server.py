@@ -191,22 +191,42 @@ def definition(
 def highlight(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[DocumentHighlight]:
-    """Support document highlight request"""
+    """Support document highlight request
+
+    This function is called frequently, so we minimize the number of expensive
+    calls. These calls are:
+
+    1. Getting assignment of current symbol (script.goto)
+    2. Getting all names in the current script (script.get_names)
+
+    Finally, we only return names if there are more than 1. Otherwise, we don't
+    want to highlight anything.
+    """
+    document = server.workspace.get_document(params.textDocument.uri)
+    word = document.word_at_position(params.position)
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
-    jedi_names = jedi_script.goto(
+    jedi_definition_names = jedi_script.goto(
         follow_imports=False, follow_builtin_imports=False, **jedi_lines,
     )
-    if not jedi_names:
+    if not jedi_definition_names:
         return []
-    current_name = jedi_names[0]
-    return [
+    current_definition_name = jedi_definition_names[0]
+    jedi_context = jedi_script.get_context(**jedi_lines)
+    current_full_name = (
+        jedi_context.full_name
+        if jedi_context.name == word
+        else f"{jedi_context.full_name}.{word}"
+    )
+    highlight_names = [
         DocumentHighlight(jedi_utils.lsp_range(name))
         for name in jedi_script.get_names(
             all_scopes=True, definitions=True, references=True
         )
-        if jedi_utils.compare_names(name, current_name)
+        if name.full_name == current_full_name
+        or jedi_utils.compare_names(name, current_definition_name)
     ]
+    return highlight_names if len(highlight_names) > 1 else []
 
 
 def hover(

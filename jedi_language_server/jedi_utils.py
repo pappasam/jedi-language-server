@@ -121,14 +121,10 @@ def line_column(position: Position) -> Dict[str, int]:
     return dict(line=position.line + 1, column=position.character)
 
 
-def compare_names(name: Name, name_root: Name) -> bool:
-    """Check if a name has the same root as another name
+def compare_names(name1: Name, name2: Name) -> bool:
+    """Check if one Name is equal to another
 
-    Assumes the first result is correct. This could potentially be the cause of
-    bugs; if you experience weird behavior we may want to revisit this
-    decision.
-
-    Currently useful for "highlight" functionality
+    This function, while trivial, is useful for documenting types without
+    needing to directly import anything from jedi into `server.py`
     """
-    names = name.goto(follow_imports=False, follow_builtin_imports=False)
-    return names and names[0] == name_root
+    return name1 == name2
