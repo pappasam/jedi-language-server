@@ -14,6 +14,7 @@ from pygls.exceptions import FeatureAlreadyRegisteredError
 from pygls.features import (
     COMPLETION,
     DEFINITION,
+    DOCUMENT_HIGHLIGHT,
     DOCUMENT_SYMBOL,
     HOVER,
     INITIALIZED,
@@ -35,6 +36,7 @@ from pygls.types import (
     DidChangeTextDocumentParams,
     DidOpenTextDocumentParams,
     DidSaveTextDocumentParams,
+    DocumentHighlight,
     DocumentSymbolParams,
     Hover,
     Location,
@@ -186,6 +188,27 @@ def definition(
     return [jedi_utils.lsp_location(name) for name in names]
 
 
+def highlight(
+    server: JediLanguageServer, params: TextDocumentPositionParams
+) -> List[DocumentHighlight]:
+    """Support document highlight request"""
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    jedi_lines = jedi_utils.line_column(params.position)
+    jedi_names = jedi_script.goto(
+        follow_imports=False, follow_builtin_imports=False, **jedi_lines,
+    )
+    if not jedi_names:
+        return []
+    current_name = jedi_names[0]
+    return [
+        DocumentHighlight(jedi_utils.lsp_range(name))
+        for name in jedi_script.get_names(
+            all_scopes=True, definitions=True, references=True
+        )
+        if jedi_utils.compare_names(name, current_name)
+    ]
+
+
 def hover(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Hover:
@@ -289,6 +312,7 @@ _CONFIG_SIGNATURE = (
 _FEATURES_STANDARD = (
     Feature(COMPLETION, completion, _CONFIG_COMPLETION),
     Feature(DEFINITION, definition),
+    Feature(DOCUMENT_HIGHLIGHT, highlight),
     Feature(DOCUMENT_SYMBOL, document_symbol),
     Feature(HOVER, hover),
     Feature(REFERENCES, references),

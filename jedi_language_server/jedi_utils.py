@@ -44,23 +44,25 @@ def project(workspace: Workspace) -> Project:
     )
 
 
-def lsp_location(name: Name) -> Location:
-    """Get LSP location from Jedi definition
+def lsp_range(name: Name) -> Range:
+    """Get LSP range from Jedi definition
 
     NOTE:
         * jedi is 1-indexed for lines and 0-indexed for columns
         * LSP is 0-indexed for lines and 0-indexed for columns
         * Therefore, subtract 1 from Jedi's definition line
     """
-    return Location(
-        uri=from_fs_path(name.module_path),
-        range=Range(
-            start=Position(line=name.line - 1, character=name.column),
-            end=Position(
-                line=name.line - 1, character=name.column + len(name.name),
-            ),
+    return Range(
+        start=Position(line=name.line - 1, character=name.column),
+        end=Position(
+            line=name.line - 1, character=name.column + len(name.name),
         ),
     )
+
+
+def lsp_location(name: Name) -> Location:
+    """Get LSP location from Jedi definition"""
+    return Location(uri=from_fs_path(name.module_path), range=lsp_range(name))
 
 
 def lsp_symbol_information(name: Name) -> SymbolInformation:
@@ -109,3 +111,16 @@ def line_column(position: Position) -> Dict[str, int]:
     line.
     """
     return dict(line=position.line + 1, column=position.character)
+
+
+def compare_names(name: Name, name_root: Name) -> bool:
+    """Check if a name has the same root as another name
+
+    Assumes the first result is correct. This could potentially be the cause of
+    bugs; if you experience weird behavior we may want to revisit this
+    decision.
+
+    Currently useful for "highlight" functionality
+    """
+    names = name.goto(follow_imports=False, follow_builtin_imports=False)
+    return names and names[0] == name_root
