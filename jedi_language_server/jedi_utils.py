@@ -6,6 +6,7 @@ Translates pygls types back and forth with Jedi
 from typing import Dict, Optional
 
 import jedi.api.errors
+import jedi.inference.references
 from jedi import Project, Script
 from jedi.api.classes import Name
 from jedi.api.environment import get_cached_default_environment
@@ -21,6 +22,13 @@ from pygls.uris import from_fs_path
 from pygls.workspace import Workspace
 
 from .type_map import get_lsp_symbol_type
+
+# NOTE: remove this once Jedi ignores '.venv' folders by default
+# without this line, Jedi will search in '.venv' folders
+jedi.inference.references._IGNORE_FOLDERS = (  # pylint: disable=protected-access
+    *jedi.inference.references._IGNORE_FOLDERS,  # pylint: disable=protected-access
+    ".venv",
+)
 
 
 def script(workspace: Workspace, uri: str) -> Script:
