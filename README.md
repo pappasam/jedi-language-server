@@ -41,7 +41,7 @@ The following instructions show how to use jedi-language-server with your develo
 
 ### Neovim
 
-Use [coc.nvim](https://github.com/neoclide/coc.nvim/wiki/Language-servers#register-custom-language-servers) with [coc-jedi](https://github.com/pappasam/coc-jedi).
+Use [coc.nvim](https://github.com/neoclide/coc.nvim) with [coc-jedi](https://github.com/pappasam/coc-jedi).
 
 ### Command line (bash / zsh)
 
