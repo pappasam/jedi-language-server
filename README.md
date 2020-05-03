@@ -59,36 +59,12 @@ jedi-language-server supports top-level configuration items in `coc-settings.jso
 
 ```json
 {
-  "jedi.enabled": true,
-  "jedi.completion.triggerCharacters": [".", "'", "\""],
-  "jedi.signatureHelp.triggerCharacters": ["(", ",", ")"],
   "jedi.diagnostics.enabled": true,
   "jedi.diagnostics.didOpen": true,
   "jedi.diagnostics.didChange": true,
   "jedi.diagnostics.didSave": true
 }
 ```
-
-### jedi.enabled
-
-Enables (or disables) all jedi-language-server features (other than initialization)
-
-- type: `boolean`
-- default: `true`
-
-### jedi.completion.triggerCharacters
-
-Defines characters that trigger completion automatically when typed
-
-- type: `array<string>`
-- default: `[".", "'", "\""]`
-
-### jedi.signatureHelp.triggerCharacters
-
-Defines characters that trigger signature help automatically when typed
-
-- type: `array<string>`
-- default: `["(", ",", ")"]`
 
 ### jedi.diagnostics.enabled
 
