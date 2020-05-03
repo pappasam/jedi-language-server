@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Most registrations moved to `static` registrations
 - Configuration options for `triggerCharacters` and other server-managed feature options were removed. See <https://github.com/pappasam/jedi-language-server/issues/15>
+- Elegant solution overriding `bf_*` thanks to [harismandal](https://github.com/harismandal) and [muffinmad](https://github.com/muffinmad/anakin-language-server/blob/539fedc41c7263bb3cd95d1350b7f5cca7f97872/anakinls/server.py#L41-L50)
 
 ## 0.11.0
 
