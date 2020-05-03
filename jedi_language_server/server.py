@@ -386,7 +386,6 @@ async def initialize(
                 "hierarchicalDocumentSymbolSupport",
             ]
         ),
-        False,
     ):
         await server.register_feature(_FEATURE_DOCUMENT_SYMBOL, object())
     else:
