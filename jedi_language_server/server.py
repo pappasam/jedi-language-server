@@ -17,6 +17,7 @@ from pygls.features import (
     DOCUMENT_HIGHLIGHT,
     DOCUMENT_SYMBOL,
     HOVER,
+    INITIALIZE,
     INITIALIZED,
     REFERENCES,
     RENAME,
@@ -37,8 +38,10 @@ from pygls.types import (
     DidOpenTextDocumentParams,
     DidSaveTextDocumentParams,
     DocumentHighlight,
+    DocumentSymbol,
     DocumentSymbolParams,
     Hover,
+    InitializeParams,
     Location,
     ParameterInformation,
     Registration,
@@ -270,13 +273,22 @@ def rename(
     return WorkspaceEdit(changes=changes)
 
 
-def document_symbol(
+def document_symbol_legacy(
     server: JediLanguageServer, params: DocumentSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python document symbols"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     names = jedi_script.get_names()
     return [jedi_utils.lsp_symbol_information(name) for name in names]
+
+
+def document_symbol(
+    server: JediLanguageServer, params: DocumentSymbolParams
+) -> List[DocumentSymbol]:
+    """Document Python document symbols, hierarchically"""
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    names = jedi_script.get_names(all_scopes=True, definitions=True)
+    return jedi_utils.lsp_document_symbols(names)
 
 
 def workspace_symbol(
@@ -318,7 +330,7 @@ def did_open(server: JediLanguageServer, params: DidOpenTextDocumentParams):
     _publish_diagnostics(server, params.textDocument.uri)
 
 
-# Feature constants
+# Dynamic feature constants
 
 
 _CONFIG_COMPLETION = (
@@ -333,7 +345,6 @@ _FEATURES_STANDARD = (
     Feature(COMPLETION, completion, _CONFIG_COMPLETION),
     Feature(DEFINITION, definition),
     Feature(DOCUMENT_HIGHLIGHT, highlight),
-    Feature(DOCUMENT_SYMBOL, document_symbol),
     Feature(HOVER, hover),
     Feature(REFERENCES, references),
     Feature(RENAME, rename),
@@ -345,10 +356,42 @@ _FEATURE_DID_OPEN = Feature(TEXT_DOCUMENT_DID_OPEN, did_open)
 _FEATURE_DID_SAVE = Feature(TEXT_DOCUMENT_DID_SAVE, did_save)
 
 
+# Static feature constants
+# These need to be initialized in "initialize", not "initialized"
+# I may consider putting everything in the "initialize" method at some point
+
+
+_FEATURE_DOCUMENT_SYMBOL = Feature(DOCUMENT_SYMBOL, document_symbol)
+_FEATURE_DOCUMENT_SYMBOL_LEGACY = Feature(
+    DOCUMENT_SYMBOL, document_symbol_legacy
+)
+
 # Instantiate server singleton
 
-
 SERVER = JediLanguageServer()
+
+
+@SERVER.feature(INITIALIZE)
+async def initialize(
+    server: JediLanguageServer, params: InitializeParams,
+):
+    """Handle server initialization"""
+    if rgetattr(
+        params,
+        ".".join(
+            [
+                "capabilities",
+                "textDocument",
+                "documentSymbol",
+                "hierarchicalDocumentSymbolSupport",
+            ]
+        ),
+    ):
+        await server.register_feature(_FEATURE_DOCUMENT_SYMBOL, object())
+    else:
+        await server.register_feature(
+            _FEATURE_DOCUMENT_SYMBOL_LEGACY, object()
+        )
 
 
 # Define post-initialization function to customize configuration

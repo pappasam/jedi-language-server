@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.11.0
+
+### Added
+
+- hierarchicalDocumentSymbolSupport (eg, you get a nice outline when making a documentSymbol request). Conditionally provides this functionality based on whether your language client supports this.
+
 ## 0.10.2
 
 ### Changed
