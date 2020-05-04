@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.12.1
+
+### Changed
+
+- Removed `)` from signatureHelp triggerCharacters (now just `(` and `,`). Thanks to [rwols](https://github.com/rwols) in <https://github.com/pappasam/jedi-language-server/issues/15#issuecomment-623295867>!
+
 ## 0.12.0
 
 ### Changed

@@ -186,7 +186,7 @@ def completion(
     )
 
 
-@SERVER.feature(SIGNATURE_HELP, trigger_characters=["(", ",", ")"])
+@SERVER.feature(SIGNATURE_HELP, trigger_characters=["(", ","])
 def signature_help(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> SignatureHelp:
