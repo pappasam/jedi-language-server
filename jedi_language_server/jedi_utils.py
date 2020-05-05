@@ -8,7 +8,7 @@ from typing import Dict, List
 import jedi.api.errors
 import jedi.inference.references
 from jedi import Project, Script
-from jedi.api.classes import Name
+from jedi.api.classes import Completion, Name
 from jedi.api.environment import get_cached_default_environment
 from pygls.types import (
     Diagnostic,
@@ -160,3 +160,14 @@ def compare_names(name1: Name, name2: Name) -> bool:
     needing to directly import anything from jedi into `server.py`
     """
     return name1 == name2
+
+
+def complete_sort_name(name: Completion) -> str:
+    """Return sort name for a jedi completion
+
+    Should be passed to the sortText field in CompletionItem. Strings sort a-z,
+    a comes first and z comes last.
+    """
+    if name.type == "param":
+        return f"a{name.name}"
+    return f"z{name.name}"
