@@ -97,10 +97,6 @@ class JediLanguageServer(LanguageServer):
             pygls_utils.uuid
         )
 
-    def jls_message(self, message: str) -> None:
-        """Standardize `JediLanguageServer.show_message`"""
-        self.show_message(f"jedi-language-server {message}")
-
     async def unregister_feature(self, feature: Feature) -> None:
         """Unregister an LSP method if it has already been registered"""
         lsp_method = feature.lsp_method
@@ -408,5 +404,3 @@ async def initialized(
             await server.register_feature(_FEATURE_DID_CHANGE, config)
         if rgetattr(config, "diagnostics.didSave", True):
             await server.register_feature(_FEATURE_DID_SAVE, config)
-
-    server.jls_message("initialized")
