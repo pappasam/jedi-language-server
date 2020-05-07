@@ -5,24 +5,11 @@ Helper functions that simplify working with pygls
 
 
 import functools
-from typing import Callable, NamedTuple
-from uuid import uuid4
 
 from pygls.types import Position
 from pygls.workspace import Document
 
 _SENTINEL = object()
-
-
-class Feature(NamedTuple):
-    """Organize information about LanguageServer features
-
-    :attr lsp_method: exact name of the feature's LSP method
-    :attr function: python function to be associated with the method
-    """
-
-    lsp_method: str
-    function: Callable
 
 
 def rgetattr(obj: object, attr: str, default: object = None) -> object:
@@ -71,8 +58,3 @@ def char_before_cursor(
         return document.lines[position.line][position.character - 1]
     except IndexError:
         return default
-
-
-def uuid() -> str:
-    """Function to create a string uuid"""
-    return str(uuid4())

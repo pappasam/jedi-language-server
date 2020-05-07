@@ -55,44 +55,24 @@ jedi-language-server currently works only over IO. This may change in the future
 
 ## Configuration
 
-jedi-language-server supports top-level configuration items in `coc-settings.json` (or your editor-equivalent configuration file). The following is a snippet of `coc-settings.json` with defaults:
+We recommend using [coc-jedi](https://github.com/pappasam/coc-jedi) and following its [configuration instructions](https://github.com/pappasam/coc-jedi#configuration).
+
+If you are configuration this manually, jedi-language-server supports the following [initializationOptions](https://microsoft.github.io/language-server-protocol/specification#initialize):
 
 ```json
-{
-  "jedi.diagnostics.enabled": true,
-  "jedi.diagnostics.didOpen": true,
-  "jedi.diagnostics.didChange": true,
-  "jedi.diagnostics.didSave": true
-}
+...
+  "initializationOptions": {
+    "diagnostics": {
+      "enable": true,
+      "didOpen": true,
+      "didChange": true,
+      "didSave": true
+    }
+  }
+...
 ```
 
-### jedi.diagnostics.enabled
-
-Enables (or disables) diagnostics provided by Jedi
-
-- type: `boolean`
-- default: `true`
-
-### jedi.diagnostics.didOpen
-
-When diagnostics are enabled, run on document open
-
-- type: `boolean`
-- default: `true`
-
-### jedi.diagnostics.didChange
-
-When diagnostics are enabled, run on in-memory document change (eg, while you're editing, without needing to save to disk)
-
-- type: `boolean`
-- default: `true`
-
-### jedi.diagnostics.didSave
-
-When diagnostics are enabled, run on document save (to disk)
-
-- type: `boolean`
-- default: `true`
+See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi#configuration) for an explanation of these configurations.
 
 ## Additional Diagnostics
 

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.13.0
+
+### Changed
+
+- Configuration takes place using initializationOptions instead of asynchronous reads of the current user config. Improves startup time and supports more LanguageClients.
+
+### Removed
+
+- Dynamic registration. All registration is now static since static registration is widely supported.
+
 ## 0.12.3
 
 ### Removed
