@@ -57,7 +57,7 @@ jedi-language-server currently works only over IO. This may change in the future
 
 We recommend using [coc-jedi](https://github.com/pappasam/coc-jedi) and following its [configuration instructions](https://github.com/pappasam/coc-jedi#configuration).
 
-If you are configuration this manually, jedi-language-server supports the following [initializationOptions](https://microsoft.github.io/language-server-protocol/specification#initialize):
+If you are configuring manually, jedi-language-server supports the following [initializationOptions](https://microsoft.github.io/language-server-protocol/specification#initialize):
 
 ```json
 ...
@@ -72,7 +72,7 @@ If you are configuration this manually, jedi-language-server supports the follow
 ...
 ```
 
-See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi#configuration) for an explanation of these configurations.
+See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi#configuration) for an explanation of the above configurations.
 
 ## Additional Diagnostics
 
