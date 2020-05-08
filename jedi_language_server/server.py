@@ -65,7 +65,9 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         client capabilities and initializationOptions.
         """
         server: "LanguageServer" = self._server
-        text_document_capabilities = params.capabilities.textDocument
+        text_document_capabilities = rgetattr(
+            params, "capabilities.textDocument"
+        )
         if rgetattr(
             text_document_capabilities,
             "documentSymbol.hierarchicalDocumentSymbolSupport",
@@ -73,7 +75,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
             server.feature(DOCUMENT_SYMBOL)(document_symbol)
         else:
             server.feature(DOCUMENT_SYMBOL)(document_symbol_legacy)
-        init = params.initializationOptions
+        init = rgetattr(params, "initializationOptions")
         if rgetattr(init, "diagnostics.enable", True):
             if rgetattr(init, "diagnostics.didOpen", True):
                 SERVER.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
