@@ -3,7 +3,7 @@
 Translates pygls types back and forth with Jedi
 """
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import jedi.api.errors
 import jedi.inference.references
@@ -84,6 +84,30 @@ def lsp_symbol_information(name: Name) -> SymbolInformation:
     )
 
 
+def _definition_name_start_end_pos(
+    name: Name,
+) -> Tuple[Tuple[int, int], Tuple[int, int]]:
+    """Get the start and end positions of a name's definition
+
+    Ugly, but it gets the job done as of Jedi 0.17.0
+
+    Returns a tuple of (start_pos, end_pos), which are, themselves, tuples
+
+    See: https://github.com/davidhalter/jedi/issues/1576#issuecomment-627557560
+    """
+    definition = (
+        name._name.tree_name.get_definition()  # pylint: disable=protected-access
+    )
+    if definition is None:
+        return name.start_pos, name.end_pos
+    if name.type in ("function", "class"):
+        last_leaf = definition.get_last_leaf()
+        if last_leaf.type == "newline":
+            return definition.start_pos, last_leaf.get_previous_leaf().end_pos
+        return definition.start_pos, last_leaf.end_pos
+    return definition.start_pos, definition.end_pos
+
+
 def _document_symbol_range(name: Name) -> Range:
     """Get accurate full range of function
 
@@ -95,14 +119,12 @@ def _document_symbol_range(name: Name) -> Range:
     cuts off the end sometimes before the final function statement. This may be
     the cause of bugs at some point.
     """
-    _name = (
-        name._name.tree_name.get_definition()  # pylint: disable=protected-access
-    )
-    (start_line, start_column) = _name.start_pos
-    (end_line, end_column) = _name.end_pos
+    start, end = _definition_name_start_end_pos(name)
+    (start_line, start_column) = start
+    (end_line, end_column) = end
     return Range(
         start=Position(start_line - 1, start_column),
-        end=Position(end_line - 1, end_column + 20000),
+        end=Position(end_line - 1, end_column),
     )
 
 
