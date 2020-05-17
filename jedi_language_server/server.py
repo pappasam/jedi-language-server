@@ -113,7 +113,9 @@ def completion(
                 label=completion.name,
                 kind=get_lsp_completion_type(completion.type),
                 detail=completion.description,
-                documentation=completion.docstring(),
+                documentation=MarkupContent(
+                    kind=MarkupKind.PlainText, value=completion.docstring()
+                ),
                 sort_text=jedi_utils.complete_sort_name(completion),
                 insert_text=pygls_utils.clean_completion_name(
                     completion.name, char
