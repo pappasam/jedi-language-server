@@ -5,6 +5,7 @@
 # My local dev stuff
 test.py
 .nvimrc
+.vim
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
