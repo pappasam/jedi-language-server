@@ -39,6 +39,8 @@ from pygls.types import (
     InitializeParams,
     InitializeResult,
     Location,
+    MarkupContent,
+    MarkupKind,
     ParameterInformation,
     RenameParams,
     SignatureHelp,
@@ -111,7 +113,9 @@ def completion(
                 label=completion.name,
                 kind=get_lsp_completion_type(completion.type),
                 detail=completion.description,
-                documentation=completion.docstring(),
+                documentation=MarkupContent(
+                    kind=MarkupKind.PlainText, value=completion.docstring()
+                ),
                 sort_text=jedi_utils.complete_sort_name(completion),
                 insert_text=pygls_utils.clean_completion_name(
                     completion.name, char
@@ -205,13 +209,21 @@ def highlight(
 
 
 @SERVER.feature(HOVER)
-def hover(server: LanguageServer, params: TextDocumentPositionParams) -> Hover:
+def hover(
+    server: LanguageServer, params: TextDocumentPositionParams
+) -> Optional[Hover]:
     """Support Hover"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
-    jedi_docstrings = (n.docstring() for n in jedi_script.help(**jedi_lines))
-    names = [name for name in jedi_docstrings if name]
-    return Hover(contents=names if names else "jedi: no help docs found")
+    for name in jedi_script.help(**jedi_lines):
+        docstring = name.docstring()
+        if not docstring:
+            continue
+        contents = MarkupContent(kind=MarkupKind.PlainText, value=docstring)
+        document = server.workspace.get_document(params.textDocument.uri)
+        _range = pygls_utils.current_word_range(document, params.position)
+        return Hover(contents=contents, range=_range)
+    return None
 
 
 @SERVER.feature(REFERENCES)

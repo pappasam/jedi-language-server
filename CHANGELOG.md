@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.14.0
+
+### Changed
+
+- 5e2bc3b 2020-05-17 | Completion item documentation is in PlainText (HEAD -> hover-improve) [Sam Roeca
+- 44292b9 2020-05-17 | Hover now returns MarkupContent + Range [Sam Roeca]
+- 0871c6d 2020-05-17 | Ensure that preferred parameters end in "=" [Sam Roeca]
+- d66c402 2020-05-17 | current_word_range function added to pygls_utils [Sam Roeca]
+
 ## 0.13.2
 
 ### Changed
