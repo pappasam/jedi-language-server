@@ -7,7 +7,7 @@ Official language server spec:
 """
 
 import itertools
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from pygls.features import (
     COMPLETION,
@@ -53,7 +53,7 @@ from pygls.types import (
 )
 
 from . import jedi_utils, pygls_utils
-from .pygls_utils import rgetattr
+from .initialize_params_parser import InitializeParamsParser
 from .type_map import get_lsp_completion_type
 
 
@@ -66,37 +66,40 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         Here, we can conditionally register functions to features based on
         client capabilities and initializationOptions.
         """
-        server: "LanguageServer" = self._server
-        text_document_capabilities = rgetattr(
-            params, "capabilities.textDocument"
-        )
-        if rgetattr(
-            text_document_capabilities,
-            "documentSymbol.hierarchicalDocumentSymbolSupport",
-        ):
-            server.feature(DOCUMENT_SYMBOL)(document_symbol)
-        else:
-            server.feature(DOCUMENT_SYMBOL)(document_symbol_legacy)
-        init = rgetattr(params, "initializationOptions")
-        if rgetattr(init, "diagnostics.enable", True):
-            if rgetattr(init, "diagnostics.didOpen", True):
+        # pylint: disable=line-too-long
+        server: "JediLanguageServer" = self._server
+        ip = server.initialize_params  # pylint: disable=invalid-name
+        ip.set_initialize_params(params)
+        if ip.initializationOptions_diagnostics_enable:
+            if ip.initializationOptions_diagnostics_didOpen:
                 SERVER.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
-            if rgetattr(init, "diagnostics.didChange", True):
+            if ip.initializationOptions_diagnostics_didChange:
                 SERVER.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
-            if rgetattr(init, "diagnostics.didSave", True):
+            if ip.initializationOptions_diagnostics_didSave:
                 SERVER.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
         return super().bf_initialize(params)
 
 
-SERVER = LanguageServer(protocol_cls=JediLanguageServerProtocol)
+class JediLanguageServer(LanguageServer):
+    """Jedi language server
+
+    :attr initialize_params: initialized in bf_initialize from the protocol_cls
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.initialize_params = InitializeParamsParser()
+        super().__init__(*args, **kwargs)
 
 
-# Static capabilities, no configuration
+SERVER = JediLanguageServer(protocol_cls=JediLanguageServerProtocol)
+
+
+# Server capabilities
 
 
 @SERVER.feature(COMPLETION, trigger_characters=[".", "'", '"'])
 def completion(
-    server: LanguageServer, params: CompletionParams
+    server: JediLanguageServer, params: CompletionParams
 ) -> CompletionList:
     """Returns completion items"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
@@ -128,7 +131,7 @@ def completion(
 
 @SERVER.feature(SIGNATURE_HELP, trigger_characters=["(", ","])
 def signature_help(
-    server: LanguageServer, params: TextDocumentPositionParams
+    server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> SignatureHelp:
     """Returns signature help"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
@@ -155,7 +158,7 @@ def signature_help(
 
 @SERVER.feature(DEFINITION)
 def definition(
-    server: LanguageServer, params: TextDocumentPositionParams
+    server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Support Goto Definition"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
@@ -168,7 +171,7 @@ def definition(
 
 @SERVER.feature(DOCUMENT_HIGHLIGHT)
 def highlight(
-    server: LanguageServer, params: TextDocumentPositionParams
+    server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[DocumentHighlight]:
     """Support document highlight request
 
@@ -210,7 +213,7 @@ def highlight(
 
 @SERVER.feature(HOVER)
 def hover(
-    server: LanguageServer, params: TextDocumentPositionParams
+    server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[Hover]:
     """Support Hover"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
@@ -228,7 +231,7 @@ def hover(
 
 @SERVER.feature(REFERENCES)
 def references(
-    server: LanguageServer, params: TextDocumentPositionParams
+    server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> List[Location]:
     """Obtain all references to text"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
@@ -239,7 +242,7 @@ def references(
 
 @SERVER.feature(RENAME)
 def rename(
-    server: LanguageServer, params: RenameParams
+    server: JediLanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
@@ -258,9 +261,23 @@ def rename(
     return WorkspaceEdit(changes=changes)
 
 
+@SERVER.feature(DOCUMENT_SYMBOL)
+def document_symbol(
+    server: JediLanguageServer, params: DocumentSymbolParams
+) -> Union[List[DocumentSymbol], List[SymbolInformation]]:
+    """Document Python document symbols, hierarchically"""
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    names = jedi_script.get_names(all_scopes=True, definitions=True)
+    if (
+        server.initialize_params.capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport  # pylint: disable=line-too-long
+    ):
+        return jedi_utils.lsp_document_symbols(names)
+    return [jedi_utils.lsp_symbol_information(name) for name in names]
+
+
 @SERVER.feature(WORKSPACE_SYMBOL)
 def workspace_symbol(
-    server: LanguageServer, params: WorkspaceSymbolParams
+    server: JediLanguageServer, params: WorkspaceSymbolParams
 ) -> List[SymbolInformation]:
     """Document Python workspace symbols"""
     jedi_project = jedi_utils.project(server.workspace)
@@ -276,28 +293,7 @@ def workspace_symbol(
 # Static capability or initializeOptions functions that rely on a specific
 # client capability or user configuration. These are associated with
 # JediLanguageServer within JediLanguageServerProtocol.bf_initialize
-
-# DOCUMENT_SYMBOL: legacy
-def document_symbol_legacy(
-    server: LanguageServer, params: DocumentSymbolParams
-) -> List[SymbolInformation]:
-    """Document Python document symbols"""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    names = jedi_script.get_names()
-    return [jedi_utils.lsp_symbol_information(name) for name in names]
-
-
-# DOCUMENT_SYMBOL: new
-def document_symbol(
-    server: LanguageServer, params: DocumentSymbolParams
-) -> List[DocumentSymbol]:
-    """Document Python document symbols, hierarchically"""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    names = jedi_script.get_names(all_scopes=True, definitions=True)
-    return jedi_utils.lsp_document_symbols(names)
-
-
-def _publish_diagnostics(server: LanguageServer, uri: str):
+def _publish_diagnostics(server: JediLanguageServer, uri: str):
     """Helper function to publish diagnostics for a file"""
     jedi_script = jedi_utils.script(server.workspace, uri)
     errors = jedi_script.get_syntax_errors()
@@ -306,18 +302,20 @@ def _publish_diagnostics(server: LanguageServer, uri: str):
 
 
 # TEXT_DOCUMENT_DID_SAVE
-def did_save(server: LanguageServer, params: DidSaveTextDocumentParams):
+def did_save(server: JediLanguageServer, params: DidSaveTextDocumentParams):
     """Actions run on textDocument/didSave"""
     _publish_diagnostics(server, params.textDocument.uri)
 
 
 # TEXT_DOCUMENT_DID_CHANGE
-def did_change(server: LanguageServer, params: DidChangeTextDocumentParams):
+def did_change(
+    server: JediLanguageServer, params: DidChangeTextDocumentParams
+):
     """Actions run on textDocument/didChange"""
     _publish_diagnostics(server, params.textDocument.uri)
 
 
 # TEXT_DOCUMENT_DID_OPEN
-def did_open(server: LanguageServer, params: DidOpenTextDocumentParams):
+def did_open(server: JediLanguageServer, params: DidOpenTextDocumentParams):
     """Actions run on textDocument/didOpen"""
     _publish_diagnostics(server, params.textDocument.uri)
