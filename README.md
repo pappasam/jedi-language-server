@@ -76,49 +76,7 @@ See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi
 
 ## Additional Diagnostics
 
-jedi-langugage-server provides diagnostics about syntax errors, powered by Jedi. If you would like additional diagnostics, we suggest using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
-
-If using Neovim/coc, this can easily be done with [coc-diagnostic](https://github.com/iamcco/coc-diagnostic). Configure with [pylint](https://github.com/PyCQA/pylint) in your `coc-settings.json`:
-
-```json
-"diagnostic-languageserver.filetypes": {
-  "python": "pylint"
-},
-"diagnostic-languageserver.linters": {
-  "pylint": {
-    "sourceName": "pylint",
-    "command": "pylint",
-    "args": [
-      "--output-format",
-      "text",
-      "--score",
-      "no",
-      "--msg-template",
-      "'{line}:{column}:{category}:{msg} ({msg_id}:{symbol})'",
-      "%file"
-    ],
-    "formatPattern": [
-      "^(\\d+?):(\\d+?):([a-z]+?):(.*)$",
-      {
-        "line": 1,
-        "column": 2,
-        "security": 3,
-        "message": 4
-      }
-    ],
-    "securities": {
-      "informational": "hint",
-      "refactor": "info",
-      "convention": "info",
-      "warning": "warning",
-      "error": "error",
-      "fatal": "error"
-    },
-    "offsetColumn": 1,
-    "formatLines": 1
-  }
-}
-```
+jedi-langugage-server currently provides diagnostics about syntax errors, powered by Jedi. If you would like additional diagnostics, we suggest using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
 
 ## Local Development
 
