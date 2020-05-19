@@ -7,9 +7,9 @@ This parser handles the following tasks for the InitializeParams:
 - organizing initialization values in one place
 """
 
-from typing import Optional
+from typing import List, Optional
 
-from pygls.types import InitializeParams
+from pygls.types import InitializeParams, MarkupKind
 
 from .pygls_utils import rgetattr
 
@@ -36,6 +36,21 @@ class InitializeParamsParser:
         self._initialize_params_store = params
 
     @property
+    def capabilities_textDocument_completion_completionItem_documentationFormat(
+        self,
+    ) -> List[MarkupKind]:
+        _path = (
+            "capabilities",
+            "textDocument",
+            "completion",
+            "completionItem",
+            "documentationFormat",
+        )
+        path = ".".join(_path)
+        default = [MarkupKind.PlainText]
+        return rgetattr(self._initialize_params, path, default)  # type: ignore
+
+    @property
     def capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport(
         self,
     ) -> bool:
@@ -48,6 +63,46 @@ class InitializeParamsParser:
         path = ".".join(_path)
         default = False
         return bool(rgetattr(self._initialize_params, path, default))
+
+    @property
+    def capabilities_textDocument_hover_contentFormat(
+        self,
+    ) -> List[MarkupKind]:
+        _path = (
+            "capabilities",
+            "textDocument",
+            "hover",
+            "contentFormat",
+        )
+        path = ".".join(_path)
+        default = [MarkupKind.PlainText]
+        return rgetattr(self._initialize_params, path, default)  # type: ignore
+
+    @property
+    def capabilities_textDocument_signatureHelp_contentFormat(
+        self,
+    ) -> List[str]:
+        _path = (
+            "capabilities",
+            "textDocument",
+            "hover",
+            "contentFormat",
+        )
+        path = ".".join(_path)
+        default = [MarkupKind.PlainText]
+        return rgetattr(self._initialize_params, path, default)  # type: ignore
+
+    @property
+    def initializationOptions_markupKindPreferred(
+        self,
+    ) -> Optional[MarkupKind]:
+        _path = (
+            "initializationOptions",
+            "markupKindPreferred",
+        )
+        path = ".".join(_path)
+        result = rgetattr(self._initialize_params, path)
+        return result if result is None else MarkupKind(result)
 
     @property
     def initializationOptions_diagnostics_enable(self) -> bool:

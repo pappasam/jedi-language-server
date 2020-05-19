@@ -40,7 +40,6 @@ from pygls.types import (
     InitializeResult,
     Location,
     MarkupContent,
-    MarkupKind,
     ParameterInformation,
     RenameParams,
     SignatureHelp,
@@ -56,6 +55,8 @@ from . import jedi_utils, pygls_utils
 from .initialize_params_parser import InitializeParamsParser
 from .type_map import get_lsp_completion_type
 
+# pylint: disable=line-too-long
+
 
 class JediLanguageServerProtocol(LanguageServerProtocol):
     """Override some built-in functions"""
@@ -66,7 +67,6 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         Here, we can conditionally register functions to features based on
         client capabilities and initializationOptions.
         """
-        # pylint: disable=line-too-long
         server: "JediLanguageServer" = self._server
         ip = server.initialize_params  # pylint: disable=invalid-name
         ip.set_initialize_params(params)
@@ -109,6 +109,17 @@ def completion(
         document=server.workspace.get_document(params.textDocument.uri),
         position=params.position,
     )
+    markup_preferred = (
+        server.initialize_params.initializationOptions_markupKindPreferred
+    )
+    markup_supported = (
+        server.initialize_params.capabilities_textDocument_completion_completionItem_documentationFormat
+    )
+    markup_kind = (
+        markup_preferred
+        if markup_preferred in markup_supported
+        else markup_supported[0]
+    )
     return CompletionList(
         is_incomplete=False,
         items=[
@@ -117,7 +128,7 @@ def completion(
                 kind=get_lsp_completion_type(completion.type),
                 detail=completion.description,
                 documentation=MarkupContent(
-                    kind=MarkupKind.PlainText, value=completion.docstring()
+                    kind=markup_kind, value=completion.docstring()
                 ),
                 sort_text=jedi_utils.complete_sort_name(completion),
                 insert_text=pygls_utils.clean_completion_name(
@@ -222,7 +233,18 @@ def hover(
         docstring = name.docstring()
         if not docstring:
             continue
-        contents = MarkupContent(kind=MarkupKind.PlainText, value=docstring)
+        markup_preferred = (
+            server.initialize_params.initializationOptions_markupKindPreferred
+        )
+        markup_supported = (
+            server.initialize_params.capabilities_textDocument_hover_contentFormat
+        )
+        markup_kind = (
+            markup_preferred
+            if markup_preferred in markup_supported
+            else markup_supported[0]
+        )
+        contents = MarkupContent(kind=markup_kind, value=docstring)
         document = server.workspace.get_document(params.textDocument.uri)
         _range = pygls_utils.current_word_range(document, params.position)
         return Hover(contents=contents, range=_range)
@@ -269,7 +291,7 @@ def document_symbol(
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     names = jedi_script.get_names(all_scopes=True, definitions=True)
     if (
-        server.initialize_params.capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport  # pylint: disable=line-too-long
+        server.initialize_params.capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport
     ):
         return jedi_utils.lsp_document_symbols(names)
     return [jedi_utils.lsp_symbol_information(name) for name in names]
