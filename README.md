@@ -4,7 +4,7 @@
 [![image-license](https://img.shields.io/pypi/l/jedi-language-server.svg)](https://python.org/pypi/jedi-language-server)
 [![image-python-versions](https://img.shields.io/pypi/pyversions/jedi-language-server.svg)](https://python.org/pypi/jedi-language-server)
 
-A [Language Server](https://microsoft.github.io/language-server-protocol/) for the latest version(s) of [Jedi](https://jedi.readthedocs.io/en/latest/).
+A [Language Server](https://microsoft.github.io/language-server-protocol/) for the latest version(s) of [Jedi](https://jedi.readthedocs.io/en/latest/). If using Neovim/Vim, we recommend using with [coc-jedi](https://github.com/pappasam/coc-jedi).
 
 **Note:** this tool is actively used by its primary author. He's happy to review pull requests / respond to issues you may discover.
 
@@ -18,11 +18,13 @@ pip install -U jedi-language-server
 
 `-U` ensures that you're pulling the latest version from pypi.
 
-Alternatively, consider using [pipx](https://github.com/pipxproject/pipx) to keep jedi-language-server isolated from your other Python dependencies.
+Alternatively, consider using [pipx](https://github.com/pipxproject/pipx) to keep jedi-language-server isolated from your other Python dependencies. Don't worry, jedi is smart enough to figure out which Virtual environment you're currently using!
 
-## Overview
+## Capabilities
 
-jedi-language-server aims to support all of Jedi's capabilities and expose them through the Language Server Protocol. It currently supports the following Language Server requests:
+jedi-language-server aims to support all of Jedi's capabilities and expose them through the Language Server Protocol. It currently supports the following Language Server capabilities:
+
+### Language Features
 
 - [textDocument/completion](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_completion)
 - [textDocument/definition](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_definition)
@@ -34,6 +36,12 @@ jedi-language-server aims to support all of Jedi's capabilities and expose them 
 - [textDocument/rename](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_rename)
 - [textDocument/signatureHelp](https://microsoft.github.io/language-server-protocol/specification#textDocument_signatureHelp)
 - [workspace/symbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspace_symbol)
+
+### Text Synchronization (for diagnostics)
+
+- [textDocument/didChange](https://microsoft.github.io/language-server-protocol/specification#textDocument_didChange)
+- [textDocument/didOpen](https://microsoft.github.io/language-server-protocol/specification#textDocument_didOpen)
+- [textDocument/didSave](https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave)
 
 ## Editor Setup
 
@@ -62,6 +70,7 @@ If you are configuring manually, jedi-language-server supports the following [in
 ```json
 ...
   "initializationOptions": {
+    "markupKindPreferred": null,
     "diagnostics": {
       "enable": true,
       "didOpen": true,
