@@ -51,6 +51,11 @@ The following instructions show how to use jedi-language-server with your develo
 
 Use [coc.nvim](https://github.com/neoclide/coc.nvim) with [coc-jedi](https://github.com/pappasam/coc-jedi).
 
+
+### Emacs
+
+Use [lsp-jedi](https://github.com/fredcamps/lsp-jedi)
+
 ### Command line (bash / zsh)
 
 At your terminal prompt:
