@@ -47,14 +47,13 @@ jedi-language-server aims to support all of Jedi's capabilities and expose them 
 
 The following instructions show how to use jedi-language-server with your development tooling. The instructions assume you have already installed jedi-language-server.
 
-### Neovim
+### Vim / Neovim
 
 Use [coc.nvim](https://github.com/neoclide/coc.nvim) with [coc-jedi](https://github.com/pappasam/coc-jedi).
 
-
 ### Emacs
 
-Use [lsp-jedi](https://github.com/fredcamps/lsp-jedi)
+Use [lsp-jedi](https://github.com/fredcamps/lsp-jedi).
 
 ### Command line (bash / zsh)
 
