@@ -189,8 +189,11 @@ def complete_sort_name(name: Completion) -> str:
 
     Should be passed to the sortText field in CompletionItem. Strings sort a-z,
     a comes first and z comes last.
+
+    Additionally, we'd like to keep the sort order to what Jedi has provided.
+    For this reason, we make sure the sort-text is just a letter and not the
+    name itself.
     """
     if name.type == "param" and name.name.endswith("="):
-        # params directly associated with filling out current function sig
-        return f"a{name.name}"
-    return f"z{name.name}"
+        return f"a"
+    return f"z"
