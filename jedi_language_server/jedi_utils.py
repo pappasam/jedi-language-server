@@ -3,7 +3,7 @@
 Translates pygls types back and forth with Jedi
 """
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import jedi.api.errors
 import jedi.inference.references
@@ -108,6 +108,39 @@ def _definition_name_start_end_pos(
     return definition.start_pos, definition.end_pos
 
 
+def _get_definition_start_position(name: Name) -> Optional[Tuple[int, int]]:
+    """Start of the definition range. Rows start with 1, columns with 0
+
+    NOTE: replace with public method when Jedi 0.17.1 released
+    """
+    # pylint: disable=protected-access
+    if name._name.tree_name is None:
+        return None
+    definition = name._name.tree_name.get_definition()
+    if definition is None:
+        return name._name.start_pos
+    return definition.start_pos
+
+
+def _get_definition_end_position(name: Name) -> Optional[Tuple[int, int]]:
+    """End of the definition range. Rows start with 1, columns with 0
+
+    NOTE: replace with public method when Jedi 0.17.1 released
+    """
+    # pylint: disable=protected-access
+    if name._name.tree_name is None:
+        return None
+    definition = name._name.tree_name.get_definition()
+    if definition is None:
+        return name._name.tree_name.end_pos
+    if name.type in ("function", "class"):
+        last_leaf = definition.get_last_leaf()
+        if last_leaf.type == "newline":
+            return last_leaf.get_previous_leaf().end_pos
+        return last_leaf.end_pos
+    return definition.end_pos
+
+
 def _document_symbol_range(name: Name) -> Range:
     """Get accurate full range of function
 
@@ -119,7 +152,10 @@ def _document_symbol_range(name: Name) -> Range:
     cuts off the end sometimes before the final function statement. This may be
     the cause of bugs at some point.
     """
-    start, end = _definition_name_start_end_pos(name)
+    start = _get_definition_start_position(name)
+    end = _get_definition_end_position(name)
+    if start is None or end is None:
+        return lsp_range(name)
     (start_line, start_column) = start
     (end_line, end_column) = end
     return Range(
