@@ -38,6 +38,7 @@ from pygls.types import (
     Hover,
     InitializeParams,
     InitializeResult,
+    InsertTextFormat,
     Location,
     MarkupContent,
     ParameterInformation,
@@ -134,6 +135,7 @@ def completion(
                 insert_text=pygls_utils.clean_completion_name(
                     completion.name, char
                 ),
+                insert_text_format=InsertTextFormat.PlainText,
             )
             for completion in completions
         ],

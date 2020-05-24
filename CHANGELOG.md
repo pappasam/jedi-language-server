@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.15.1
+
+### Fixed
+
+- f44ef53 2020-05-24 | Completion: explicit insert_text_format=PlainText [Sam Roeca]
+- 0d63b25 2020-05-23 | Replace symbol position functions with public ones [Sam Roeca]
+- fdc0b99 2020-05-23 | Completion sorting now sorts sections, not labels [Sam Roeca]
+
 ## 0.15.0
 
 ### Changed
