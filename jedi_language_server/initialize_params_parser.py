@@ -51,6 +51,21 @@ class InitializeParamsParser:
         return rgetattr(self._initialize_params, path, default)  # type: ignore
 
     @property
+    def capabilities_textDocument_completion_completionItem_snippetSupport(
+        self,
+    ) -> bool:
+        _path = (
+            "capabilities",
+            "textDocument",
+            "completion",
+            "completionItem",
+            "snippetSupport",
+        )
+        path = ".".join(_path)
+        default = False
+        return bool(rgetattr(self._initialize_params, path, default))
+
+    @property
     def capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport(
         self,
     ) -> bool:
