@@ -126,6 +126,17 @@ class InitializeParamsParser:
         return result if result is None else MarkupKind(result)
 
     @cached_property
+    def initializationOptions_completion_disableSnippets(self) -> bool:
+        _path = (
+            "initializationOptions",
+            "completion",
+            "disableSnippets",
+        )
+        path = ".".join(_path)
+        default = False
+        return bool(rgetattr(self._initialize_params, path, default))
+
+    @cached_property
     def initializationOptions_diagnostics_enable(self) -> bool:
         _path = (
             "initializationOptions",

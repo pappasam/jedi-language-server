@@ -102,6 +102,7 @@ def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> CompletionList:
     """Returns completion items"""
+    # pylint: disable=too-many-locals
     trigger_kind = params.context.triggerKind
     trigger_dot = (
         trigger_kind == CompletionTriggerKind.TriggerCharacter
@@ -128,6 +129,10 @@ def completion(
     snippet_support = (
         server.initialize_params.capabilities_textDocument_completion_completionItem_snippetSupport
     )
+    snippet_disable = (
+        server.initialize_params.initializationOptions_completion_disableSnippets
+    )
+    enable_snippets = snippet_support and not snippet_disable
     start_position = (
         params.position
         if trigger_dot or char_before_cursor == " "
@@ -141,7 +146,7 @@ def completion(
             jedi_utils.lsp_completion_item(
                 name=completion,
                 start_position=start_position,
-                snippet_support=snippet_support,
+                enable_snippets=enable_snippets,
                 markup_kind=markup_kind,
             )
             for completion in completions

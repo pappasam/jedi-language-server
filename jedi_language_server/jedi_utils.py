@@ -244,7 +244,7 @@ _POSITION_PARAMETERS = {
 def lsp_completion_item(
     name: Completion,
     start_position: Position,
-    snippet_support: bool,
+    enable_snippets: bool,
     markup_kind: MarkupKind,
 ) -> CompletionItem:
     """Using a Jedi completion, obtain a jedi completion item"""
@@ -267,7 +267,9 @@ def lsp_completion_item(
         text_edit=TextEdit(range=range_, new_text=name_name),
         insert_text_format=InsertTextFormat.PlainText,
     )
-    if not snippet_support:
+    if not enable_snippets:
+        return completion_item
+    if name_type == "import":
         return completion_item
 
     signatures = name.get_signatures()
