@@ -10,7 +10,6 @@ import jedi.api.errors
 import jedi.inference.references
 from jedi import Project, Script
 from jedi.api.classes import Completion, Name, Signature
-from jedi.api.environment import get_cached_default_environment
 from pygls.types import (
     CompletionItem,
     Diagnostic,
@@ -41,12 +40,7 @@ def script(workspace: Workspace, uri: str) -> Script:
     """Simplifies getting jedi Script"""
     project_ = project(workspace)
     document = workspace.get_document(uri)
-    return Script(
-        code=document.source,
-        path=document.path,
-        project=project_,
-        environment=get_cached_default_environment(),
-    )
+    return Script(code=document.source, path=document.path, project=project_)
 
 
 def project(workspace: Workspace) -> Project:
