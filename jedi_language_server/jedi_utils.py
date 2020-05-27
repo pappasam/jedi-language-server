@@ -251,9 +251,7 @@ def lsp_completion_item(
     name_type = name.type
     name_name = name.name
     range_ = Range(
-        start=Position(
-            line=start_position.line, character=start_position.character - 1,
-        ),
+        start=start_position,
         end=Position(
             line=start_position.line,
             character=start_position.character + len(name_name),
@@ -291,9 +289,7 @@ def lsp_completion_item(
     )
     new_text = name_name + snippet_signature
     new_range = Range(
-        start=Position(
-            line=start_position.line, character=start_position.character - 1,
-        ),
+        start=start_position,
         end=Position(
             line=start_position.line,
             character=start_position.character + len(new_text),
