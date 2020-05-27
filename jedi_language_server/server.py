@@ -103,10 +103,6 @@ def completion(
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     completions = jedi_script.complete(**jedi_lines)
-    char = pygls_utils.char_before_cursor(
-        document=server.workspace.get_document(params.textDocument.uri),
-        position=params.position,
-    )
     markup_preferred = (
         server.initialize_params.initializationOptions_markupKindPreferred
     )
@@ -126,7 +122,7 @@ def completion(
         items=[
             jedi_utils.lsp_completion_item(
                 name=completion,
-                char_before_cursor=char,
+                start_position=params.position,
                 snippet_support=snippet_support,
                 markup_kind=markup_kind,
             )

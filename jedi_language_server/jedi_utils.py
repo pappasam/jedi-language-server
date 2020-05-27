@@ -22,6 +22,7 @@ from pygls.types import (
     Position,
     Range,
     SymbolInformation,
+    TextEdit,
 )
 from pygls.uris import from_fs_path
 from pygls.workspace import Workspace
@@ -234,18 +235,6 @@ def complete_sort_name(name: Completion) -> str:
     return "z"
 
 
-def clean_completion_name(name: str, char: str) -> str:
-    """Clean the completion name, stripping bad surroundings
-
-    1. Remove all surrounding " and '. For
-    """
-    if char == "'":
-        return name.lstrip("'")
-    if char == '"':
-        return name.lstrip('"')
-    return name
-
-
 _POSITION_PARAMETERS = {
     Parameter.POSITIONAL_ONLY,
     Parameter.POSITIONAL_OR_KEYWORD,
@@ -254,13 +243,22 @@ _POSITION_PARAMETERS = {
 
 def lsp_completion_item(
     name: Completion,
-    char_before_cursor: str,
+    start_position: Position,
     snippet_support: bool,
     markup_kind: MarkupKind,
 ) -> CompletionItem:
     """Using a Jedi completion, obtain a jedi completion item"""
     name_type = name.type
     name_name = name.name
+    range_ = Range(
+        start=Position(
+            line=start_position.line, character=start_position.character - 1,
+        ),
+        end=Position(
+            line=start_position.line,
+            character=start_position.character + len(name_name),
+        ),
+    )
     completion_item = CompletionItem(
         label=name_name,
         filter_text=name_name,
@@ -268,7 +266,7 @@ def lsp_completion_item(
         detail=name.description,
         documentation=MarkupContent(kind=markup_kind, value=name.docstring()),
         sort_text=complete_sort_name(name),
-        insert_text=clean_completion_name(name_name, char_before_cursor),
+        text_edit=TextEdit(range=range_, new_text=name_name),
         insert_text_format=InsertTextFormat.PlainText,
     )
     if not snippet_support:
@@ -291,5 +289,15 @@ def lsp_completion_item(
     snippet_signature = (
         "($0)" if not params else "(" + ", ".join(params) + ")$0"
     )
-    completion_item.insertText = name_name + snippet_signature
+    new_text = name_name + snippet_signature
+    new_range = Range(
+        start=Position(
+            line=start_position.line, character=start_position.character - 1,
+        ),
+        end=Position(
+            line=start_position.line,
+            character=start_position.character + len(new_text),
+        ),
+    )
+    completion_item.textEdit = TextEdit(range=new_range, new_text=new_text)
     return completion_item

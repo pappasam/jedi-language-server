@@ -49,6 +49,16 @@ def char_before_cursor(
         return default
 
 
+def char_after_cursor(
+    document: Document, position: Position, default=""
+) -> str:
+    """Get the character directly before the cursor"""
+    try:
+        return document.lines[position.line][position.character]
+    except IndexError:
+        return default
+
+
 def current_word_range(
     document: Document, position: Position
 ) -> Optional[Range]:
