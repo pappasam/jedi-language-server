@@ -3,18 +3,23 @@
 Translates pygls types back and forth with Jedi
 """
 
+from inspect import Parameter
 from typing import Dict, List, Optional, Tuple
 
 import jedi.api.errors
 import jedi.inference.references
 from jedi import Project, Script
-from jedi.api.classes import Completion, Name
+from jedi.api.classes import Completion, Name, Signature
 from jedi.api.environment import get_cached_default_environment
 from pygls.types import (
+    CompletionItem,
     Diagnostic,
     DiagnosticSeverity,
     DocumentSymbol,
+    InsertTextFormat,
     Location,
+    MarkupContent,
+    MarkupKind,
     Position,
     Range,
     SymbolInformation,
@@ -22,7 +27,7 @@ from pygls.types import (
 from pygls.uris import from_fs_path
 from pygls.workspace import Workspace
 
-from .type_map import get_lsp_symbol_type
+from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
 # NOTE: remove this once Jedi ignores '.venv' folders by default
 # without this line, Jedi will search in '.venv' folders
@@ -231,5 +236,66 @@ def complete_sort_name(name: Completion) -> str:
     name itself.
     """
     if name.type == "param" and name.name.endswith("="):
-        return f"a"
-    return f"z"
+        return "a"
+    return "z"
+
+
+def clean_completion_name(name: str, char: str) -> str:
+    """Clean the completion name, stripping bad surroundings
+
+    1. Remove all surrounding " and '. For
+    """
+    if char == "'":
+        return name.lstrip("'")
+    if char == '"':
+        return name.lstrip('"')
+    return name
+
+
+_POSITION_PARAMETERS = {
+    Parameter.POSITIONAL_ONLY,
+    Parameter.POSITIONAL_OR_KEYWORD,
+}
+
+
+def lsp_completion_item(
+    name: Completion,
+    char_before_cursor: str,
+    snippet_support: bool,
+    markup_kind: MarkupKind,
+) -> CompletionItem:
+    """Using a Jedi completion, obtain a jedi completion item"""
+    name_type = name.type
+    name_name = name.name
+    completion_item = CompletionItem(
+        label=name_name,
+        filter_text=name_name,
+        kind=get_lsp_completion_type(name_type),
+        detail=name.description,
+        documentation=MarkupContent(kind=markup_kind, value=name.docstring()),
+        sort_text=complete_sort_name(name),
+        insert_text=clean_completion_name(name_name, char_before_cursor),
+        insert_text_format=InsertTextFormat.PlainText,
+    )
+    if not snippet_support:
+        return completion_item
+
+    signatures = name.get_signatures()
+    if not signatures:
+        return completion_item
+
+    completion_item.insertTextFormat = InsertTextFormat.Snippet
+    signature: Signature = signatures[0]
+    try:
+        params = [
+            "${" + f"{param_num + 1}:{param.to_string()}" + "}"
+            for param_num, param in enumerate(signature.params)
+            if param.kind in _POSITION_PARAMETERS and not param.infer_default()
+        ]
+    except Exception:  # pylint: disable=broad-except
+        params = []
+    snippet_signature = (
+        "($0)" if not params else "(" + ", ".join(params) + ")$0"
+    )
+    completion_item.insertText = name_name + snippet_signature
+    return completion_item
