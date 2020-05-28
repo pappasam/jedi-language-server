@@ -14,7 +14,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Completion items now return `TextEdit` instead of `InsertText`. This, according to LSP documentation, will create a more-consistent experience across LSP clients. We'll see...
 - Reflecting the recent version of Jedi, the type map between Jedi and `pygls` has been reduced to reflect only the public types available in Jedi.
 - Cache now no longer explicitly referenced.
 

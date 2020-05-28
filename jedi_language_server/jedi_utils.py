@@ -22,7 +22,6 @@ from pygls.types import (
     Position,
     Range,
     SymbolInformation,
-    TextEdit,
 )
 from pygls.uris import from_fs_path
 from pygls.workspace import Workspace
@@ -278,7 +277,6 @@ def is_import(script_: Script, line: int, column: int) -> bool:
 def lsp_completion_item(
     name: Completion,
     char_before_cursor: str,
-    start_position: Position,
     enable_snippets: bool,
     markup_kind: MarkupKind,
 ) -> CompletionItem:
@@ -292,16 +290,7 @@ def lsp_completion_item(
         detail=name.description,
         documentation=MarkupContent(kind=markup_kind, value=name.docstring()),
         sort_text=complete_sort_name(name),
-        text_edit=TextEdit(
-            range=Range(
-                start=start_position,
-                end=Position(
-                    line=start_position.line,
-                    character=start_position.character + len(name_clean),
-                ),
-            ),
-            new_text=name_clean,
-        ),
+        insert_text=name_clean,
         insert_text_format=InsertTextFormat.PlainText,
     )
     if not enable_snippets:
@@ -317,14 +306,5 @@ def lsp_completion_item(
     except Exception:  # pylint: disable=broad-except
         snippet_signature = "($0)"
     new_text = name_name + snippet_signature
-    new_range = Range(
-        start=Position(
-            line=start_position.line, character=start_position.character,
-        ),
-        end=Position(
-            line=start_position.line,
-            character=start_position.character + len(new_text),
-        ),
-    )
-    completion_item.textEdit = TextEdit(range=new_range, new_text=new_text)
+    completion_item.insertText = new_text
     return completion_item

@@ -100,14 +100,6 @@ def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> CompletionList:
     """Returns completion items"""
-    # pylint: disable=too-many-locals
-    document = server.workspace.get_document(params.textDocument.uri)
-    current_word_range = pygls_utils.current_word_range(
-        document, params.position
-    )
-    char_before_cursor = pygls_utils.char_before_cursor(
-        document, params.position
-    )
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     completions = jedi_script.complete(**jedi_lines)
@@ -136,8 +128,9 @@ def completion(
     enable_snippets = (
         snippet_support and not snippet_disable and not is_import_context
     )
-    start_position = (
-        current_word_range.start if current_word_range else params.position
+    char_before_cursor = pygls_utils.char_before_cursor(
+        document=server.workspace.get_document(params.textDocument.uri),
+        position=params.position,
     )
     return CompletionList(
         is_incomplete=False,
@@ -145,7 +138,6 @@ def completion(
             jedi_utils.lsp_completion_item(
                 name=completion,
                 char_before_cursor=char_before_cursor,
-                start_position=start_position,
                 enable_snippets=enable_snippets,
                 markup_kind=markup_kind,
             )
