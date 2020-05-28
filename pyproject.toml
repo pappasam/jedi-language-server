@@ -13,7 +13,7 @@ include_trailing_comma = true
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.15.1"
+version = "0.16.0"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -47,6 +47,7 @@ python = "^3.6"
 click = ">=7.0"
 jedi = ">=0.17.0"
 pygls = ">=0.8.1"
+cached-property = { version = ">=1.5.1", python = "~3.6 || ~3.7" }
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.3"

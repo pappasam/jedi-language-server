@@ -13,6 +13,12 @@ from pygls.types import InitializeParams, MarkupKind
 
 from .pygls_utils import rgetattr
 
+try:
+    from functools import cached_property  # type: ignore
+except ImportError:
+    from cached_property import cached_property
+
+
 # pylint: disable=line-too-long
 # pylint: disable=invalid-name
 # pylint: disable=missing-function-docstring
@@ -24,7 +30,7 @@ class InitializeParamsParser:
     def __init__(self) -> None:
         self._initialize_params_store: Optional[InitializeParams] = None
 
-    @property
+    @cached_property
     def _initialize_params(self) -> InitializeParams:
         """Get the initialize params"""
         if self._initialize_params_store is None:
@@ -35,7 +41,7 @@ class InitializeParamsParser:
         """Set the initialize params"""
         self._initialize_params_store = params
 
-    @property
+    @cached_property
     def capabilities_textDocument_completion_completionItem_documentationFormat(
         self,
     ) -> List[MarkupKind]:
@@ -50,7 +56,22 @@ class InitializeParamsParser:
         default = [MarkupKind.PlainText]
         return rgetattr(self._initialize_params, path, default)  # type: ignore
 
-    @property
+    @cached_property
+    def capabilities_textDocument_completion_completionItem_snippetSupport(
+        self,
+    ) -> bool:
+        _path = (
+            "capabilities",
+            "textDocument",
+            "completion",
+            "completionItem",
+            "snippetSupport",
+        )
+        path = ".".join(_path)
+        default = False
+        return bool(rgetattr(self._initialize_params, path, default))
+
+    @cached_property
     def capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport(
         self,
     ) -> bool:
@@ -64,7 +85,7 @@ class InitializeParamsParser:
         default = False
         return bool(rgetattr(self._initialize_params, path, default))
 
-    @property
+    @cached_property
     def capabilities_textDocument_hover_contentFormat(
         self,
     ) -> List[MarkupKind]:
@@ -78,7 +99,7 @@ class InitializeParamsParser:
         default = [MarkupKind.PlainText]
         return rgetattr(self._initialize_params, path, default)  # type: ignore
 
-    @property
+    @cached_property
     def capabilities_textDocument_signatureHelp_contentFormat(
         self,
     ) -> List[str]:
@@ -92,7 +113,7 @@ class InitializeParamsParser:
         default = [MarkupKind.PlainText]
         return rgetattr(self._initialize_params, path, default)  # type: ignore
 
-    @property
+    @cached_property
     def initializationOptions_markupKindPreferred(
         self,
     ) -> Optional[MarkupKind]:
@@ -104,7 +125,18 @@ class InitializeParamsParser:
         result = rgetattr(self._initialize_params, path)
         return result if result is None else MarkupKind(result)
 
-    @property
+    @cached_property
+    def initializationOptions_completion_disableSnippets(self) -> bool:
+        _path = (
+            "initializationOptions",
+            "completion",
+            "disableSnippets",
+        )
+        path = ".".join(_path)
+        default = False
+        return bool(rgetattr(self._initialize_params, path, default))
+
+    @cached_property
     def initializationOptions_diagnostics_enable(self) -> bool:
         _path = (
             "initializationOptions",
@@ -115,7 +147,7 @@ class InitializeParamsParser:
         default = True
         return bool(rgetattr(self._initialize_params, path, default))
 
-    @property
+    @cached_property
     def initializationOptions_diagnostics_didOpen(self) -> bool:
         _path = (
             "initializationOptions",
@@ -126,7 +158,7 @@ class InitializeParamsParser:
         default = True
         return bool(rgetattr(self._initialize_params, path, default))
 
-    @property
+    @cached_property
     def initializationOptions_diagnostics_didSave(self) -> bool:
         _path = (
             "initializationOptions",
@@ -137,7 +169,7 @@ class InitializeParamsParser:
         default = True
         return bool(rgetattr(self._initialize_params, path, default))
 
-    @property
+    @cached_property
     def initializationOptions_diagnostics_didChange(self) -> bool:
         _path = (
             "initializationOptions",

@@ -26,7 +26,6 @@ from pygls.features import (
 from pygls.protocol import LanguageServerProtocol
 from pygls.server import LanguageServer
 from pygls.types import (
-    CompletionItem,
     CompletionList,
     CompletionParams,
     DidChangeTextDocumentParams,
@@ -38,7 +37,6 @@ from pygls.types import (
     Hover,
     InitializeParams,
     InitializeResult,
-    InsertTextFormat,
     Location,
     MarkupContent,
     ParameterInformation,
@@ -54,7 +52,6 @@ from pygls.types import (
 
 from . import jedi_utils, pygls_utils
 from .initialize_params_parser import InitializeParamsParser
-from .type_map import get_lsp_completion_type
 
 # pylint: disable=line-too-long
 
@@ -106,10 +103,6 @@ def completion(
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     completions = jedi_script.complete(**jedi_lines)
-    char = pygls_utils.char_before_cursor(
-        document=server.workspace.get_document(params.textDocument.uri),
-        position=params.position,
-    )
     markup_preferred = (
         server.initialize_params.initializationOptions_markupKindPreferred
     )
@@ -121,21 +114,32 @@ def completion(
         if markup_preferred in markup_supported
         else markup_supported[0]
     )
+    snippet_support = (
+        server.initialize_params.capabilities_textDocument_completion_completionItem_snippetSupport
+    )
+    snippet_disable = (
+        server.initialize_params.initializationOptions_completion_disableSnippets
+    )
+    is_import_context = jedi_utils.is_import(
+        script_=jedi_script,
+        line=jedi_lines["line"],
+        column=jedi_lines["column"],
+    )
+    enable_snippets = (
+        snippet_support and not snippet_disable and not is_import_context
+    )
+    char_before_cursor = pygls_utils.char_before_cursor(
+        document=server.workspace.get_document(params.textDocument.uri),
+        position=params.position,
+    )
     return CompletionList(
         is_incomplete=False,
         items=[
-            CompletionItem(
-                label=completion.name,
-                kind=get_lsp_completion_type(completion.type),
-                detail=completion.description,
-                documentation=MarkupContent(
-                    kind=markup_kind, value=completion.docstring()
-                ),
-                sort_text=jedi_utils.complete_sort_name(completion),
-                insert_text=pygls_utils.clean_completion_name(
-                    completion.name, char
-                ),
-                insert_text_format=InsertTextFormat.PlainText,
+            jedi_utils.lsp_completion_item(
+                name=completion,
+                char_before_cursor=char_before_cursor,
+                enable_snippets=enable_snippets,
+                markup_kind=markup_kind,
             )
             for completion in completions
         ],

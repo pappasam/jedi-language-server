@@ -39,24 +39,22 @@ def _rgetattr(obj: object, attr: str) -> object:
     return functools.reduce(_getattr, [obj] + attr.split("."))  # type: ignore
 
 
-def clean_completion_name(name: str, char: str) -> str:
-    """Clean the completion name, stripping bad surroundings
-
-    1. Remove all surrounding " and '. For
-    """
-    if char == "'":
-        return name.lstrip("'")
-    if char == '"':
-        return name.lstrip('"')
-    return name
-
-
 def char_before_cursor(
     document: Document, position: Position, default=""
 ) -> str:
     """Get the character directly before the cursor"""
     try:
         return document.lines[position.line][position.character - 1]
+    except IndexError:
+        return default
+
+
+def char_after_cursor(
+    document: Document, position: Position, default=""
+) -> str:
+    """Get the character directly before the cursor"""
+    try:
+        return document.lines[position.line][position.character]
     except IndexError:
         return default
 

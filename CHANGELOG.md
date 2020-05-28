@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.16.0
+
+### Added
+
+- All properties in initializer are cached using "cached_property". 3rd party library used for Python 3.6 and 3.7.
+- Snippet support for `CompletionItem`
+- Configuration option to disable `CompletionItem` snippets (preserving existing behavior)
+
+### Changed
+
+- Reflecting the recent version of Jedi, the type map between Jedi and `pygls` has been reduced to reflect only the public types available in Jedi.
+- Cache now no longer explicitly referenced.
+
+### Fixed
+
+- Some code cleanup.
+
 ## 0.15.1
 
 ### Fixed

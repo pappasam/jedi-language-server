@@ -3,18 +3,22 @@
 Translates pygls types back and forth with Jedi
 """
 
+from inspect import Parameter
 from typing import Dict, List, Optional, Tuple
 
 import jedi.api.errors
 import jedi.inference.references
 from jedi import Project, Script
-from jedi.api.classes import Completion, Name
-from jedi.api.environment import get_cached_default_environment
+from jedi.api.classes import Completion, Name, ParamName, Signature
 from pygls.types import (
+    CompletionItem,
     Diagnostic,
     DiagnosticSeverity,
     DocumentSymbol,
+    InsertTextFormat,
     Location,
+    MarkupContent,
+    MarkupKind,
     Position,
     Range,
     SymbolInformation,
@@ -22,7 +26,7 @@ from pygls.types import (
 from pygls.uris import from_fs_path
 from pygls.workspace import Workspace
 
-from .type_map import get_lsp_symbol_type
+from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
 # NOTE: remove this once Jedi ignores '.venv' folders by default
 # without this line, Jedi will search in '.venv' folders
@@ -36,12 +40,7 @@ def script(workspace: Workspace, uri: str) -> Script:
     """Simplifies getting jedi Script"""
     project_ = project(workspace)
     document = workspace.get_document(uri)
-    return Script(
-        code=document.source,
-        path=document.path,
-        project=project_,
-        environment=get_cached_default_environment(),
-    )
+    return Script(code=document.source, path=document.path, project=project_)
 
 
 def project(workspace: Workspace) -> Project:
@@ -82,30 +81,6 @@ def lsp_symbol_information(name: Name) -> SymbolInformation:
         location=lsp_location(name),
         container_name=name.parent(),
     )
-
-
-def _definition_name_start_end_pos(
-    name: Name,
-) -> Tuple[Tuple[int, int], Tuple[int, int]]:
-    """Get the start and end positions of a name's definition
-
-    Ugly, but it gets the job done as of Jedi 0.17.0
-
-    Returns a tuple of (start_pos, end_pos), which are, themselves, tuples
-
-    See: https://github.com/davidhalter/jedi/issues/1576#issuecomment-627557560
-    """
-    definition = (
-        name._name.tree_name.get_definition()  # pylint: disable=protected-access
-    )
-    if definition is None:
-        return name.start_pos, name.end_pos
-    if name.type in ("function", "class"):
-        last_leaf = definition.get_last_leaf()
-        if last_leaf.type == "newline":
-            return definition.start_pos, last_leaf.get_previous_leaf().end_pos
-        return definition.start_pos, last_leaf.end_pos
-    return definition.start_pos, definition.end_pos
 
 
 def _get_definition_start_position(name: Name) -> Optional[Tuple[int, int]]:
@@ -231,5 +206,105 @@ def complete_sort_name(name: Completion) -> str:
     name itself.
     """
     if name.type == "param" and name.name.endswith("="):
-        return f"a"
-    return f"z"
+        return "a"
+    return "z"
+
+
+def clean_completion_name(name: str, char_before_cursor: str) -> str:
+    """Clean the completion name, stripping bad surroundings
+
+    1. Remove all surrounding " and '. For
+    """
+    if char_before_cursor in {"'", '"'}:
+        return name.lstrip(char_before_cursor)
+    return name
+
+
+_POSITION_PARAMETERS = {
+    Parameter.POSITIONAL_ONLY,
+    Parameter.POSITIONAL_OR_KEYWORD,
+}
+
+_PARAM_NAME_IGNORE = {"/", "*"}
+
+
+def get_snippet_signature(signature: Signature) -> str:
+    """Return the snippet signature"""
+    params: List[ParamName] = signature.params
+    signature_list = []
+    count = 1
+    for param in params:
+        if param.name in _PARAM_NAME_IGNORE:
+            continue
+        if param.kind in _POSITION_PARAMETERS:
+            param_str = param.to_string()
+            if "=" in param_str:  # hacky default argument check
+                break
+            result = "${" + f"{count}:{param.to_string()}" + "}"
+            signature_list.append(result)
+            count += 1
+            continue
+        if param.kind == Parameter.KEYWORD_ONLY:
+            result = param.name + "=${" + f"{count}:{param.to_string()}" + "}"
+            signature_list.append(result)
+            count += 1
+            continue
+    if not signature_list:
+        return "($0)"
+    return "(" + ", ".join(signature_list) + ")$0"
+
+
+def is_import(script_: Script, line: int, column: int) -> bool:
+    """Check whether a position is a Jedi import
+
+    line and column are Jedi lines and columns
+
+    NOTE: this function is a bit of a hack and should be revisited with each
+    Jedi release. Additionally, it doesn't really work for manually-triggered
+    completions, without any text, which will may cause issues for users with
+    manually triggered completions.
+    """
+    # pylint: disable=protected-access
+    tree_name = script_._module_node.get_name_of_position((line, column))
+    if tree_name is None:
+        return False
+    name = script_._get_module_context().create_name(tree_name)
+    if name is None:
+        return False
+    return name.is_import()
+
+
+def lsp_completion_item(
+    name: Completion,
+    char_before_cursor: str,
+    enable_snippets: bool,
+    markup_kind: MarkupKind,
+) -> CompletionItem:
+    """Using a Jedi completion, obtain a jedi completion item"""
+    name_name = name.name
+    name_clean = clean_completion_name(name_name, char_before_cursor)
+    completion_item = CompletionItem(
+        label=name_name,
+        filter_text=name_name,
+        kind=get_lsp_completion_type(name.type),
+        detail=name.description,
+        documentation=MarkupContent(kind=markup_kind, value=name.docstring()),
+        sort_text=complete_sort_name(name),
+        insert_text=name_clean,
+        insert_text_format=InsertTextFormat.PlainText,
+    )
+    if not enable_snippets:
+        return completion_item
+
+    signatures = name.get_signatures()
+    if not signatures:
+        return completion_item
+
+    completion_item.insertTextFormat = InsertTextFormat.Snippet
+    try:
+        snippet_signature = get_snippet_signature(signatures[0])
+    except Exception:  # pylint: disable=broad-except
+        snippet_signature = "($0)"
+    new_text = name_name + snippet_signature
+    completion_item.insertText = new_text
+    return completion_item

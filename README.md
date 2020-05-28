@@ -75,6 +75,9 @@ If you are configuring manually, jedi-language-server supports the following [in
 ...
   "initializationOptions": {
     "markupKindPreferred": null,
+    "completion": {
+      "disableSnippets": false
+    },
     "diagnostics": {
       "enable": true,
       "didOpen": true,
