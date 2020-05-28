@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Tuple
 import jedi.api.errors
 import jedi.inference.references
 from jedi import Project, Script
-from jedi.api.classes import Completion, Name, Signature
+from jedi.api.classes import Completion, Name, ParamName, Signature
 from pygls.types import (
     CompletionItem,
     Diagnostic,
@@ -240,6 +240,33 @@ _POSITION_PARAMETERS = {
     Parameter.POSITIONAL_OR_KEYWORD,
 }
 
+_PARAM_NAME_IGNORE = {"/", "*"}
+
+
+def get_snippet_signature(signature: Signature) -> str:
+    """Return the snippet signature"""
+    params: List[ParamName] = signature.params
+    signature_list = []
+    count = 1
+    for param in params:
+        if param.name in _PARAM_NAME_IGNORE:
+            continue
+        if param.infer_default():
+            break
+        if param.kind in _POSITION_PARAMETERS:
+            result = "${" + f"{count}:{param.to_string()}" + "}"
+            signature_list.append(result)
+            count += 1
+            continue
+        if param.kind == Parameter.KEYWORD_ONLY:
+            result = param.name + "=${" + f"{count}:{param.to_string()}" + "}"
+            signature_list.append(result)
+            count += 1
+            continue
+    if not signature_list:
+        return "($0)"
+    return "(" + ", ".join(signature_list) + ")$0"
+
 
 def lsp_completion_item(
     name: Completion,
@@ -269,26 +296,16 @@ def lsp_completion_item(
     )
     if not enable_snippets:
         return completion_item
-    if name_type == "import":
-        return completion_item
 
     signatures = name.get_signatures()
     if not signatures:
         return completion_item
 
     completion_item.insertTextFormat = InsertTextFormat.Snippet
-    signature: Signature = signatures[0]
     try:
-        params = [
-            "${" + f"{param_num + 1}:{param.to_string()}" + "}"
-            for param_num, param in enumerate(signature.params)
-            if param.kind in _POSITION_PARAMETERS and not param.infer_default()
-        ]
+        snippet_signature = get_snippet_signature(signatures[0])
     except Exception:  # pylint: disable=broad-except
-        params = []
-    snippet_signature = (
-        "($0)" if not params else "(" + ", ".join(params) + ")$0"
-    )
+        snippet_signature = "($0)"
     new_text = name_name + snippet_signature
     new_range = Range(
         start=start_position,
