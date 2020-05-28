@@ -28,7 +28,6 @@ from pygls.server import LanguageServer
 from pygls.types import (
     CompletionList,
     CompletionParams,
-    CompletionTriggerKind,
     DidChangeTextDocumentParams,
     DidOpenTextDocumentParams,
     DidSaveTextDocumentParams,
@@ -41,7 +40,6 @@ from pygls.types import (
     Location,
     MarkupContent,
     ParameterInformation,
-    Position,
     RenameParams,
     SignatureHelp,
     SignatureInformation,
@@ -103,14 +101,12 @@ def completion(
 ) -> CompletionList:
     """Returns completion items"""
     # pylint: disable=too-many-locals
-    trigger_kind = params.context.triggerKind
-    trigger_dot = (
-        trigger_kind == CompletionTriggerKind.TriggerCharacter
-        and params.context.triggerCharacter == "."
-    )
     document = server.workspace.get_document(params.textDocument.uri)
+    current_word_range = pygls_utils.current_word_range(
+        document, params.position
+    )
     char_before_cursor = pygls_utils.char_before_cursor(
-        document, params.position,
+        document, params.position
     )
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
@@ -134,17 +130,14 @@ def completion(
     )
     enable_snippets = snippet_support and not snippet_disable
     start_position = (
-        params.position
-        if trigger_dot or char_before_cursor == " "
-        else Position(
-            line=params.position.line, character=params.position.character - 1
-        )
+        current_word_range.start if current_word_range else params.position
     )
     return CompletionList(
         is_incomplete=False,
         items=[
             jedi_utils.lsp_completion_item(
                 name=completion,
+                char_before_cursor=char_before_cursor,
                 start_position=start_position,
                 enable_snippets=enable_snippets,
                 markup_kind=markup_kind,

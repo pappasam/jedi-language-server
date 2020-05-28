@@ -235,6 +235,16 @@ def complete_sort_name(name: Completion) -> str:
     return "z"
 
 
+def clean_completion_name(name: str, char_before_cursor: str) -> str:
+    """Clean the completion name, stripping bad surroundings
+
+    1. Remove all surrounding " and '. For
+    """
+    if char_before_cursor in {"'", '"'}:
+        return name.lstrip(char_before_cursor)
+    return name
+
+
 _POSITION_PARAMETERS = {
     Parameter.POSITIONAL_ONLY,
     Parameter.POSITIONAL_OR_KEYWORD,
@@ -251,9 +261,10 @@ def get_snippet_signature(signature: Signature) -> str:
     for param in params:
         if param.name in _PARAM_NAME_IGNORE:
             continue
-        if param.infer_default():
-            break
         if param.kind in _POSITION_PARAMETERS:
+            param_str = param.to_string()
+            if "=" in param_str:  # hacky default argument check
+                break
             result = "${" + f"{count}:{param.to_string()}" + "}"
             signature_list.append(result)
             count += 1
@@ -270,28 +281,31 @@ def get_snippet_signature(signature: Signature) -> str:
 
 def lsp_completion_item(
     name: Completion,
+    char_before_cursor: str,
     start_position: Position,
     enable_snippets: bool,
     markup_kind: MarkupKind,
 ) -> CompletionItem:
     """Using a Jedi completion, obtain a jedi completion item"""
-    name_type = name.type
     name_name = name.name
-    range_ = Range(
-        start=start_position,
-        end=Position(
-            line=start_position.line,
-            character=start_position.character + len(name_name),
-        ),
-    )
+    name_clean = clean_completion_name(name_name, char_before_cursor)
     completion_item = CompletionItem(
         label=name_name,
         filter_text=name_name,
-        kind=get_lsp_completion_type(name_type),
+        kind=get_lsp_completion_type(name.type),
         detail=name.description,
         documentation=MarkupContent(kind=markup_kind, value=name.docstring()),
         sort_text=complete_sort_name(name),
-        text_edit=TextEdit(range=range_, new_text=name_name),
+        text_edit=TextEdit(
+            range=Range(
+                start=start_position,
+                end=Position(
+                    line=start_position.line,
+                    character=start_position.character + len(name_clean),
+                ),
+            ),
+            new_text=name_clean,
+        ),
         insert_text_format=InsertTextFormat.PlainText,
     )
     if not enable_snippets:
@@ -308,7 +322,9 @@ def lsp_completion_item(
         snippet_signature = "($0)"
     new_text = name_name + snippet_signature
     new_range = Range(
-        start=start_position,
+        start=Position(
+            line=start_position.line, character=start_position.character,
+        ),
         end=Position(
             line=start_position.line,
             character=start_position.character + len(new_text),
