@@ -128,7 +128,14 @@ def completion(
     snippet_disable = (
         server.initialize_params.initializationOptions_completion_disableSnippets
     )
-    enable_snippets = snippet_support and not snippet_disable
+    is_import_context = jedi_utils.is_import(
+        script_=jedi_script,
+        line=jedi_lines["line"],
+        column=jedi_lines["column"],
+    )
+    enable_snippets = (
+        snippet_support and not snippet_disable and not is_import_context
+    )
     start_position = (
         current_word_range.start if current_word_range else params.position
     )

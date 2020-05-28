@@ -255,6 +255,26 @@ def get_snippet_signature(signature: Signature) -> str:
     return "(" + ", ".join(signature_list) + ")$0"
 
 
+def is_import(script_: Script, line: int, column: int) -> bool:
+    """Check whether a position is a Jedi import
+
+    line and column are Jedi lines and columns
+
+    NOTE: this function is a bit of a hack and should be revisited with each
+    Jedi release. Additionally, it doesn't really work for manually-triggered
+    completions, without any text, which will may cause issues for users with
+    manually triggered completions.
+    """
+    # pylint: disable=protected-access
+    tree_name = script_._module_node.get_name_of_position((line, column))
+    if tree_name is None:
+        return False
+    name = script_._get_module_context().create_name(tree_name)
+    if name is None:
+        return False
+    return name.is_import()
+
+
 def lsp_completion_item(
     name: Completion,
     char_before_cursor: str,
