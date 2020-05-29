@@ -179,3 +179,16 @@ class InitializeParamsParser:
         path = ".".join(_path)
         default = True
         return bool(rgetattr(self._initialize_params, path, default))
+
+    @cached_property
+    def initializationOptions_jediSettings_autoImportModules(
+        self,
+    ) -> List[str]:
+        _path = (
+            "initializationOptions",
+            "jediSettings",
+            "autoImportModules",
+        )
+        path = ".".join(_path)
+        default: List[str] = []
+        return rgetattr(self._initialize_params, path, default)  # type: ignore

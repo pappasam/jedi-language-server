@@ -68,6 +68,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         server: "JediLanguageServer" = self._server
         ip = server.initialize_params  # pylint: disable=invalid-name
         ip.set_initialize_params(params)
+        jedi_utils.set_jedi_settings(ip)
         if ip.initializationOptions_diagnostics_enable:
             if ip.initializationOptions_diagnostics_didOpen:
                 SERVER.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)

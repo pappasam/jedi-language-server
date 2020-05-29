@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Tuple
 
 import jedi.api.errors
 import jedi.inference.references
+import jedi.settings
 from jedi import Project, Script
 from jedi.api.classes import Completion, Name, ParamName, Signature
 from pygls.types import (
@@ -26,6 +27,7 @@ from pygls.types import (
 from pygls.uris import from_fs_path
 from pygls.workspace import Workspace
 
+from .initialize_params_parser import InitializeParamsParser
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
 # NOTE: remove this once Jedi ignores '.venv' folders by default
@@ -34,6 +36,18 @@ jedi.inference.references._IGNORE_FOLDERS = (  # pylint: disable=protected-acces
     *jedi.inference.references._IGNORE_FOLDERS,  # pylint: disable=protected-access
     ".venv",
 )
+
+
+def set_jedi_settings(  # pylint: disable=invalid-name
+    ip: InitializeParamsParser,
+) -> None:
+    """Sets jedi settings"""
+    jedi.settings.auto_import_modules = list(
+        set(
+            jedi.settings.auto_import_modules
+            + ip.initializationOptions_jediSettings_autoImportModules
+        )
+    )
 
 
 def script(workspace: Workspace, uri: str) -> Script:
