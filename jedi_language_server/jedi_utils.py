@@ -13,6 +13,7 @@ from jedi import Project, Script
 from jedi.api.classes import Completion, Name, ParamName, Signature
 from pygls.types import (
     CompletionItem,
+    CompletionItemKind,
     Diagnostic,
     DiagnosticSeverity,
     DocumentSymbol,
@@ -245,6 +246,8 @@ _PARAM_NAME_IGNORE = {"/", "*"}
 def get_snippet_signature(signature: Signature) -> str:
     """Return the snippet signature"""
     params: List[ParamName] = signature.params
+    if not params:
+        return "()$0"
     signature_list = []
     count = 1
     for param in params:
@@ -289,6 +292,12 @@ def is_import(script_: Script, line: int, column: int) -> bool:
     return name.is_import()
 
 
+_LSP_TYPE_FOR_SNIPPET = {
+    CompletionItemKind.Class,
+    CompletionItemKind.Function,
+}
+
+
 def lsp_completion_item(
     name: Completion,
     char_before_cursor: str,
@@ -298,10 +307,11 @@ def lsp_completion_item(
     """Using a Jedi completion, obtain a jedi completion item"""
     name_name = name.name
     name_clean = clean_completion_name(name_name, char_before_cursor)
+    lsp_type = get_lsp_completion_type(name.type)
     completion_item = CompletionItem(
         label=name_name,
         filter_text=name_name,
-        kind=get_lsp_completion_type(name.type),
+        kind=lsp_type,
         detail=name.description,
         documentation=MarkupContent(kind=markup_kind, value=name.docstring()),
         sort_text=complete_sort_name(name),
@@ -310,16 +320,18 @@ def lsp_completion_item(
     )
     if not enable_snippets:
         return completion_item
+    if lsp_type not in _LSP_TYPE_FOR_SNIPPET:
+        return completion_item
 
     signatures = name.get_signatures()
     if not signatures:
         return completion_item
 
-    completion_item.insertTextFormat = InsertTextFormat.Snippet
     try:
         snippet_signature = get_snippet_signature(signatures[0])
     except Exception:  # pylint: disable=broad-except
-        snippet_signature = "($0)"
+        return completion_item
     new_text = name_name + snippet_signature
     completion_item.insertText = new_text
+    completion_item.insertTextFormat = InsertTextFormat.Snippet
     return completion_item
