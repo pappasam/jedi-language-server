@@ -248,18 +248,19 @@ def get_snippet_signature(signature: Signature) -> str:
     signature_list = []
     count = 1
     for param in params:
-        if param.name in _PARAM_NAME_IGNORE:
+        param_name = param.name
+        if param_name in _PARAM_NAME_IGNORE:
             continue
         if param.kind in _POSITION_PARAMETERS:
             param_str = param.to_string()
             if "=" in param_str:  # hacky default argument check
                 break
-            result = "${" + f"{count}:{param.to_string()}" + "}"
+            result = "${" + f"{count}:{param_name}" + "}"
             signature_list.append(result)
             count += 1
             continue
         if param.kind == Parameter.KEYWORD_ONLY:
-            result = param.name + "=${" + f"{count}:{param.to_string()}" + "}"
+            result = param_name + "=${" + f"{count}:..." + "}"
             signature_list.append(result)
             count += 1
             continue
