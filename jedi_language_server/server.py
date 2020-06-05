@@ -7,7 +7,7 @@ Official language server spec:
 """
 
 import itertools
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from pygls.features import (
     COMPLETION,
@@ -45,13 +45,13 @@ from pygls.types import (
     SignatureInformation,
     SymbolInformation,
     TextDocumentPositionParams,
-    TextEdit,
     WorkspaceEdit,
     WorkspaceSymbolParams,
 )
 
 from . import jedi_utils, pygls_utils
 from .initialize_params_parser import InitializeParamsParser
+from .text_edit_utils import RefactoringConverter
 
 # pylint: disable=line-too-long
 
@@ -276,18 +276,10 @@ def rename(
     """Rename a symbol across a workspace"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
-    names = jedi_script.get_references(**jedi_lines)
-    if not names:
-        return None
-    locations = [jedi_utils.lsp_location(name) for name in names]
-    changes: Dict[str, List[TextEdit]] = {}
-    for location in locations:
-        text_edit = TextEdit(location.range, new_text=params.newName)
-        if location.uri not in changes:
-            changes[location.uri] = [text_edit]
-        else:
-            changes[location.uri].append(text_edit)
-    return WorkspaceEdit(changes=changes)
+    refactoring = jedi_script.rename(new_name=params.newName, **jedi_lines)
+    converter = RefactoringConverter(refactoring)
+    changes = converter.lsp_document_changes()
+    return WorkspaceEdit(document_changes=changes)  # type: ignore
 
 
 @SERVER.feature(DOCUMENT_SYMBOL)
