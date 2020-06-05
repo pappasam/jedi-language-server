@@ -71,11 +71,11 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         jedi_utils.set_jedi_settings(ip)
         if ip.initializationOptions_diagnostics_enable:
             if ip.initializationOptions_diagnostics_didOpen:
-                SERVER.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
+                server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
             if ip.initializationOptions_diagnostics_didChange:
-                SERVER.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
+                server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
             if ip.initializationOptions_diagnostics_didSave:
-                SERVER.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
+                server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
         return super().bf_initialize(params)
 
 
