@@ -24,7 +24,7 @@ class RenameFile:  # pylint: disable=too-few-public-methods
     """Pygls has bug right now, this would be simple pull request"""
 
     def __init__(
-        self, old_uri: str, new_uri: str, options: "RenameFileOptions" = None
+        self, old_uri: str, new_uri: str, options: RenameFileOptions = None
     ):
         # pylint: disable=invalid-name
         self.kind = "rename"
@@ -73,8 +73,14 @@ class RefactoringConverter:
             )
 
 
+_OPCODES_CHANGE = {"replace", "delete", "insert"}
+
+
 def lsp_text_edits(changed_file: ChangedFile) -> List[TextEdit]:
-    """Take a jedi `ChangedFile` and convert to list of text edits"""
+    """Take a jedi `ChangedFile` and convert to list of text edits
+
+    Handles inserts, replaces, and deletions within a text file
+    """
     old_code = (
         changed_file._module_node.get_code()  # pylint: disable=protected-access
     )
@@ -82,7 +88,7 @@ def lsp_text_edits(changed_file: ChangedFile) -> List[TextEdit]:
     opcode_position_lookup_old = get_opcode_position_lookup(old_code)
     text_edits = []
     for opcode in get_opcodes(old_code, new_code):
-        if opcode.op == "replace":
+        if opcode.op in _OPCODES_CHANGE:
             start = opcode_position_lookup_old[opcode.old_start]
             end = opcode_position_lookup_old[opcode.old_end]
             start_char = opcode.old_start - start.range_start
