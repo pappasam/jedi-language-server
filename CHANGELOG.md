@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.18.0
+
+### Added
+
+- Support for CodeActions: `inline`, `extract_function`, and `extract_variable`
+
+### Changed
+
+- Rename now uses Jedi's rename capabilities, relying on some clever code using difflib and a range lookup mechanism
+
+### Fixed
+
+- Features now all return Optional values, preferring `null` to `[]`.
+
 ## 0.17.1
 
 ### Fixed

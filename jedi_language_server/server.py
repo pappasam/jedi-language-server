@@ -9,7 +9,9 @@ Official language server spec:
 import itertools
 from typing import List, Optional, Union
 
+from jedi.api.refactoring import RefactoringError
 from pygls.features import (
+    CODE_ACTION,
     COMPLETION,
     DEFINITION,
     DOCUMENT_HIGHLIGHT,
@@ -26,6 +28,9 @@ from pygls.features import (
 from pygls.protocol import LanguageServerProtocol
 from pygls.server import LanguageServer
 from pygls.types import (
+    CodeAction,
+    CodeActionKind,
+    CodeActionParams,
     CompletionList,
     CompletionParams,
     DidChangeTextDocumentParams,
@@ -49,9 +54,8 @@ from pygls.types import (
     WorkspaceSymbolParams,
 )
 
-from . import jedi_utils, pygls_utils
+from . import jedi_utils, pygls_utils, text_edit_utils
 from .initialize_params_parser import InitializeParamsParser
-from .text_edit_utils import RefactoringConverter
 
 # pylint: disable=line-too-long
 
@@ -99,11 +103,11 @@ SERVER = JediLanguageServer(protocol_cls=JediLanguageServerProtocol)
 @SERVER.feature(COMPLETION, trigger_characters=[".", "'", '"'])
 def completion(
     server: JediLanguageServer, params: CompletionParams
-) -> CompletionList:
+) -> Optional[CompletionList]:
     """Returns completion items"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
-    completions = jedi_script.complete(**jedi_lines)
+    completions_jedi = jedi_script.complete(**jedi_lines)
     markup_preferred = (
         server.initialize_params.initializationOptions_markupKindPreferred
     )
@@ -133,64 +137,74 @@ def completion(
         document=server.workspace.get_document(params.textDocument.uri),
         position=params.position,
     )
-    return CompletionList(
-        is_incomplete=False,
-        items=[
-            jedi_utils.lsp_completion_item(
-                name=completion,
-                char_before_cursor=char_before_cursor,
-                enable_snippets=enable_snippets,
-                markup_kind=markup_kind,
-            )
-            for completion in completions
-        ],
+    completion_items = [
+        jedi_utils.lsp_completion_item(
+            name=completion,
+            char_before_cursor=char_before_cursor,
+            enable_snippets=enable_snippets,
+            markup_kind=markup_kind,
+        )
+        for completion in completions_jedi
+    ]
+    return (
+        CompletionList(is_incomplete=False, items=completion_items)
+        if completion_items
+        else None
     )
 
 
 @SERVER.feature(SIGNATURE_HELP, trigger_characters=["(", ","])
 def signature_help(
     server: JediLanguageServer, params: TextDocumentPositionParams
-) -> SignatureHelp:
+) -> Optional[SignatureHelp]:
     """Returns signature help"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
-    signatures = jedi_script.get_signatures(**jedi_lines)
-    return SignatureHelp(
-        signatures=[
-            SignatureInformation(
-                label=signature.to_string(),
-                documentation=None,
-                parameters=[
-                    ParameterInformation(
-                        label=info.to_string(), documentation=None
-                    )
-                    for info in signature.params
-                ],
-            )
-            for signature in signatures
-        ],
-        active_signature=0,
-        active_parameter=signatures[0].index if signatures else 0,
+    signatures_jedi = jedi_script.get_signatures(**jedi_lines)
+    signatures = [
+        SignatureInformation(
+            label=signature.to_string(),
+            documentation=None,
+            parameters=[
+                ParameterInformation(
+                    label=info.to_string(), documentation=None
+                )
+                for info in signature.params
+            ],
+        )
+        for signature in signatures_jedi
+    ]
+    return (
+        SignatureHelp(
+            signatures=signatures,
+            active_signature=0,
+            active_parameter=(
+                signatures_jedi[0].index if signatures_jedi else 0
+            ),
+        )
+        if signatures
+        else None
     )
 
 
 @SERVER.feature(DEFINITION)
 def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
-) -> List[Location]:
+) -> Optional[List[Location]]:
     """Support Goto Definition"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.goto(
         follow_imports=True, follow_builtin_imports=True, **jedi_lines,
     )
-    return [jedi_utils.lsp_location(name) for name in names]
+    definitions = [jedi_utils.lsp_location(name) for name in names]
+    return definitions if definitions else None
 
 
 @SERVER.feature(DOCUMENT_HIGHLIGHT)
 def highlight(
     server: JediLanguageServer, params: TextDocumentPositionParams
-) -> List[DocumentHighlight]:
+) -> Optional[List[DocumentHighlight]]:
     """Support document highlight request
 
     This function is called frequently, so we minimize the number of expensive
@@ -226,7 +240,7 @@ def highlight(
         if name.full_name == current_full_name
         or jedi_utils.compare_names(name, current_definition_name)
     ]
-    return highlight_names if len(highlight_names) > 1 else []
+    return highlight_names if highlight_names else None
 
 
 @SERVER.feature(HOVER)
@@ -261,12 +275,47 @@ def hover(
 @SERVER.feature(REFERENCES)
 def references(
     server: JediLanguageServer, params: TextDocumentPositionParams
-) -> List[Location]:
+) -> Optional[List[Location]]:
     """Obtain all references to text"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.get_references(**jedi_lines)
-    return [jedi_utils.lsp_location(name) for name in names]
+    locations = [jedi_utils.lsp_location(name) for name in names]
+    return locations if locations else None
+
+
+@SERVER.feature(DOCUMENT_SYMBOL)
+def document_symbol(
+    server: JediLanguageServer, params: DocumentSymbolParams
+) -> Optional[Union[List[DocumentSymbol], List[SymbolInformation]]]:
+    """Document Python document symbols, hierarchically"""
+    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    names = jedi_script.get_names(all_scopes=True, definitions=True)
+    if (
+        server.initialize_params.capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport
+    ):
+        document_symbols = jedi_utils.lsp_document_symbols(names)
+        return document_symbols if document_symbols else None
+    symbol_information = [
+        jedi_utils.lsp_symbol_information(name) for name in names
+    ]
+    return symbol_information if symbol_information else None
+
+
+@SERVER.feature(WORKSPACE_SYMBOL)
+def workspace_symbol(
+    server: JediLanguageServer, params: WorkspaceSymbolParams
+) -> Optional[List[SymbolInformation]]:
+    """Document Python workspace symbols"""
+    jedi_project = jedi_utils.project(server.workspace)
+    if params.query.strip() == "":
+        return None
+    names = jedi_project.search(params.query)
+    symbols = [
+        jedi_utils.lsp_symbol_information(name)
+        for name in itertools.islice(names, 20)
+    ]
+    return symbols if symbols else None
 
 
 @SERVER.feature(RENAME)
@@ -276,39 +325,93 @@ def rename(
     """Rename a symbol across a workspace"""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
-    refactoring = jedi_script.rename(new_name=params.newName, **jedi_lines)
-    converter = RefactoringConverter(refactoring)
-    changes = converter.lsp_document_changes()
-    return WorkspaceEdit(document_changes=changes)  # type: ignore
+    try:
+        refactoring = jedi_script.rename(new_name=params.newName, **jedi_lines)
+    except RefactoringError:
+        return None
+    changes = text_edit_utils.lsp_document_changes(refactoring)
+    return WorkspaceEdit(document_changes=changes) if changes else None  # type: ignore
 
 
-@SERVER.feature(DOCUMENT_SYMBOL)
-def document_symbol(
-    server: JediLanguageServer, params: DocumentSymbolParams
-) -> Union[List[DocumentSymbol], List[SymbolInformation]]:
-    """Document Python document symbols, hierarchically"""
+@SERVER.feature(
+    CODE_ACTION,
+    code_action_kinds=[
+        CodeActionKind.RefactorInline,
+        CodeActionKind.RefactorExtract,
+    ],
+)
+def code_action(
+    server: JediLanguageServer, params: CodeActionParams
+) -> Optional[List[CodeAction]]:
+    """Get code actions
+
+    Currently supports:
+        1. Inline variable
+        2. Extract variable
+        3. Extract function
+    """
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    names = jedi_script.get_names(all_scopes=True, definitions=True)
-    if (
-        server.initialize_params.capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport
-    ):
-        return jedi_utils.lsp_document_symbols(names)
-    return [jedi_utils.lsp_symbol_information(name) for name in names]
+    code_actions = []
+    jedi_lines = jedi_utils.line_column(params.range.start)
 
+    try:
+        inline_refactoring = jedi_script.inline(**jedi_lines)
+    except RefactoringError:
+        inline_changes = []  # type: ignore
+    else:
+        inline_changes = text_edit_utils.lsp_document_changes(
+            inline_refactoring
+        )
+    if inline_changes:
+        code_actions.append(
+            CodeAction(
+                title="Inline variable",
+                kind=CodeActionKind.RefactorInline,
+                edit=WorkspaceEdit(document_changes=inline_changes),
+            )
+        )
 
-@SERVER.feature(WORKSPACE_SYMBOL)
-def workspace_symbol(
-    server: JediLanguageServer, params: WorkspaceSymbolParams
-) -> List[SymbolInformation]:
-    """Document Python workspace symbols"""
-    jedi_project = jedi_utils.project(server.workspace)
-    if params.query.strip() == "":
-        return []
-    names = jedi_project.search(params.query)
-    return [
-        jedi_utils.lsp_symbol_information(name)
-        for name in itertools.islice(names, 20)
-    ]
+    extract_var = jedi_utils.random_var("var_")
+    try:
+        extract_variable_refactoring = jedi_script.extract_variable(
+            new_name=extract_var, **jedi_lines
+        )
+    except RefactoringError:
+        extract_variable_changes = []  # type: ignore
+    else:
+        extract_variable_changes = text_edit_utils.lsp_document_changes(
+            extract_variable_refactoring
+        )
+    if extract_variable_changes:
+        code_actions.append(
+            CodeAction(
+                title=f"Extract expression into variable '{extract_var}'",
+                kind=CodeActionKind.RefactorExtract,
+                edit=WorkspaceEdit(document_changes=extract_variable_changes),
+            )
+        )
+
+    extract_func = jedi_utils.random_var("func_")
+    try:
+        extract_function_refactoring = jedi_script.extract_function(
+            new_name=extract_func, **jedi_lines
+        )
+    except RefactoringError:
+        extract_function_changes = []  # type: ignore
+    else:
+        extract_function_changes = text_edit_utils.lsp_document_changes(
+            extract_function_refactoring
+        )
+    if extract_function_changes:
+        code_actions.append(
+            CodeAction(
+                title=f"Extract expression into function '{extract_func}'",
+                kind=CodeActionKind.RefactorExtract,
+                edit=WorkspaceEdit(document_changes=extract_function_changes),
+            )
+        )
+
+    return code_actions if code_actions else None
 
 
 # Static capability or initializeOptions functions that rely on a specific

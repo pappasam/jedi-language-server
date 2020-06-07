@@ -33,20 +33,25 @@ class RenameFile:  # pylint: disable=too-few-public-methods
         self.options = options
 
 
+def lsp_document_changes(
+    refactoring: Refactoring,
+) -> List[Union[TextDocumentEdit, RenameFile]]:
+    """Get lsp text document edits from Jedi refactoring
+
+    This is the main public function that you probably want
+    """
+    converter = RefactoringConverter(refactoring)
+    return [
+        *converter.lsp_text_document_edits(),
+        *converter.lsp_renames(),
+    ]
+
+
 class RefactoringConverter:
     """Convert jedi Refactoring objects into renaming machines"""
 
     def __init__(self, refactoring: Refactoring) -> None:
         self.refactoring = refactoring
-
-    def lsp_document_changes(
-        self,
-    ) -> List[Union[TextDocumentEdit, RenameFile]]:
-        """Top-level converter, supports renaming and document edits"""
-        return [
-            *self.lsp_text_document_edits(),
-            *self.lsp_renames(),
-        ]
 
     def lsp_renames(self) -> Iterator[RenameFile]:
         """Get all File rename operations"""
@@ -168,7 +173,7 @@ def get_opcode_position_lookup(code: str,) -> Dict[int, LinePosition]:
     start = 0
     for line, code_line in enumerate(original_lines):
         end = start + len(code_line)
-        key = range(start, end)
+        key = range(start, end + 1)  # must be 1 greater than last item
         line_lookup[key] = LinePosition(start, end, line, code_line)
         start = end
     return line_lookup
