@@ -356,6 +356,9 @@ def code_action(
     jedi_lines_extract = jedi_utils.line_column_range(params.range)
 
     try:
+        if params.range.start.line != params.range.end.line:
+            # refactor this at some point; control flow with exception == bad
+            raise RefactoringError("inline only viable for single-line range")
         inline_refactoring = jedi_script.inline(**jedi_lines)
     except RefactoringError:
         inline_changes = []  # type: ignore
