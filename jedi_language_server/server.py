@@ -353,6 +353,7 @@ def code_action(
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     code_actions = []
     jedi_lines = jedi_utils.line_column(params.range.start)
+    jedi_lines_extract = jedi_utils.line_column_range(params.range)
 
     try:
         inline_refactoring = jedi_script.inline(**jedi_lines)
@@ -374,7 +375,7 @@ def code_action(
     extract_var = jedi_utils.random_var("var_")
     try:
         extract_variable_refactoring = jedi_script.extract_variable(
-            new_name=extract_var, **jedi_lines
+            new_name=extract_var, **jedi_lines_extract
         )
     except RefactoringError:
         extract_variable_changes = []  # type: ignore
@@ -394,7 +395,7 @@ def code_action(
     extract_func = jedi_utils.random_var("func_")
     try:
         extract_function_refactoring = jedi_script.extract_function(
-            new_name=extract_func, **jedi_lines
+            new_name=extract_func, **jedi_lines_extract
         )
     except RefactoringError:
         extract_function_changes = []  # type: ignore
