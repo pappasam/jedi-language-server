@@ -1,1 +1,1 @@
-"""Jedi Language Server"""
+"""Jedi Language Server."""

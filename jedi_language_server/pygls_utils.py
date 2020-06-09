@@ -1,4 +1,4 @@
-"""Utilities to work with pygls
+"""Utilities to work with pygls.
 
 Helper functions that simplify working with pygls
 """
@@ -14,7 +14,7 @@ _SENTINEL = object()
 
 
 def rgetattr(obj: object, attr: str, default: object = None) -> object:
-    """Get nested attributes, recursively
+    """Get nested attributes, recursively.
 
     Usage:
         >> repr(my_object)
@@ -31,7 +31,7 @@ def rgetattr(obj: object, attr: str, default: object = None) -> object:
 
 
 def _rgetattr(obj: object, attr: str) -> object:
-    """Get nested attributes, recursively"""
+    """Get nested attributes, recursively."""
 
     def _getattr(obj, attr):
         return getattr(obj, attr, _SENTINEL)
@@ -42,7 +42,7 @@ def _rgetattr(obj: object, attr: str) -> object:
 def char_before_cursor(
     document: Document, position: Position, default=""
 ) -> str:
-    """Get the character directly before the cursor"""
+    """Get the character directly before the cursor."""
     try:
         return document.lines[position.line][position.character - 1]
     except IndexError:
@@ -52,7 +52,7 @@ def char_before_cursor(
 def char_after_cursor(
     document: Document, position: Position, default=""
 ) -> str:
-    """Get the character directly before the cursor"""
+    """Get the character directly before the cursor."""
     try:
         return document.lines[position.line][position.character]
     except IndexError:
@@ -62,7 +62,7 @@ def char_after_cursor(
 def current_word_range(
     document: Document, position: Position
 ) -> Optional[Range]:
-    """Get the range of the word under the cursor"""
+    """Get the range of the word under the cursor."""
     word = document.word_at_position(position)
     word_len = len(word)
     line: str = document.lines[position.line]

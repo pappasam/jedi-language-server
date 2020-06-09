@@ -1,4 +1,4 @@
-"""Jedi types mapped to LSP types"""
+"""Jedi types mapped to LSP types."""
 
 from pygls.types import CompletionItemKind, SymbolKind
 
@@ -29,10 +29,16 @@ _JEDI_SYMBOL_TYPE_MAP = {
 
 
 def get_lsp_completion_type(jedi_type: str) -> CompletionItemKind:
-    """Get type map. Always return a value."""
+    """Get type map.
+
+    Always return a value.
+    """
     return _JEDI_COMPLETION_TYPE_MAP.get(jedi_type, CompletionItemKind.Text)
 
 
 def get_lsp_symbol_type(jedi_type: str) -> SymbolKind:
-    """Get type map. Always return a value."""
+    """Get type map.
+
+    Always return a value.
+    """
     return _JEDI_SYMBOL_TYPE_MAP.get(jedi_type, SymbolKind.Namespace)

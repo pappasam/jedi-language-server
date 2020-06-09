@@ -1,7 +1,7 @@
-"""Utility functions for converting to TextEdit
+"""Utility functions for converting to TextEdit.
 
-This module is a bridge between `jedi.Refactoring` and `pygls.types.TextEdit`
-types
+This module is a bridge between `jedi.Refactoring` and
+`pygls.types.TextEdit` types
 """
 
 
@@ -21,7 +21,7 @@ from pygls.uris import from_fs_path
 
 
 class RenameFile:  # pylint: disable=too-few-public-methods
-    """Pygls has bug right now, this would be simple pull request"""
+    """Pygls has bug right now, this would be simple pull request."""
 
     def __init__(
         self, old_uri: str, new_uri: str, options: RenameFileOptions = None
@@ -36,7 +36,7 @@ class RenameFile:  # pylint: disable=too-few-public-methods
 def lsp_document_changes(
     refactoring: Refactoring,
 ) -> List[Union[TextDocumentEdit, RenameFile]]:
-    """Get lsp text document edits from Jedi refactoring
+    """Get lsp text document edits from Jedi refactoring.
 
     This is the main public function that you probably want
     """
@@ -48,13 +48,13 @@ def lsp_document_changes(
 
 
 class RefactoringConverter:
-    """Convert jedi Refactoring objects into renaming machines"""
+    """Convert jedi Refactoring objects into renaming machines."""
 
     def __init__(self, refactoring: Refactoring) -> None:
         self.refactoring = refactoring
 
     def lsp_renames(self) -> Iterator[RenameFile]:
-        """Get all File rename operations"""
+        """Get all File rename operations."""
         for old_name, new_name in self.refactoring.get_renames():
             yield RenameFile(
                 old_uri=from_fs_path(old_name),
@@ -65,7 +65,7 @@ class RefactoringConverter:
             )
 
     def lsp_text_document_edits(self) -> Iterator[TextDocumentEdit]:
-        """Get all text document edits"""
+        """Get all text document edits."""
         changed_files = self.refactoring.get_changed_files()
         for path, changed_file in changed_files.items():
             uri = from_fs_path(path)
@@ -82,7 +82,7 @@ _OPCODES_CHANGE = {"replace", "delete", "insert"}
 
 
 def lsp_text_edits(changed_file: ChangedFile) -> List[TextEdit]:
-    """Take a jedi `ChangedFile` and convert to list of text edits
+    """Take a jedi `ChangedFile` and convert to list of text edits.
 
     Handles inserts, replaces, and deletions within a text file
     """
@@ -112,7 +112,7 @@ def lsp_text_edits(changed_file: ChangedFile) -> List[TextEdit]:
 
 
 class Opcode(NamedTuple):
-    """Typed opcode
+    """Typed opcode.
 
     Op can be one of the following values:
         'replace':  a[i1:i2] should be replaced by b[j1:j2]
@@ -137,7 +137,7 @@ def get_opcodes(old: str, new: str) -> List[Opcode]:
 
 
 class LinePosition(NamedTuple):
-    """Container to map absolute text position to lines and columns"""
+    """Container to map absolute text position to lines and columns."""
 
     range_start: int
     range_end: int
@@ -146,7 +146,7 @@ class LinePosition(NamedTuple):
 
 
 class RangeDict(dict):
-    """Range dict
+    """Range dict.
 
     Copied from: https://stackoverflow.com/a/39358140
     """
@@ -161,12 +161,12 @@ class RangeDict(dict):
 
 
 def get_opcode_position_lookup(code: str,) -> Dict[int, LinePosition]:
-    """Obtain the opcode lookup position
+    """Obtain the opcode lookup position.
 
-    This function is beautiful. It takes code and creates a data structure
-    within which one can look up opcode-friendly values. It relies on the
-    `RangeDict` above, which lets you look up a value within a range of linear
-    values
+    This function is beautiful. It takes code and creates a data
+    structure within which one can look up opcode-friendly values. It
+    relies on the `RangeDict` above, which lets you look up a value
+    within a range of linear values
     """
     original_lines = code.splitlines(keepends=True)
     line_lookup = RangeDict()

@@ -1,4 +1,4 @@
-"""Utilities to work with Jedi
+"""Utilities to work with Jedi.
 
 Translates pygls types back and forth with Jedi
 """
@@ -44,7 +44,7 @@ jedi.inference.references._IGNORE_FOLDERS = (  # pylint: disable=protected-acces
 def set_jedi_settings(  # pylint: disable=invalid-name
     ip: InitializeParamsParser,
 ) -> None:
-    """Sets jedi settings"""
+    """Sets jedi settings."""
     jedi.settings.auto_import_modules = list(
         set(
             jedi.settings.auto_import_modules
@@ -54,14 +54,14 @@ def set_jedi_settings(  # pylint: disable=invalid-name
 
 
 def script(workspace: Workspace, uri: str) -> Script:
-    """Simplifies getting jedi Script"""
+    """Simplifies getting jedi Script."""
     project_ = project(workspace)
     document = workspace.get_document(uri)
     return Script(code=document.source, path=document.path, project=project_)
 
 
 def project(workspace: Workspace) -> Project:
-    """Simplifies getting jedi project"""
+    """Simplifies getting jedi project."""
     return Project(
         path=workspace.root_path,
         smart_sys_path=True,
@@ -70,7 +70,7 @@ def project(workspace: Workspace) -> Project:
 
 
 def lsp_range(name: Name) -> Range:
-    """Get LSP range from Jedi definition
+    """Get LSP range from Jedi definition.
 
     NOTE:
         * jedi is 1-indexed for lines and 0-indexed for columns
@@ -86,12 +86,12 @@ def lsp_range(name: Name) -> Range:
 
 
 def lsp_location(name: Name) -> Location:
-    """Get LSP location from Jedi definition"""
+    """Get LSP location from Jedi definition."""
     return Location(uri=from_fs_path(name.module_path), range=lsp_range(name))
 
 
 def lsp_symbol_information(name: Name) -> SymbolInformation:
-    """Get LSP SymbolInformation from Jedi definition"""
+    """Get LSP SymbolInformation from Jedi definition."""
     return SymbolInformation(
         name=name.name,
         kind=get_lsp_symbol_type(name.type),
@@ -101,7 +101,7 @@ def lsp_symbol_information(name: Name) -> SymbolInformation:
 
 
 def _get_definition_start_position(name: Name) -> Optional[Tuple[int, int]]:
-    """Start of the definition range. Rows start with 1, columns with 0
+    """Start of the definition range. Rows start with 1, columns with 0.
 
     NOTE: replace with public method when Jedi 0.17.1 released
     """
@@ -115,7 +115,7 @@ def _get_definition_start_position(name: Name) -> Optional[Tuple[int, int]]:
 
 
 def _get_definition_end_position(name: Name) -> Optional[Tuple[int, int]]:
-    """End of the definition range. Rows start with 1, columns with 0
+    """End of the definition range. Rows start with 1, columns with 0.
 
     NOTE: replace with public method when Jedi 0.17.1 released
     """
@@ -134,7 +134,7 @@ def _get_definition_end_position(name: Name) -> Optional[Tuple[int, int]]:
 
 
 def _document_symbol_range(name: Name) -> Range:
-    """Get accurate full range of function
+    """Get accurate full range of function.
 
     Thanks https://github.com/CXuesong from
     https://github.com/palantir/python-language-server/pull/537/files for the
@@ -157,7 +157,7 @@ def _document_symbol_range(name: Name) -> Range:
 
 
 def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
-    """Get hierarchical symbols"""
+    """Get hierarchical symbols."""
     _name_lookup: Dict[Name, DocumentSymbol] = {}
     results: List[DocumentSymbol] = []
     for name in names:
@@ -178,7 +178,7 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
 
 
 def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
-    """Get LSP Diagnostic from Jedi SyntaxError"""
+    """Get LSP Diagnostic from Jedi SyntaxError."""
     return Diagnostic(
         range=Range(
             start=Position(line=error.line - 1, character=error.column),
@@ -191,7 +191,7 @@ def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
 
 
 def line_column(position: Position) -> Dict[str, int]:
-    """Translate pygls Position to Jedi's line / column
+    """Translate pygls Position to Jedi's line/column.
 
     Returns a dictionary because this return result should be unpacked as a
     function argument to Jedi's functions.
@@ -202,8 +202,9 @@ def line_column(position: Position) -> Dict[str, int]:
     """
     return dict(line=position.line + 1, column=position.character)
 
+
 def line_column_range(pygls_range: Range) -> Dict[str, int]:
-    """Translate pygls range to Jedi's line / column / until_line / until_column
+    """Translate pygls range to Jedi's line/column/until_line/until_column.
 
     Returns a dictionary because this return result should be unpacked as a
     function argument to Jedi's functions.
@@ -212,20 +213,26 @@ def line_column_range(pygls_range: Range) -> Dict[str, int]:
     lines and 0-indexed for columns. Therefore, add 1 to LSP's request for the
     line.
     """
-    return dict(line=pygls_range.start.line + 1, column=pygls_range.start.character,
-                until_line=pygls_range.end.line + 1, until_column=pygls_range.end.character)
+    return dict(
+        line=pygls_range.start.line + 1,
+        column=pygls_range.start.character,
+        until_line=pygls_range.end.line + 1,
+        until_column=pygls_range.end.character,
+    )
+
 
 def compare_names(name1: Name, name2: Name) -> bool:
-    """Check if one Name is equal to another
+    """Check if one Name is equal to another.
 
-    This function, while trivial, is useful for documenting types without
-    needing to directly import anything from jedi into `server.py`
+    This function, while trivial, is useful for documenting types
+    without needing to directly import anything from jedi into
+    `server.py`
     """
     return name1 == name2
 
 
 def complete_sort_name(name: Completion) -> str:
-    """Return sort name for a jedi completion
+    """Return sort name for a jedi completion.
 
     Should be passed to the sortText field in CompletionItem. Strings sort a-z,
     a comes first and z comes last.
@@ -240,7 +247,7 @@ def complete_sort_name(name: Completion) -> str:
 
 
 def clean_completion_name(name: str, char_before_cursor: str) -> str:
-    """Clean the completion name, stripping bad surroundings
+    """Clean the completion name, stripping bad surroundings.
 
     1. Remove all surrounding " and '. For
     """
@@ -258,7 +265,7 @@ _PARAM_NAME_IGNORE = {"/", "*"}
 
 
 def get_snippet_signature(signature: Signature) -> str:
-    """Return the snippet signature"""
+    """Return the snippet signature."""
     params: List[ParamName] = signature.params
     if not params:
         return "()$0"
@@ -287,7 +294,7 @@ def get_snippet_signature(signature: Signature) -> str:
 
 
 def is_import(script_: Script, line: int, column: int) -> bool:
-    """Check whether a position is a Jedi import
+    """Check whether a position is a Jedi import.
 
     line and column are Jedi lines and columns
 
@@ -318,7 +325,7 @@ def lsp_completion_item(
     enable_snippets: bool,
     markup_kind: MarkupKind,
 ) -> CompletionItem:
-    """Using a Jedi completion, obtain a jedi completion item"""
+    """Using a Jedi completion, obtain a jedi completion item."""
     name_name = name.name
     name_clean = clean_completion_name(name_name, char_before_cursor)
     lsp_type = get_lsp_completion_type(name.type)
@@ -356,6 +363,9 @@ def random_var(
     random_length: int = 8,
     letters: str = string.ascii_lowercase,
 ) -> str:
-    """Generate a random variable name. Useful for refactoring functions"""
+    """Generate a random variable name.
+
+    Useful for refactoring functions
+    """
     ending = "".join(random.choice(letters) for _ in range(random_length))
     return beginning + ending

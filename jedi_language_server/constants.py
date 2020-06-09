@@ -1,1 +1,1 @@
-"""Constants"""
+"""Constants."""

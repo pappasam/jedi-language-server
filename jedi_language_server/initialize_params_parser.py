@@ -1,4 +1,4 @@
-"""Module containing the InitializeParams parser
+"""Module containing the InitializeParams parser.
 
 This parser handles the following tasks for the InitializeParams:
 
@@ -25,20 +25,20 @@ except ImportError:
 
 
 class InitializeParamsParser:
-    """Class to parse and manage InitializeParams"""
+    """Class to parse and manage InitializeParams."""
 
     def __init__(self) -> None:
         self._initialize_params_store: Optional[InitializeParams] = None
 
     @cached_property
     def _initialize_params(self) -> InitializeParams:
-        """Get the initialize params"""
+        """Get the initialize params."""
         if self._initialize_params_store is None:
             raise ValueError("InitializeParams not set")
         return self._initialize_params_store
 
     def set_initialize_params(self, params: InitializeParams) -> None:
-        """Set the initialize params"""
+        """Set the initialize params."""
         self._initialize_params_store = params
 
     @cached_property
