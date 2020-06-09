@@ -213,7 +213,7 @@ def line_column_range(pygls_range: Range) -> Dict[str, int]:
     line.
     """
     return dict(line=pygls_range.start.line + 1, column=pygls_range.start.character,
-                until_line=pygls_range.end.line, until_column=pygls_range.end.character)
+                until_line=pygls_range.end.line + 1, until_column=pygls_range.end.character)
 
 def compare_names(name1: Name, name2: Name) -> bool:
     """Check if one Name is equal to another
