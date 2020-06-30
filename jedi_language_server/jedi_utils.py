@@ -33,13 +33,6 @@ from pygls.workspace import Workspace
 from .initialize_params_parser import InitializeParamsParser
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
-# NOTE: remove this once Jedi ignores '.venv' folders by default
-# without this line, Jedi will search in '.venv' folders
-jedi.inference.references._IGNORE_FOLDERS = (  # pylint: disable=protected-access
-    *jedi.inference.references._IGNORE_FOLDERS,  # pylint: disable=protected-access
-    ".venv",
-)
-
 
 def set_jedi_settings(  # pylint: disable=invalid-name
     ip: InitializeParamsParser,
@@ -182,9 +175,11 @@ def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
     return Diagnostic(
         range=Range(
             start=Position(line=error.line - 1, character=error.column),
-            end=Position(line=error.line - 1, character=error.column),
+            end=Position(
+                line=error.until_line - 1, character=error.until_column
+            ),
         ),
-        message=str(error).strip("<>"),
+        message=error.get_message(),
         severity=DiagnosticSeverity.Error,
         source="jedi",
     )
