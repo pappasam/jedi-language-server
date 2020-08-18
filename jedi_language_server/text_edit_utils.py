@@ -71,8 +71,8 @@ class RefactoringConverter:
             uri = from_fs_path(path)
             text_edits = lsp_text_edits(changed_file)
             yield TextDocumentEdit(
-                text_document=VersionedTextDocumentIdentifier(
-                    uri=uri, version=None,  # type: ignore
+                text_document=VersionedTextDocumentIdentifier(  # type: ignore
+                    uri=uri, version=None,
                 ),
                 edits=text_edits,
             )

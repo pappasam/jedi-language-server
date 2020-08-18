@@ -44,10 +44,7 @@ from pygls.types import (
     InitializeResult,
     Location,
     MarkupContent,
-    ParameterInformation,
     RenameParams,
-    SignatureHelp,
-    SignatureInformation,
     SymbolInformation,
     TextDocumentPositionParams,
     WorkspaceEdit,
@@ -56,6 +53,11 @@ from pygls.types import (
 
 from . import jedi_utils, pygls_utils, text_edit_utils
 from .initialize_params_parser import InitializeParamsParser
+from .pygls_type_overrides import (
+    ParameterInformation,
+    SignatureHelp,
+    SignatureInformation,
+)
 
 # pylint: disable=line-too-long
 
@@ -164,11 +166,8 @@ def signature_help(
     signatures = [
         SignatureInformation(
             label=signature.to_string(),
-            documentation=None,
             parameters=[
-                ParameterInformation(
-                    label=info.to_string(), documentation=None
-                )
+                ParameterInformation(label=info.to_string())
                 for info in signature.params
             ],
         )
