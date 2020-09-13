@@ -5,6 +5,7 @@ Translates pygls types back and forth with Jedi
 
 import random
 import string  # pylint: disable=deprecated-module
+import sys
 from inspect import Parameter
 from typing import Dict, List, Optional, Tuple
 
@@ -55,6 +56,12 @@ def script(workspace: Workspace, uri: str) -> Script:
 
 def project(workspace: Workspace) -> Project:
     """Simplifies getting jedi project."""
+
+    extra_paths = getattr(workspace, "extra_paths", [])
+    for path in extra_paths:
+        if path not in sys.path:
+            sys.path.insert(0, path)
+
     return Project(
         path=workspace.root_path,
         smart_sys_path=True,

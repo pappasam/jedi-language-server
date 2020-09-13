@@ -82,7 +82,12 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
                 server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
             if ip.initializationOptions_diagnostics_didSave:
                 server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
-        return super().bf_initialize(params)
+        res = super().bf_initialize(params)
+
+        extraPaths = getattr(params.initializationOptions, 'extraPaths', [])
+        self.workspace.extra_paths = extraPaths
+
+        return res
 
 
 class JediLanguageServer(LanguageServer):
