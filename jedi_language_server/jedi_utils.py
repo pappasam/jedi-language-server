@@ -64,6 +64,7 @@ def project(workspace: Workspace) -> Project:
 
     return Project(
         path=workspace.root_path,
+        sys_path=sys.path,
         smart_sys_path=True,
         load_unsafe_extensions=False,
     )
