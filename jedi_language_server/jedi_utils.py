@@ -3,16 +3,16 @@
 Translates pygls types back and forth with Jedi
 """
 
+from inspect import Parameter
 import random
 import string  # pylint: disable=deprecated-module
-from inspect import Parameter
 from typing import Dict, List, Optional, Tuple
 
+from jedi import Project, Script
+from jedi.api.classes import Completion, Name, ParamName, Signature
 import jedi.api.errors
 import jedi.inference.references
 import jedi.settings
-from jedi import Project, Script
-from jedi.api.classes import Completion, Name, ParamName, Signature
 from pygls.types import (
     CompletionItem,
     CompletionItemKind,
@@ -89,7 +89,9 @@ def lsp_symbol_information(name: Name) -> SymbolInformation:
         name=name.name,
         kind=get_lsp_symbol_type(name.type),
         location=lsp_location(name),
-        container_name=name.parent(),
+        container_name=(
+            "None" if name is None else (name.full_name or name.name or "None")
+        ),
     )
 
 

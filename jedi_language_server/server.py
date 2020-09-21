@@ -10,6 +10,7 @@ import itertools
 from typing import List, Optional, Union
 
 from jedi.api.refactoring import RefactoringError
+from jedi.inference.references import _IGNORE_FOLDERS
 from pygls.features import (
     CODE_ACTION,
     COMPLETION,
@@ -283,19 +284,40 @@ def document_symbol(
     return symbol_information if symbol_information else None
 
 
+def _ignore_folder(path_check: str) -> bool:
+    """Determines whether there's an ignore folder in the path.
+
+    Intended to be used with the `workspace_symbol` function
+    """
+    for ignore_folder in _IGNORE_FOLDERS:
+        if f"/{ignore_folder}/" in path_check:
+            return True
+    return False
+
+
 @SERVER.feature(WORKSPACE_SYMBOL)
 def workspace_symbol(
     server: JediLanguageServer, params: WorkspaceSymbolParams
 ) -> Optional[List[SymbolInformation]]:
-    """Document Python workspace symbols."""
+    """Document Python workspace symbols.
+
+    Returns up to 20 symbols, ignoring the following symbols:
+
+    1. Those that don't have a module_path associated with them (built-ins)
+    2. Those that are not rooted in the current workspace.
+    3. Those whose folders contain a directory that is ignored (.venv, etc)
+    """
     jedi_project = jedi_utils.project(server.workspace)
-    if params.query.strip() == "":
-        return None
-    names = jedi_project.search(params.query)
-    symbols = [
+    names = jedi_project.complete_search(params.query)
+    workspace_root = server.workspace.root_path
+    _symbols = (
         jedi_utils.lsp_symbol_information(name)
-        for name in itertools.islice(names, 20)
-    ]
+        for name in names
+        if name.module_path
+        and name.module_path.startswith(workspace_root)
+        and not _ignore_folder(name.module_path)
+    )
+    symbols = list(itertools.islice(_symbols, 20))
     return symbols if symbols else None
 
 
