@@ -3,16 +3,16 @@
 Translates pygls types back and forth with Jedi
 """
 
-from inspect import Parameter
 import random
 import string  # pylint: disable=deprecated-module
+from inspect import Parameter
 from typing import Dict, List, Optional, Tuple
 
-from jedi import Project, Script
-from jedi.api.classes import Completion, Name, ParamName, Signature
 import jedi.api.errors
 import jedi.inference.references
 import jedi.settings
+from jedi import Project, Script
+from jedi.api.classes import Completion, Name, ParamName, Signature
 from pygls.types import (
     CompletionItem,
     CompletionItemKind,
@@ -73,7 +73,8 @@ def lsp_range(name: Name) -> Range:
     return Range(
         start=Position(line=name.line - 1, character=name.column),
         end=Position(
-            line=name.line - 1, character=name.column + len(name.name),
+            line=name.line - 1,
+            character=name.column + len(name.name),
         ),
     )
 

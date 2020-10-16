@@ -71,8 +71,9 @@ class RefactoringConverter:
             uri = from_fs_path(path)
             text_edits = lsp_text_edits(changed_file)
             yield TextDocumentEdit(
-                text_document=VersionedTextDocumentIdentifier(  # type: ignore
-                    uri=uri, version=None,
+                text_document=VersionedTextDocumentIdentifier(
+                    uri=uri,
+                    version=None,  # type: ignore
                 ),
                 edits=text_edits,
             )
@@ -160,7 +161,9 @@ class RangeDict(dict):
         return super().__getitem__(item)
 
 
-def get_opcode_position_lookup(code: str,) -> Dict[int, LinePosition]:
+def get_opcode_position_lookup(
+    code: str,
+) -> Dict[int, LinePosition]:
     """Obtain the opcode lookup position.
 
     This function is beautiful. It takes code and creates a data

@@ -195,7 +195,9 @@ def definition(
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.goto(
-        follow_imports=True, follow_builtin_imports=True, **jedi_lines,
+        follow_imports=True,
+        follow_builtin_imports=True,
+        **jedi_lines,
     )
     definitions = [jedi_utils.lsp_location(name) for name in names]
     return definitions if definitions else None
@@ -374,7 +376,9 @@ def code_action(
             CodeAction(
                 title="Inline variable",
                 kind=CodeActionKind.RefactorInline,
-                edit=WorkspaceEdit(document_changes=inline_changes),
+                edit=WorkspaceEdit(
+                    document_changes=inline_changes,  # type: ignore
+                ),
             )
         )
 
@@ -394,7 +398,9 @@ def code_action(
             CodeAction(
                 title=f"Extract expression into variable '{extract_var}'",
                 kind=CodeActionKind.RefactorExtract,
-                edit=WorkspaceEdit(document_changes=extract_variable_changes),
+                edit=WorkspaceEdit(
+                    document_changes=extract_variable_changes,  # type: ignore
+                ),
             )
         )
 
@@ -414,7 +420,9 @@ def code_action(
             CodeAction(
                 title=f"Extract expression into function '{extract_func}'",
                 kind=CodeActionKind.RefactorExtract,
-                edit=WorkspaceEdit(document_changes=extract_function_changes),
+                edit=WorkspaceEdit(
+                    document_changes=extract_function_changes,  # type: ignore
+                ),
             )
         )
 
