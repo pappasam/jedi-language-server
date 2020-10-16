@@ -45,7 +45,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.6"
 click = ">=7.0"
-jedi = "^0.17.2"
+jedi = "0.17.2"
 pygls = "^0.9.1"
 cached-property = { version = ">=1.5.1", python = "~3.6 || ~3.7" }
 
