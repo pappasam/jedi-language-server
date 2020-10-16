@@ -109,7 +109,7 @@ def completion(
 ) -> Optional[CompletionList]:
     """Returns completion items."""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    jedi_lines = jedi_utils.line_column(params.position)
+    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     completions_jedi = jedi_script.complete(**jedi_lines)
     markup_preferred = (
         server.initialize_params.initializationOptions_markupKindPreferred
@@ -162,7 +162,7 @@ def signature_help(
 ) -> Optional[SignatureHelp]:
     """Returns signature help."""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    jedi_lines = jedi_utils.line_column(params.position)
+    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     signatures_jedi = jedi_script.get_signatures(**jedi_lines)
     signatures = [
         SignatureInformation(
@@ -193,7 +193,7 @@ def definition(
 ) -> Optional[List[Location]]:
     """Support Goto Definition."""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    jedi_lines = jedi_utils.line_column(params.position)
+    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     names = jedi_script.goto(
         follow_imports=True,
         follow_builtin_imports=True,
@@ -219,7 +219,7 @@ def highlight(
     want to highlight anything.
     """
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    jedi_lines = jedi_utils.line_column(params.position)
+    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     names = jedi_script.get_references(**jedi_lines, scope="file")
     highlight_names = [
         DocumentHighlight(jedi_utils.lsp_range(name)) for name in names
@@ -233,7 +233,7 @@ def hover(
 ) -> Optional[Hover]:
     """Support Hover."""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    jedi_lines = jedi_utils.line_column(params.position)
+    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     for name in jedi_script.help(**jedi_lines):
         docstring = name.docstring()
         if not docstring:
@@ -262,7 +262,7 @@ def references(
 ) -> Optional[List[Location]]:
     """Obtain all references to text."""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    jedi_lines = jedi_utils.line_column(params.position)
+    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     names = jedi_script.get_references(**jedi_lines)
     locations = [jedi_utils.lsp_location(name) for name in names]
     return locations if locations else None
@@ -329,7 +329,7 @@ def rename(
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace."""
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
-    jedi_lines = jedi_utils.line_column(params.position)
+    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     try:
         refactoring = jedi_script.rename(new_name=params.newName, **jedi_lines)
     except RefactoringError:
@@ -357,7 +357,7 @@ def code_action(
     """
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     code_actions = []
-    jedi_lines = jedi_utils.line_column(params.range.start)
+    jedi_lines = jedi_utils.line_column(jedi_script, params.range.start)
     jedi_lines_extract = jedi_utils.line_column_range(params.range)
 
     try:

@@ -188,7 +188,7 @@ def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
     )
 
 
-def line_column(position: Position) -> Dict[str, int]:
+def line_column(jedi_script: Script, position: Position) -> Dict[str, int]:
     """Translate pygls Position to Jedi's line/column.
 
     Returns a dictionary because this return result should be unpacked as a
@@ -197,8 +197,26 @@ def line_column(position: Position) -> Dict[str, int]:
     Jedi is 1-indexed for lines and 0-indexed for columns. LSP is 0-indexed for
     lines and 0-indexed for columns. Therefore, add 1 to LSP's request for the
     line.
+
+    Note: as of version 3.15, LSP's treatment of "position" conflicts with
+    Jedi in some cases. According to the LSP docs:
+        Character offset on a line in a document (zero-based). Assuming that
+        the line is represented as a string, the `character` value represents
+        the gap between the `character` and `character + 1`.
+
+        If the character value is greater than the line length it defaults back
+        to the line length.
+
+    Sources:
+    https://microsoft.github.io/language-server-protocol/specification#position
+    https://github.com/palantir/python-language-server/pull/201/files
     """
-    return dict(line=position.line + 1, column=position.character)
+    lines = jedi_script._code_lines  # pylint: disable=protected-access
+    line_length = len(lines[position.line])
+    return dict(
+        line=position.line + 1,
+        column=min(position.character, line_length - 1),
+    )
 
 
 def line_column_range(pygls_range: Range) -> Dict[str, int]:
