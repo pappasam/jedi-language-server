@@ -10,7 +10,6 @@ import itertools
 from typing import List, Optional, Union
 
 from jedi.api.refactoring import RefactoringError
-from jedi.inference.references import _IGNORE_FOLDERS
 from pygls.features import (
     CODE_ACTION,
     COMPLETION,
@@ -53,6 +52,7 @@ from pygls.types import (
 )
 
 from . import jedi_utils, pygls_utils, text_edit_utils
+from .constants import JEDI_IGNORE_FOLDERS
 from .initialize_params_parser import InitializeParamsParser
 from .pygls_type_overrides import (
     ParameterInformation,
@@ -310,7 +310,7 @@ def _ignore_folder(path_check: str) -> bool:
 
     Intended to be used with the `workspace_symbol` function
     """
-    for ignore_folder in _IGNORE_FOLDERS:
+    for ignore_folder in JEDI_IGNORE_FOLDERS:
         if f"/{ignore_folder}/" in path_check:
             return True
     return False
