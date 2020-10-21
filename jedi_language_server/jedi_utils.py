@@ -6,7 +6,7 @@ Translates pygls types back and forth with Jedi
 import random
 import string  # pylint: disable=deprecated-module
 from inspect import Parameter
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 
 import jedi.api.errors
 import jedi.inference.references
@@ -65,10 +65,9 @@ def project(workspace: Workspace) -> Project:
 def lsp_range(name: Name) -> Range:
     """Get LSP range from Jedi definition.
 
-    NOTE:
-        * jedi is 1-indexed for lines and 0-indexed for columns
-        * LSP is 0-indexed for lines and 0-indexed for columns
-        * Therefore, subtract 1 from Jedi's definition line
+    - jedi is 1-indexed for lines and 0-indexed for columns
+    - LSP is 0-indexed for lines and 0-indexed for columns
+    - Therefore, subtract 1 from Jedi's definition line
     """
     return Range(
         start=Position(line=name.line - 1, character=name.column),
@@ -96,52 +95,19 @@ def lsp_symbol_information(name: Name) -> SymbolInformation:
     )
 
 
-def _get_definition_start_position(name: Name) -> Optional[Tuple[int, int]]:
-    """Start of the definition range. Rows start with 1, columns with 0.
-
-    NOTE: replace with public method when Jedi 0.17.1 released
-    """
-    # pylint: disable=protected-access
-    if name._name.tree_name is None:
-        return None
-    definition = name._name.tree_name.get_definition()
-    if definition is None:
-        return name._name.start_pos
-    return definition.start_pos
-
-
-def _get_definition_end_position(name: Name) -> Optional[Tuple[int, int]]:
-    """End of the definition range. Rows start with 1, columns with 0.
-
-    NOTE: replace with public method when Jedi 0.17.1 released
-    """
-    # pylint: disable=protected-access
-    if name._name.tree_name is None:
-        return None
-    definition = name._name.tree_name.get_definition()
-    if definition is None:
-        return name._name.tree_name.end_pos
-    if name.type in ("function", "class"):
-        last_leaf = definition.get_last_leaf()
-        if last_leaf.type == "newline":
-            return last_leaf.get_previous_leaf().end_pos
-        return last_leaf.end_pos
-    return definition.end_pos
-
-
 def _document_symbol_range(name: Name) -> Range:
     """Get accurate full range of function.
 
-    Thanks https://github.com/CXuesong from
-    https://github.com/palantir/python-language-server/pull/537/files for the
+    Thanks <https://github.com/CXuesong> from
+    <https://github.com/palantir/python-language-server/pull/537/files> for the
     inspiration!
 
     Note: I add tons of extra space to make dictionary completions work. Jedi
     cuts off the end sometimes before the final function statement. This may be
     the cause of bugs at some point.
     """
-    start = _get_definition_start_position(name)
-    end = _get_definition_end_position(name)
+    start = name.get_definition_start_position()
+    end = name.get_definition_end_position()
     if start is None or end is None:
         return lsp_range(name)
     (start_line, start_column) = start
@@ -153,10 +119,18 @@ def _document_symbol_range(name: Name) -> Range:
 
 
 def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
-    """Get hierarchical symbols."""
+    """Get hierarchical symbols.
+
+    We do some cleaning here. Names from scopes that aren't directly
+    accessible with dot notation are removed from display. See comments
+    inline for cleaning steps.
+    """
     _name_lookup: Dict[Name, DocumentSymbol] = {}
     results: List[DocumentSymbol] = []
     for name in names:
+        if name.type in {"param"}:
+            # disable above types from consideration entirely
+            continue
         symbol = DocumentSymbol(
             name=name.name,
             kind=get_lsp_symbol_type(name.type),
@@ -165,11 +139,27 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
             children=[],
         )
         parent = name.parent()
-        if parent is None or not parent in _name_lookup:
+        if parent.type == "module" and parent.module_path == name.module_path:
+            # top-level names are included
             results.append(symbol)
-        else:
+            _name_lookup[name] = symbol
+        elif (
+            parent.type == "class"
+            and name.type == "function"
+            and name.name in {"__init__"}
+        ):
+            # special case for __init__ method in class; names defined here
             _name_lookup[parent].children.append(symbol)  # type: ignore
-        _name_lookup[name] = symbol
+            _name_lookup[name] = symbol
+        elif parent not in _name_lookup:
+            # unquafied names are not included in the tree
+            continue
+        elif name.is_side_effect():
+            # handle attribute creation on __init__ method
+            _name_lookup[parent].children.append(symbol)  # type: ignore
+        elif parent.type not in {"function"}:
+            # children are added for non-function top-level scopes (classes)
+            _name_lookup[parent].children.append(symbol)  # type: ignore
     return results
 
 
@@ -200,6 +190,7 @@ def line_column(jedi_script: Script, position: Position) -> Dict[str, int]:
 
     Note: as of version 3.15, LSP's treatment of "position" conflicts with
     Jedi in some cases. According to the LSP docs:
+
         Character offset on a line in a document (zero-based). Assuming that
         the line is represented as a string, the `character` value represents
         the gap between the `character` and `character + 1`.
@@ -312,7 +303,7 @@ def get_snippet_signature(signature: Signature) -> str:
 def is_import(script_: Script, line: int, column: int) -> bool:
     """Check whether a position is a Jedi import.
 
-    line and column are Jedi lines and columns
+    `line` and `column` are Jedi lines and columns
 
     NOTE: this function is a bit of a hack and should be revisited with each
     Jedi release. Additionally, it doesn't really work for manually-triggered

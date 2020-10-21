@@ -272,7 +272,24 @@ def references(
 def document_symbol(
     server: JediLanguageServer, params: DocumentSymbolParams
 ) -> Optional[Union[List[DocumentSymbol], List[SymbolInformation]]]:
-    """Document Python document symbols, hierarchically."""
+    """Document Python document symbols, hierarchically if possible.
+
+    In Jedi, valid values for `name.type` are:
+
+    - `module`
+    - `class`
+    - `instance`
+    - `function`
+    - `param`
+    - `path`
+    - `keyword`
+    - `statement`
+
+    We do some cleaning here. For hierarchical symbols, names from scopes that
+    aren't directly accessible with dot notation are removed from display. For
+    non-hierarchical symbols, we simply remove `param` symbols. Others are
+    included for completeness.
+    """
     jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
     names = jedi_script.get_names(all_scopes=True, definitions=True)
     if (
@@ -281,7 +298,9 @@ def document_symbol(
         document_symbols = jedi_utils.lsp_document_symbols(names)
         return document_symbols if document_symbols else None
     symbol_information = [
-        jedi_utils.lsp_symbol_information(name) for name in names
+        jedi_utils.lsp_symbol_information(name)
+        for name in names
+        if name.type != "param"
     ]
     return symbol_information if symbol_information else None
 
