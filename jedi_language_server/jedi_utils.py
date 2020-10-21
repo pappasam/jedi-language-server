@@ -26,6 +26,7 @@ from pygls.types import (
     Position,
     Range,
     SymbolInformation,
+    SymbolKind,
 )
 from pygls.uris import from_fs_path
 from pygls.workspace import Workspace
@@ -128,9 +129,6 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
     _name_lookup: Dict[Name, DocumentSymbol] = {}
     results: List[DocumentSymbol] = []
     for name in names:
-        if name.type in {"param"}:
-            # disable above types from consideration entirely
-            continue
         symbol = DocumentSymbol(
             name=name.name,
             kind=get_lsp_symbol_type(name.type),
@@ -139,26 +137,39 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
             children=[],
         )
         parent = name.parent()
-        if parent.type == "module" and parent.module_path == name.module_path:
-            # top-level names are included
+        if parent.type == "module":
+            # add module-level variables to list
             results.append(symbol)
-            _name_lookup[name] = symbol
+            if name.type == "class":
+                # if they're a class, they can also be a namespace
+                _name_lookup[name] = symbol
         elif (
             parent.type == "class"
             and name.type == "function"
             and name.name in {"__init__"}
         ):
             # special case for __init__ method in class; names defined here
+            symbol.kind = SymbolKind.Method
             _name_lookup[parent].children.append(symbol)  # type: ignore
             _name_lookup[name] = symbol
         elif parent not in _name_lookup:
-            # unquafied names are not included in the tree
+            # unqualified names are not included in the tree
             continue
-        elif name.is_side_effect():
+        elif name.is_side_effect() and name.get_line_code().strip().startswith(
+            "self."
+        ):
             # handle attribute creation on __init__ method
+            symbol.kind = SymbolKind.Property
             _name_lookup[parent].children.append(symbol)  # type: ignore
-        elif parent.type not in {"function"}:
-            # children are added for non-function top-level scopes (classes)
+        elif parent.type == "class":
+            # children are added for class scopes
+            if name.type == "function":
+                # No way to identify @property decorated items. That said, as
+                # far as code is concerned, @property-decorated items should be
+                # considered "methods" since do more than just assign a value.
+                symbol.kind = SymbolKind.Method
+            else:
+                symbol.kind = SymbolKind.Property
             _name_lookup[parent].children.append(symbol)  # type: ignore
     return results
 
