@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.20.0
+
+### Changed
+
+- Update documentSymbol query
+  - Uses native Jedi position finders (faster)
+  - Removes noisy symbols from hierarchical output. Makes document outliners prettier / more visually useful
+
 ## 0.19.5
 
 ### Fixed
