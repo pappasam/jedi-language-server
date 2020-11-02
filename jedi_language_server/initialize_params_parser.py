@@ -194,12 +194,12 @@ class InitializeParamsParser:
         return rgetattr(self._initialize_params, path, default)  # type: ignore
 
     @cached_property
-    def initializationOptions_jediSettings_extraPaths(
+    def initializationOptions_workspace_extraPaths(
         self,
     ) -> List[str]:
         _path = (
             "initializationOptions",
-            "jediSettings",
+            "workspace",
             "extraPaths",
         )
         path = ".".join(_path)

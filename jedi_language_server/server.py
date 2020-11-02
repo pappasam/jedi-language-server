@@ -1,4 +1,4 @@
-"""Jedi Language Server.
+"""Jedi Language Server
 
 Creates the language server constant and wraps "features" with it.
 
@@ -87,7 +87,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         initialize_result = super().bf_initialize(params)
         server.project = Project(
             path=server.workspace.root_path,
-            added_sys_path=ip.initializationOptions_jediSettings_extraPaths,
+            added_sys_path=ip.initializationOptions_workspace_extraPaths,
             smart_sys_path=True,
             load_unsafe_extensions=False,
         )
