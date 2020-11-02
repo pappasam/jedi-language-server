@@ -192,3 +192,16 @@ class InitializeParamsParser:
         path = ".".join(_path)
         default: List[str] = []
         return rgetattr(self._initialize_params, path, default)  # type: ignore
+
+    @cached_property
+    def initializationOptions_workspace_extraPaths(
+        self,
+    ) -> List[str]:
+        _path = (
+            "initializationOptions",
+            "workspace",
+            "extraPaths",
+        )
+        path = ".".join(_path)
+        default: List[str] = []
+        return rgetattr(self._initialize_params, path, default)  # type: ignore

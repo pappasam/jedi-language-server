@@ -87,6 +87,9 @@ If you are configuring manually, jedi-language-server supports the following [in
       "didOpen": true,
       "didChange": true,
       "didSave": true
+    },
+    "workspace": {
+      "extraPaths": []
     }
   }
 ...
@@ -96,7 +99,11 @@ See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi
 
 ## Additional Diagnostics
 
-jedi-langugage-server currently provides diagnostics about syntax errors, powered by Jedi. If you would like additional diagnostics, we suggest using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
+jedi-langugage-server provides diagnostics about syntax errors, powered by Jedi. If you would like additional diagnostics, we suggest using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
+
+## Code Formatting
+
+Again, we recommend that you use [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver). It also supports code formatting.
 
 ## Local Development
 
