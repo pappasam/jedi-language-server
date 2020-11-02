@@ -98,8 +98,8 @@ class JediLanguageServer(LanguageServer):
     """Jedi language server.
 
     :attr initialize_params: initialized in bf_initialize from the protocol_cls
-    :attr project: a Jedi project. This variable is stored in "Project._path"
-                   and will be replaced on initialization.
+    :attr project: a Jedi project. This value is created in
+                   `JediLanguageServerProtocol.bf_initialize`
     """
 
     project: Project
