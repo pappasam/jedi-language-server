@@ -29,7 +29,7 @@ from pygls.types import (
     SymbolKind,
 )
 from pygls.uris import from_fs_path
-from pygls.workspace import Workspace
+from pygls.workspace import Document
 
 from .initialize_params_parser import InitializeParamsParser
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
@@ -47,20 +47,9 @@ def set_jedi_settings(  # pylint: disable=invalid-name
     )
 
 
-def script(workspace: Workspace, uri: str) -> Script:
+def script(project: Project, document: Document) -> Script:
     """Simplifies getting jedi Script."""
-    project_ = project(workspace)
-    document = workspace.get_document(uri)
-    return Script(code=document.source, path=document.path, project=project_)
-
-
-def project(workspace: Workspace) -> Project:
-    """Simplifies getting jedi project."""
-    return Project(
-        path=workspace.root_path,
-        smart_sys_path=True,
-        load_unsafe_extensions=False,
-    )
+    return Script(code=document.source, path=document.path, project=project)
 
 
 def lsp_range(name: Name) -> Range:

@@ -9,6 +9,7 @@ Official language server spec:
 import itertools
 from typing import List, Optional, Union
 
+from jedi import Project
 from jedi.api.refactoring import RefactoringError
 from pygls.features import (
     CODE_ACTION,
@@ -83,14 +84,25 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
                 server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
             if ip.initializationOptions_diagnostics_didSave:
                 server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
-        return super().bf_initialize(params)
+        initialize_result = super().bf_initialize(params)
+        server.project = Project(
+            path=server.workspace.root_path,
+            added_sys_path=ip.initializationOptions_jediSettings_extraPaths,
+            smart_sys_path=True,
+            load_unsafe_extensions=False,
+        )
+        return initialize_result
 
 
 class JediLanguageServer(LanguageServer):
     """Jedi language server.
 
     :attr initialize_params: initialized in bf_initialize from the protocol_cls
+    :attr project: a Jedi project. This variable is stored in "Project._path"
+                   and will be replaced on initialization.
     """
+
+    project: Project
 
     def __init__(self, *args, **kwargs):
         self.initialize_params = InitializeParamsParser()
@@ -108,7 +120,8 @@ def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> Optional[CompletionList]:
     """Returns completion items."""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    document = server.workspace.get_document(params.textDocument.uri)
+    jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     completions_jedi = jedi_script.complete(**jedi_lines)
     markup_preferred = (
@@ -161,7 +174,8 @@ def signature_help(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[SignatureHelp]:
     """Returns signature help."""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    document = server.workspace.get_document(params.textDocument.uri)
+    jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     signatures_jedi = jedi_script.get_signatures(**jedi_lines)
     signatures = [
@@ -192,7 +206,8 @@ def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
     """Support Goto Definition."""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    document = server.workspace.get_document(params.textDocument.uri)
+    jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     names = jedi_script.goto(
         follow_imports=True,
@@ -218,7 +233,8 @@ def highlight(
     Finally, we only return names if there are more than 1. Otherwise, we don't
     want to highlight anything.
     """
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    document = server.workspace.get_document(params.textDocument.uri)
+    jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     names = jedi_script.get_references(**jedi_lines, scope="file")
     highlight_names = [
@@ -232,7 +248,8 @@ def hover(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[Hover]:
     """Support Hover."""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    document = server.workspace.get_document(params.textDocument.uri)
+    jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     for name in jedi_script.help(**jedi_lines):
         docstring = name.docstring()
@@ -261,7 +278,8 @@ def references(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
     """Obtain all references to text."""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    document = server.workspace.get_document(params.textDocument.uri)
+    jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     names = jedi_script.get_references(**jedi_lines)
     locations = [jedi_utils.lsp_location(name) for name in names]
@@ -290,7 +308,8 @@ def document_symbol(
     non-hierarchical symbols, we simply remove `param` symbols. Others are
     included for completeness.
     """
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    document = server.workspace.get_document(params.textDocument.uri)
+    jedi_script = jedi_utils.script(server.project, document)
     names = jedi_script.get_names(all_scopes=True, definitions=True)
     if (
         server.initialize_params.capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport
@@ -328,8 +347,7 @@ def workspace_symbol(
     2. Those that are not rooted in the current workspace.
     3. Those whose folders contain a directory that is ignored (.venv, etc)
     """
-    jedi_project = jedi_utils.project(server.workspace)
-    names = jedi_project.complete_search(params.query)
+    names = server.project.complete_search(params.query)
     workspace_root = server.workspace.root_path
     _symbols = (
         jedi_utils.lsp_symbol_information(name)
@@ -347,7 +365,8 @@ def rename(
     server: JediLanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace."""
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    document = server.workspace.get_document(params.textDocument.uri)
+    jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     try:
         refactoring = jedi_script.rename(new_name=params.newName, **jedi_lines)
@@ -374,7 +393,8 @@ def code_action(
         2. Extract variable
         3. Extract function
     """
-    jedi_script = jedi_utils.script(server.workspace, params.textDocument.uri)
+    document = server.workspace.get_document(params.textDocument.uri)
+    jedi_script = jedi_utils.script(server.project, document)
     code_actions = []
     jedi_lines = jedi_utils.line_column(jedi_script, params.range.start)
     jedi_lines_extract = jedi_utils.line_column_range(params.range)
@@ -453,7 +473,8 @@ def code_action(
 # JediLanguageServer within JediLanguageServerProtocol.bf_initialize
 def _publish_diagnostics(server: JediLanguageServer, uri: str):
     """Helper function to publish diagnostics for a file."""
-    jedi_script = jedi_utils.script(server.workspace, uri)
+    document = server.workspace.get_document(uri)
+    jedi_script = jedi_utils.script(server.project, document)
     errors = jedi_script.get_syntax_errors()
     diagnostics = [jedi_utils.lsp_diagnostic(error) for error in errors]
     server.publish_diagnostics(uri, diagnostics)
