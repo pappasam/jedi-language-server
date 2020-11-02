@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- The ability to add extra paths for your workspace's code completion (`"workspace.extraPaths"`)
+- The ability to add extra paths for your workspace's code completion (`"workspace.extraPaths"`). Thanks to [Karl](https://github.com/theangryangel) and his [PR](https://github.com/pappasam/jedi-language-server/pull/39) which inspired this feature.
 
 ### Changed
 
