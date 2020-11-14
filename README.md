@@ -50,7 +50,11 @@ The following instructions show how to use jedi-language-server with your develo
 
 ### Vim / Neovim
 
-Use [coc.nvim](https://github.com/neoclide/coc.nvim) with [coc-jedi](https://github.com/pappasam/coc-jedi).
+There are at least two options:
+
+* Use [coc.nvim](https://github.com/neoclide/coc.nvim) with [coc-jedi](https://github.com/pappasam/coc-jedi).
+
+* Use [ALE](https://github.com/dense-analysis/ale).
 
 ### Emacs
 
