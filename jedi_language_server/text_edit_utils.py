@@ -17,7 +17,6 @@ from pygls.types import (
     TextEdit,
     VersionedTextDocumentIdentifier,
 )
-from pygls.uris import from_fs_path
 
 
 class RenameFile:  # pylint: disable=too-few-public-methods
@@ -57,8 +56,8 @@ class RefactoringConverter:
         """Get all File rename operations."""
         for old_name, new_name in self.refactoring.get_renames():
             yield RenameFile(
-                old_uri=from_fs_path(old_name),
-                new_uri=from_fs_path(new_name),
+                old_uri=old_name.as_uri(),
+                new_uri=new_name.as_uri(),
                 options=RenameFileOptions(
                     ignore_if_exists=True, overwrite=True
                 ),
@@ -68,7 +67,7 @@ class RefactoringConverter:
         """Get all text document edits."""
         changed_files = self.refactoring.get_changed_files()
         for path, changed_file in changed_files.items():
-            uri = from_fs_path(path)
+            uri = path.as_uri()
             text_edits = lsp_text_edits(changed_file)
             yield TextDocumentEdit(
                 text_document=VersionedTextDocumentIdentifier(
