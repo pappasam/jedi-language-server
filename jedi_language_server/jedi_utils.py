@@ -28,7 +28,6 @@ from pygls.types import (
     SymbolInformation,
     SymbolKind,
 )
-from pygls.uris import from_fs_path
 from pygls.workspace import Document
 
 from .initialize_params_parser import InitializeParamsParser
@@ -70,7 +69,7 @@ def lsp_range(name: Name) -> Range:
 
 def lsp_location(name: Name) -> Location:
     """Get LSP location from Jedi definition."""
-    return Location(uri=from_fs_path(name.module_path), range=lsp_range(name))
+    return Location(uri=name.module_path.as_uri(), range=lsp_range(name))
 
 
 def lsp_symbol_information(name: Name) -> SymbolInformation:
