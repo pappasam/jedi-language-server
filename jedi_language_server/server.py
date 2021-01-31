@@ -7,7 +7,7 @@ Official language server spec:
 """
 
 import itertools
-from typing import List, Optional, Union
+from typing import List, NamedTuple, Optional, Union
 
 from jedi import Project
 from jedi.api.refactoring import RefactoringError
@@ -120,10 +120,12 @@ SERVER = JediLanguageServer(protocol_cls=JediLanguageServerProtocol)
 
 @SERVER.feature(COMPLETION_ITEM_RESOLVE)
 def completion_item_resolve(
-    server: JediLanguageServer, item: CompletionItem
+    server: JediLanguageServer, item_params: NamedTuple
 ) -> CompletionItem:
     """Resolves documentation and detail of given completion item."""
     markup_kind = choose_markup(server)
+    params = item_params._asdict()
+    item = CompletionItem(**params)
     return jedi_utils.lsp_completion_item_resolve(
         item, markup_kind=markup_kind
     )
