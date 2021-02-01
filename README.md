@@ -26,6 +26,7 @@ jedi-language-server aims to support all of Jedi's capabilities and expose them 
 
 ### Language Features
 
+- [completionItem/resolve](https://microsoft.github.io/language-server-protocol/specification#completionItem_resolve)
 - [textDocument/codeAction](https://microsoft.github.io/language-server-protocol/specification#textDocument_codeAction) (refactor.inline, refactor.extract)
 - [textDocument/completion](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_completion)
 - [textDocument/definition](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_definition)
@@ -91,7 +92,8 @@ If you are configuring manually, jedi-language-server supports the following [in
       "autoImportModules": []
     },
     "completion": {
-      "disableSnippets": false
+      "disableSnippets": false,
+      "resolveEagerly": false
     },
     "diagnostics": {
       "enable": true,

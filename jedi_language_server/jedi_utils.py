@@ -324,33 +324,46 @@ _LSP_TYPE_FOR_SNIPPET = {
     CompletionItemKind.Function,
 }
 
+_MOST_RECENT_COMPLETIONS: Dict[str, Completion] = {}
+
+
+def clear_completions_cache():
+    """Clears the cache of completions used for completionItem/resolve."""
+    _MOST_RECENT_COMPLETIONS.clear()
+
 
 def lsp_completion_item(
-    name: Completion,
+    completion: Completion,
     char_before_cursor: str,
     enable_snippets: bool,
+    resolve_eagerly: bool,
     markup_kind: MarkupKind,
 ) -> CompletionItem:
     """Using a Jedi completion, obtain a jedi completion item."""
-    name_name = name.name
-    name_clean = clean_completion_name(name_name, char_before_cursor)
-    lsp_type = get_lsp_completion_type(name.type)
+    completion_name = completion.name
+    name_clean = clean_completion_name(completion_name, char_before_cursor)
+    lsp_type = get_lsp_completion_type(completion.type)
     completion_item = CompletionItem(
-        label=name_name,
-        filter_text=name_name,
+        label=completion_name,
+        filter_text=completion_name,
         kind=lsp_type,
-        detail=name.description,
-        documentation=MarkupContent(kind=markup_kind, value=name.docstring()),
-        sort_text=complete_sort_name(name),
+        sort_text=complete_sort_name(completion),
         insert_text=name_clean,
         insert_text_format=InsertTextFormat.PlainText,
     )
+    if resolve_eagerly:
+        completion_item = lsp_completion_item_resolve(
+            completion_item, markup_kind=markup_kind
+        )
+    else:
+        _MOST_RECENT_COMPLETIONS[completion_name] = completion
+
     if not enable_snippets:
         return completion_item
     if lsp_type not in _LSP_TYPE_FOR_SNIPPET:
         return completion_item
 
-    signatures = name.get_signatures()
+    signatures = completion.get_signatures()
     if not signatures:
         return completion_item
 
@@ -358,10 +371,23 @@ def lsp_completion_item(
         snippet_signature = get_snippet_signature(signatures[0])
     except Exception:  # pylint: disable=broad-except
         return completion_item
-    new_text = name_name + snippet_signature
+    new_text = completion_name + snippet_signature
     completion_item.insertText = new_text
     completion_item.insertTextFormat = InsertTextFormat.Snippet
     return completion_item
+
+
+def lsp_completion_item_resolve(
+    item: CompletionItem,
+    markup_kind: MarkupKind,
+) -> CompletionItem:
+    """Resolve completion item using cached jedi completion data."""
+    completion = _MOST_RECENT_COMPLETIONS[item.label]
+    item.detail = completion.description
+    item.documentation = MarkupContent(
+        kind=markup_kind, value=completion.docstring()
+    )
+    return item
 
 
 def random_var(

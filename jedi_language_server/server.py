@@ -14,6 +14,7 @@ from jedi.api.refactoring import RefactoringError
 from pygls.features import (
     CODE_ACTION,
     COMPLETION,
+    COMPLETION_ITEM_RESOLVE,
     DEFINITION,
     DOCUMENT_HIGHLIGHT,
     DOCUMENT_SYMBOL,
@@ -32,6 +33,7 @@ from pygls.types import (
     CodeAction,
     CodeActionKind,
     CodeActionParams,
+    CompletionItem,
     CompletionList,
     CompletionParams,
     DidChangeTextDocumentParams,
@@ -45,6 +47,7 @@ from pygls.types import (
     InitializeResult,
     Location,
     MarkupContent,
+    MarkupKind,
     RenameParams,
     SymbolInformation,
     TextDocumentPositionParams,
@@ -115,6 +118,36 @@ SERVER = JediLanguageServer(protocol_cls=JediLanguageServerProtocol)
 # Server capabilities
 
 
+@SERVER.feature(COMPLETION_ITEM_RESOLVE)
+def completion_item_resolve(
+    server: JediLanguageServer, params: CompletionItem
+) -> CompletionItem:
+    """Resolves documentation and detail of given completion item."""
+    markup_kind = choose_markup(server)
+    # note: params is not a CompletionItem
+    # but a namedtuple complying with CompletionItem protocol
+    item = CompletionItem(
+        label=params.label,
+        kind=params.kind,
+        detail=params.detail,
+        documentation=params.documentation,
+        deprecated=params.deprecated,
+        preselect=params.preselect,
+        sort_text=params.sortText,
+        filter_text=params.filterText,
+        insert_text=params.insertText,
+        insert_text_format=params.insertTextFormat,
+        text_edit=params.textEdit,
+        additional_text_edits=params.additionalTextEdits,
+        commit_characters=params.commitCharacters,
+        command=params.command,
+        data=params.data,
+    )
+    return jedi_utils.lsp_completion_item_resolve(
+        item, markup_kind=markup_kind
+    )
+
+
 @SERVER.feature(COMPLETION, trigger_characters=[".", "'", '"'])
 def completion(
     server: JediLanguageServer, params: CompletionParams
@@ -124,23 +157,16 @@ def completion(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     completions_jedi = jedi_script.complete(**jedi_lines)
-    markup_preferred = (
-        server.initialize_params.initializationOptions_markupKindPreferred
-    )
-    markup_supported = (
-        server.initialize_params.capabilities_textDocument_completion_completionItem_documentationFormat
-    )
-    markup_kind = (
-        markup_preferred
-        if markup_preferred in markup_supported
-        else markup_supported[0]
-    )
     snippet_support = (
         server.initialize_params.capabilities_textDocument_completion_completionItem_snippetSupport
     )
     snippet_disable = (
         server.initialize_params.initializationOptions_completion_disableSnippets
     )
+    resolve_eagerly = (
+        server.initialize_params.initializationOptions_completion_resolveEagerly
+    )
+    markup_kind = choose_markup(server)
     is_import_context = jedi_utils.is_import(
         script_=jedi_script,
         line=jedi_lines["line"],
@@ -153,11 +179,13 @@ def completion(
         document=server.workspace.get_document(params.textDocument.uri),
         position=params.position,
     )
+    jedi_utils.clear_completions_cache()
     completion_items = [
         jedi_utils.lsp_completion_item(
-            name=completion,
+            completion=completion,
             char_before_cursor=char_before_cursor,
             enable_snippets=enable_snippets,
+            resolve_eagerly=resolve_eagerly,
             markup_kind=markup_kind,
         )
         for completion in completions_jedi
@@ -255,17 +283,7 @@ def hover(
         docstring = name.docstring()
         if not docstring:
             continue
-        markup_preferred = (
-            server.initialize_params.initializationOptions_markupKindPreferred
-        )
-        markup_supported = (
-            server.initialize_params.capabilities_textDocument_hover_contentFormat
-        )
-        markup_kind = (
-            markup_preferred
-            if markup_preferred in markup_supported
-            else markup_supported[0]
-        )
+        markup_kind = choose_markup(server)
         contents = MarkupContent(kind=markup_kind, value=docstring)
         document = server.workspace.get_document(params.textDocument.uri)
         _range = pygls_utils.current_word_range(document, params.position)
@@ -498,3 +516,18 @@ def did_change(
 def did_open(server: JediLanguageServer, params: DidOpenTextDocumentParams):
     """Actions run on textDocument/didOpen."""
     _publish_diagnostics(server, params.textDocument.uri)
+
+
+def choose_markup(server: JediLanguageServer) -> MarkupKind:
+    """Returns the preferred or first of supported markup kinds."""
+    markup_preferred = (
+        server.initialize_params.initializationOptions_markupKindPreferred
+    )
+    markup_supported = (
+        server.initialize_params.capabilities_textDocument_completion_completionItem_documentationFormat
+    )
+    return (
+        markup_preferred
+        if markup_preferred in markup_supported
+        else markup_supported[0]
+    )
