@@ -1,4 +1,4 @@
-"""Jedi Language Server
+"""Jedi Language Server.
 
 Creates the language server constant and wraps "features" with it.
 
@@ -25,6 +25,7 @@ from pygls.features import (
     TEXT_DOCUMENT_DID_CHANGE,
     TEXT_DOCUMENT_DID_OPEN,
     TEXT_DOCUMENT_DID_SAVE,
+    WORKSPACE_DID_CHANGE_CONFIGURATION,
     WORKSPACE_SYMBOL,
 )
 from pygls.protocol import LanguageServerProtocol
@@ -36,6 +37,7 @@ from pygls.types import (
     CompletionItem,
     CompletionList,
     CompletionParams,
+    DidChangeConfigurationParams,
     DidChangeTextDocumentParams,
     DidOpenTextDocumentParams,
     DidSaveTextDocumentParams,
@@ -484,6 +486,18 @@ def code_action(
         )
 
     return code_actions if code_actions else None
+
+
+@SERVER.feature(WORKSPACE_DID_CHANGE_CONFIGURATION)
+def did_change_configuration(
+    server: JediLanguageServer,  # pylint: disable=unused-argument
+    params: DidChangeConfigurationParams,  # pylint: disable=unused-argument
+) -> None:
+    """Implement event for workspace/didChangeConfiguration.
+
+    Currently does nothing, but necessary for pygls. See::
+        <https://github.com/pappasam/jedi-language-server/issues/58>
+    """
 
 
 # Static capability or initializeOptions functions that rely on a specific
