@@ -64,7 +64,16 @@ class RefactoringConverter:
             )
 
     def lsp_text_document_edits(self) -> Iterator[TextDocumentEdit]:
-        """Get all text document edits."""
+        """Get all text document edits.
+
+        Note: version number defaults to `0` because the spec changed from 3.15
+        to 3.16, introducing a new concept of
+        `OptionalVersionedTextDocumentIdentifier` and disallowing a `null`
+        version for `VersionedTextDocumentIdentifier`.
+
+        TODO: more elegantly support textDocumentEdit versions in case they
+        turn out to be either useful or necessary for some clients.
+        """
         changed_files = self.refactoring.get_changed_files()
         for path, changed_file in changed_files.items():
             uri = path.as_uri()
@@ -72,7 +81,7 @@ class RefactoringConverter:
             yield TextDocumentEdit(
                 text_document=VersionedTextDocumentIdentifier(
                     uri=uri,
-                    version=None,  # type: ignore
+                    version=0,
                 ),
                 edits=text_edits,
             )
