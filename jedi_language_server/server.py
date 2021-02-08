@@ -424,7 +424,7 @@ def code_action(
             # refactor this at some point; control flow with exception == bad
             raise RefactoringError("inline only viable for single-line range")
         inline_refactoring = jedi_script.inline(**jedi_lines)
-    except RefactoringError:
+    except (RefactoringError, AttributeError, IndexError):
         inline_changes = []  # type: ignore
     else:
         inline_changes = text_edit_utils.lsp_document_changes(
@@ -446,7 +446,7 @@ def code_action(
         extract_variable_refactoring = jedi_script.extract_variable(
             new_name=extract_var, **jedi_lines_extract
         )
-    except RefactoringError:
+    except (RefactoringError, AttributeError, IndexError):
         extract_variable_changes = []  # type: ignore
     else:
         extract_variable_changes = text_edit_utils.lsp_document_changes(
@@ -468,7 +468,7 @@ def code_action(
         extract_function_refactoring = jedi_script.extract_function(
             new_name=extract_func, **jedi_lines_extract
         )
-    except RefactoringError:
+    except (RefactoringError, AttributeError, IndexError):
         extract_function_changes = []  # type: ignore
     else:
         extract_function_changes = text_edit_utils.lsp_document_changes(
