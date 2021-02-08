@@ -122,6 +122,7 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
             kind=get_lsp_symbol_type(name.type),
             range=_document_symbol_range(name),
             selection_range=lsp_range(name),
+            detail=name.description,
             children=[],
         )
         parent = name.parent()
