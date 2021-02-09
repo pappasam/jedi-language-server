@@ -48,6 +48,8 @@ click = ">=7.0"
 jedi = "0.18.0"
 pygls = "^0.9.1"
 cached-property = { version = ">=1.5.1", python = "~3.6 || ~3.7" }
+PyHamcrest = "^2.0.2"
+python-jsonrpc-server = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^1.18"
