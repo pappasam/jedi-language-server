@@ -373,8 +373,8 @@ def workspace_symbol(
         jedi_utils.lsp_symbol_information(name)
         for name in names
         if name.module_path
-        and name.module_path.startswith(workspace_root)
-        and not _ignore_folder(name.module_path)
+        and str(name.module_path).startswith(workspace_root)
+        and not _ignore_folder(str(name.module_path))
     )
     symbols = list(itertools.islice(_symbols, 20))
     return symbols if symbols else None
