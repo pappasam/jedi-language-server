@@ -8,6 +8,7 @@ import string  # pylint: disable=deprecated-module
 from inspect import Parameter
 from typing import Dict, List
 
+import docstring_to_markdown
 import jedi.api.errors
 import jedi.inference.references
 import jedi.settings
@@ -45,8 +46,9 @@ def set_jedi_settings(  # pylint: disable=invalid-name
         )
     )
 
-    jedi.settings.case_insensitive_completion = \
+    jedi.settings.case_insensitive_completion = (
         ip.initializationOptions_jediSettings_caseInsensitiveCompletion
+    )
 
 
 def script(project: Project, document: Document) -> Script:
@@ -381,6 +383,16 @@ def lsp_completion_item(
     return completion_item
 
 
+def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
+    """Take a docstring and convert it to markup kind if possible."""
+    if markup_kind == markup_kind.Markdown:
+        try:
+            return docstring_to_markdown.convert(docstring)
+        except docstring_to_markdown.UnknownFormatError:
+            pass
+    return docstring
+
+
 def lsp_completion_item_resolve(
     item: CompletionItem,
     markup_kind: MarkupKind,
@@ -388,9 +400,8 @@ def lsp_completion_item_resolve(
     """Resolve completion item using cached jedi completion data."""
     completion = _MOST_RECENT_COMPLETIONS[item.label]
     item.detail = completion.description
-    item.documentation = MarkupContent(
-        kind=markup_kind, value=completion.docstring()
-    )
+    docstring = convert_docstring(completion.docstring(), markup_kind)
+    item.documentation = MarkupContent(kind=markup_kind, value=docstring)
     return item
 
 
