@@ -205,6 +205,19 @@ class InitializeParamsParser:
         return rgetattr(self._initialize_params, path, default)  # type: ignore
 
     @cached_property
+    def initializationOptions_jediSettings_caseInsensitiveCompletion(
+        self,
+    ) -> bool:
+        _path = (
+            "initializationOptions",
+            "jediSettings",
+            "caseInsensitiveCompletion",
+        )
+        path = ".".join(_path)
+        default = True
+        return rgetattr(self._initialize_params, path, default)  # type: ignore
+
+    @cached_property
     def initializationOptions_workspace_extraPaths(
         self,
     ) -> List[str]:

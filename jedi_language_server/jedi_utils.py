@@ -45,6 +45,9 @@ def set_jedi_settings(  # pylint: disable=invalid-name
         )
     )
 
+    jedi.settings.case_insensitive_completion = \
+        ip.initializationOptions_jediSettings_caseInsensitiveCompletion
+
 
 def script(project: Project, document: Document) -> Script:
     """Simplifies getting jedi Script."""
