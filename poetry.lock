@@ -125,6 +125,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "docstring-to-markdown"
+version = "0.3"
+description = "On the fly conversion of Python docstrings to markdown"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "filelock"
 version = "3.0.12"
 description = "A platform independent file lock."
@@ -546,7 +554,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "925b3ee6f86f512a277ae72ec83e3c50d729e15bccd382605dab2225912a3200"
+content-hash = "c979634bc0eb96cb2a61539000accde2b18999ec3aa85c4fa11f8b571867e49d"
 
 [metadata.files]
 appdirs = [
@@ -595,6 +603,10 @@ dataclasses = [
 distlib = [
     {file = "distlib-0.3.1-py2.py3-none-any.whl", hash = "sha256:8c09de2c67b3e7deef7184574fc060ab8a793e7adbb183d942c389c8b13c52fb"},
     {file = "distlib-0.3.1.zip", hash = "sha256:edf6116872c863e1aa9d5bb7cb5e05a022c519a4594dc703843343a9ddd9bff1"},
+]
+docstring-to-markdown = [
+    {file = "docstring-to-markdown-0.3.tar.gz", hash = "sha256:af352323eb1ae59e29634f972259a6c8e71ee249731359dd274b6c8b30107be7"},
+    {file = "docstring_to_markdown-0.3-py3-none-any.whl", hash = "sha256:5844f9149214385246425fd948e065565a859f113670d38251e0a9175b0d02cd"},
 ]
 filelock = [
     {file = "filelock-3.0.12-py3-none-any.whl", hash = "sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836"},
