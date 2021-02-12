@@ -1,39 +1,13 @@
 """Tests for document completion requests"""
 
-import pathlib
-import json
 from hamcrest import assert_that, is_
+
 from tests import TEST_DATA
 from tests.lsp_test_client import session
+from tests.lsp_test_client.utils import as_uri
 
 
-COMPLETION_TEST_ROOT = pathlib.Path(TEST_DATA) / "completion"
-
-
-def extract_completion_params(test_file):
-    """Extract completions parameters form the test file. This should make
-    reduce the fragility of the tests.
-    """
-    file_path = COMPLETION_TEST_ROOT / test_file
-    position = None
-    context = None
-    with open(file_path.absolute(), "r") as data:
-        lines = data.readlines()
-        for line in lines:
-            parts = line.split("@")
-            try:
-                if parts[1] == "completion-position":
-                    position = json.loads(parts[2])
-                elif parts[1] == "completion-context":
-                    context = json.loads(parts[2])
-            except IndexError:
-                pass
-
-    return {
-        "textDocument": {"uri": file_path.as_uri()},
-        "position": position,
-        "context": context,
-    }
+COMPLETION_TEST_ROOT = TEST_DATA / "completion"
 
 
 def test_lsp_completion() -> None:
@@ -43,7 +17,7 @@ def test_lsp_completion() -> None:
     """
 
     with session.LspSession() as ls_session:
-        uri = (COMPLETION_TEST_ROOT / "completion_test1.py").as_uri()
+        uri = as_uri(COMPLETION_TEST_ROOT / "completion_test1.py")
         actual = ls_session.text_document_completion(
             {
                 "textDocument": {"uri": uri},

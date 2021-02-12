@@ -1,19 +1,19 @@
-"""Tests for refactoring"""
+"""Tests for refactoring requests"""
 
-import pathlib
 from hamcrest import assert_that, is_
-from tests.lsp_test_client.utils import normalizecase
+
 from tests import TEST_DATA
 from tests.lsp_test_client import session
+from tests.lsp_test_client.utils import as_uri
 
 
-REFACTOR_TEST_ROOT = pathlib.Path(TEST_DATA) / "refactoring"
+REFACTOR_TEST_ROOT = TEST_DATA / "refactoring"
 
 
 def test_lsp_rename_function():
     """Tests single file function rename"""
     with session.LspSession() as ls_session:
-        uri = normalizecase((REFACTOR_TEST_ROOT / "rename_test1.py").as_uri())
+        uri = as_uri((REFACTOR_TEST_ROOT / "rename_test1.py"))
         actual = ls_session.text_document_rename(
             {
                 "textDocument": {"uri": uri},
