@@ -89,7 +89,8 @@ If you are configuring manually, jedi-language-server supports the following [in
   "initializationOptions": {
     "markupKindPreferred": null,
     "jediSettings": {
-      "autoImportModules": []
+      "autoImportModules": [],
+      "caseInsensitiveCompletion": true
     },
     "completion": {
       "disableSnippets": false,
