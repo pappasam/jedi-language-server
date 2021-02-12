@@ -1,4 +1,4 @@
-"""Test file for completion test"""
+"""Test file for test_completion"""
 
 
 def my_function():
@@ -6,6 +6,4 @@ def my_function():
     return 1
 
 
-# @completion-position@ {"line":10, "character":3}
-# @completion-context@ {"triggerKind": 1}
 my

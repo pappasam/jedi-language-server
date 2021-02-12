@@ -4,14 +4,17 @@ import pathlib
 import json
 from hamcrest import assert_that, is_
 from tests import TEST_DATA
-from tests.lsp import session
+from tests.lsp_test_client import session
+
+
+COMPLETION_TEST_ROOT = pathlib.Path(TEST_DATA) / "completion"
 
 
 def extract_completion_params(test_file):
     """Extract completions parameters form the test file. This should make
     reduce the fragility of the tests.
     """
-    file_path = pathlib.Path(TEST_DATA) / "completion" / test_file
+    file_path = COMPLETION_TEST_ROOT / test_file
     position = None
     context = None
     with open(file_path.absolute(), "r") as data:
@@ -34,12 +37,19 @@ def extract_completion_params(test_file):
 
 
 def test_lsp_completion() -> None:
-    """Test a simple completion request"""
+    """Test a simple completion request
+
+    Test Data: tests/test_data/completion/completion_test1.py
+    """
 
     with session.LspSession() as ls_session:
-
+        uri = (COMPLETION_TEST_ROOT / "completion_test1.py").as_uri()
         actual = ls_session.text_document_completion(
-            extract_completion_params("completion_test1.py")
+            {
+                "textDocument": {"uri": uri},
+                "position": {"line": 8, "character": 2},
+                "context": {"triggerKind": 1},
+            }
         )
 
         expected = {

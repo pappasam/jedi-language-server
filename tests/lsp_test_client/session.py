@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+import py
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 
@@ -10,7 +11,7 @@ from pyls_jsonrpc.dispatchers import MethodDispatcher
 from pyls_jsonrpc.endpoint import Endpoint
 from pyls_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
-from tests.lsp import defaults
+from tests.lsp_test_client import defaults
 
 LSP_EXIT_TIMEOUT = 5000
 

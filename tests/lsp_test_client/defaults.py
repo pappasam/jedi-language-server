@@ -1,12 +1,12 @@
 import os
 
-import tests.lsp as lsp
+import tests.lsp_test_client as lsp_client
 
 VSCODE_DEFAULT_INITIALIZE = {
     "processId": os.getpid(),
     "clientInfo": {"name": "vscode", "version": "1.45.0"},
-    "rootPath": str(lsp.PROJECT_ROOT),
-    "rootUri": lsp.PROJECT_URI,
+    "rootPath": str(lsp_client.PROJECT_ROOT),
+    "rootUri": lsp_client.PROJECT_URI,
     "capabilities": {
         "workspace": {
             "applyEdit": True,
@@ -183,9 +183,18 @@ VSCODE_DEFAULT_INITIALIZE = {
             "rangeFormatting": {"dynamicRegistration": True},
             "onTypeFormatting": {"dynamicRegistration": True},
             "rename": {"dynamicRegistration": True, "prepareSupport": True},
-            "documentLink": {"dynamicRegistration": True, "tooltipSupport": True},
-            "typeDefinition": {"dynamicRegistration": True, "linkSupport": True},
-            "implementation": {"dynamicRegistration": True, "linkSupport": True},
+            "documentLink": {
+                "dynamicRegistration": True,
+                "tooltipSupport": True,
+            },
+            "typeDefinition": {
+                "dynamicRegistration": True,
+                "linkSupport": True,
+            },
+            "implementation": {
+                "dynamicRegistration": True,
+                "linkSupport": True,
+            },
             "colorProvider": {"dynamicRegistration": True},
             "foldingRange": {
                 "dynamicRegistration": True,
@@ -198,5 +207,5 @@ VSCODE_DEFAULT_INITIALIZE = {
         "window": {"workDoneProgress": True},
     },
     "trace": "verbose",
-    "workspaceFolders": [{"uri": lsp.PROJECT_URI, "name": "jedi_lsp"}],
+    "workspaceFolders": [{"uri": lsp_client.PROJECT_URI, "name": "jedi_lsp"}],
 }
