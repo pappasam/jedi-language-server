@@ -73,7 +73,11 @@ whitelist_externals = poetry
 skip_install = true
 commands =
   poetry install
+
   poetry run black --check --diff jedi_language_server tests
+  poetry run docformatter --check --recursive jedi_language_server tests
+  poetry run isort --check jedi_language_server tests
+
   poetry run mypy jedi_language_server
   poetry run pylint jedi_language_server tests
   poetry run pytest
