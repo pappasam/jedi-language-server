@@ -393,11 +393,15 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
     handling in case docstring_to_markdown.convert produces unexpected
     behavior.
     """
-    if markup_kind == markup_kind.Markdown:
+    if markup_kind == MarkupKind.Markdown:
         try:
             return docstring_to_markdown.convert(docstring)
         except docstring_to_markdown.UnknownFormatError:
-            pass
+            return (
+                "```\n" + str(docstring) + "\n```\n"
+                if docstring
+                else docstring
+            )
         except Exception as error:  # pylint: disable=broad-except
             return (
                 docstring
