@@ -384,12 +384,30 @@ def lsp_completion_item(
 
 
 def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
-    """Take a docstring and convert it to markup kind if possible."""
+    """Take a docstring and convert it to markup kind if possible.
+
+    Currently only supports markdown conversion; MarkupKind can only be
+    plaintext or markdown as of LSP 3.16.
+
+    NOTE: Since docstring_to_markdown is a new library, I add broad exception
+    handling in case docstring_to_markdown.convert produces unexpected
+    behavior.
+    """
     if markup_kind == markup_kind.Markdown:
         try:
             return docstring_to_markdown.convert(docstring)
         except docstring_to_markdown.UnknownFormatError:
             pass
+        except Exception as error:  # pylint: disable=broad-except
+            return (
+                docstring
+                + "\n"
+                + "jedi-language-server error: "
+                + "Uncaught exception while converting docstring to markdown. "
+                + "Please open issue at "
+                + "https://github.com/pappasam/jedi-language-server/issues. "
+                + f"Traceback:\n{error}"
+            )
     return docstring
 
 
