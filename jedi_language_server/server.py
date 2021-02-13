@@ -125,7 +125,7 @@ def completion_item_resolve(
     server: JediLanguageServer, params: CompletionItem
 ) -> CompletionItem:
     """Resolves documentation and detail of given completion item."""
-    markup_kind = choose_markup(server)
+    markup_kind = _choose_markup(server)
     # note: params is not a CompletionItem
     # but a namedtuple complying with CompletionItem protocol
     item = CompletionItem(
@@ -168,7 +168,7 @@ def completion(
     resolve_eagerly = (
         server.initialize_params.initializationOptions_completion_resolveEagerly
     )
-    markup_kind = choose_markup(server)
+    markup_kind = _choose_markup(server)
     is_import_context = jedi_utils.is_import(
         script_=jedi_script,
         line=jedi_lines["line"],
@@ -285,7 +285,7 @@ def hover(
         docstring = name.docstring()
         if not docstring:
             continue
-        markup_kind = choose_markup(server)
+        markup_kind = _choose_markup(server)
         docstring_clean = jedi_utils.convert_docstring(docstring, markup_kind)
         contents = MarkupContent(kind=markup_kind, value=docstring_clean)
         document = server.workspace.get_document(params.textDocument.uri)
@@ -533,7 +533,7 @@ def did_open(server: JediLanguageServer, params: DidOpenTextDocumentParams):
     _publish_diagnostics(server, params.textDocument.uri)
 
 
-def choose_markup(server: JediLanguageServer) -> MarkupKind:
+def _choose_markup(server: JediLanguageServer) -> MarkupKind:
     """Returns the preferred or first of supported markup kinds."""
     markup_preferred = (
         server.initialize_params.initializationOptions_markupKindPreferred
@@ -541,7 +541,7 @@ def choose_markup(server: JediLanguageServer) -> MarkupKind:
     markup_supported = (
         server.initialize_params.capabilities_textDocument_completion_completionItem_documentationFormat
     )
-    return (
+    return MarkupKind(
         markup_preferred
         if markup_preferred in markup_supported
         else markup_supported[0]
