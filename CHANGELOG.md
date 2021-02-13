@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
+- When `MarkupKind` is `"markdown"`, convert docstrings from rst to markdown. Currently uses <https://github.com/krassowski/docstring-to-markdown>, thanks @krassowski for the awesome library! Special attention has been paid to error handling here to give @krassowski leeway to develop the library further.
+
+## 0.24.0
+
+### Added
+
 - `caseInsensitiveCompletion` initialization option added. The user can now tell Jedi to only return case sensitive completions by setting this value to false.
 
 ### Fixed
