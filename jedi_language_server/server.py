@@ -286,7 +286,8 @@ def hover(
         if not docstring:
             continue
         markup_kind = choose_markup(server)
-        contents = MarkupContent(kind=markup_kind, value=docstring)
+        docstring_clean = jedi_utils.convert_docstring(docstring, markup_kind)
+        contents = MarkupContent(kind=markup_kind, value=docstring_clean)
         document = server.workspace.get_document(params.textDocument.uri)
         _range = pygls_utils.current_word_range(document, params.position)
         return Hover(contents=contents, range=_range)

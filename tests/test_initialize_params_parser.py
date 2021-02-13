@@ -1,15 +1,14 @@
-"""Test the InitializeParamsParser class"""
+"""Test the InitializeParamsParser class."""
 
 import pytest
-from pygls.types import (
-    MarkupKind,
-)
+from pygls.types import MarkupKind
+
 from jedi_language_server.initialize_params_parser import (
     InitializeParamsParser,
 )
 
-
 _LIST_OF_SETTINGS_AND_DEFAULTS = [
+    # pylint: disable=line-too-long
     (
         "capabilities_textDocument_completion_completionItem_documentationFormat",
         [MarkupKind.PlainText],
@@ -48,9 +47,8 @@ _LIST_OF_SETTINGS_AND_DEFAULTS = [
     _LIST_OF_SETTINGS_AND_DEFAULTS,
 )
 def test_error_when_init_params_not_set(setting, _) -> None:
-    """Test to ensure that InitializeParamsParser class raises error
-    when used without setting InitializeParams via `set_initialize_params`
-    """
+    """Test to ensure that InitializeParamsParser class raises error when used
+    without setting InitializeParams via `set_initialize_params`"""
     init_params = InitializeParamsParser()
 
     with pytest.raises(ValueError):
@@ -69,8 +67,7 @@ def test_default(setting, expected) -> None:
 
 def test_unknown_setting() -> None:
     """A new setting was addeded, and tests weren't updated with the defaults
-    for that setting.
-    """
+    for that setting."""
     init_params = InitializeParamsParser()
     actual = [
         attr
