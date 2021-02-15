@@ -50,6 +50,7 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .nox/
+coverage/
 .coverage
 .coverage.*
 .cache
@@ -129,7 +130,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
 
 # VS Code
 .vscode/
