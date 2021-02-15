@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.25.3
+
+### Changed
+
+- Relax version constraints for `docstring-to-markdown` to be compatible with all versions below `1.0`. Author confirms there won't be breaking changes until at least then: <https://github.com/pappasam/jedi-language-server/issues/68#issuecomment-778844918>
+
+## 0.25.2
+
+### Fixed
+
+- Markdown-formatted text that cannot be converted is now surrounded by fences
+- An edge case where markup_kind variable is a string, and not MarkupKind, is properly handled
+
+## 0.25.1
+
+### Fixed
+
+- Bug where client-supported markupkind wasn't being properly converted to `MarkupKind`, which caused problems when relying on client-provided defaults.
+
+## 0.25.0
+
+### Added
+
+- When `MarkupKind` is `"markdown"`, convert docstrings from rst to markdown. Currently uses <https://github.com/krassowski/docstring-to-markdown>, thanks @krassowski for the awesome library! Special attention has been paid to error handling here to give @krassowski leeway to develop the library further.
+
 ## 0.24.0
 
 ### Added
