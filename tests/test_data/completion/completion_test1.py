@@ -1,8 +1,8 @@
-"""Test file for test_completion"""
+"""Test file for test_completion."""
 
 
 def my_function():
-    """Simple test function"""
+    """Simple test function."""
     return 1
 
 

@@ -16,3 +16,9 @@ test:  ## Run the tests
 publish:  ## Build & publish the new version
 	poetry build
 	poetry publish
+
+.PHONY: format
+format:
+	poetry run black jedi_language_server tests
+	poetry run isort jedi_language_server tests
+	poetry run docformatter --recursive --in-place jedi_language_server tests

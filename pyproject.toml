@@ -67,7 +67,7 @@ jedi-language-server = 'jedi_language_server.cli:cli'
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py38
+envlist = py36,py37,py38
 isolated_build = true
 skipsdist = true
 [testenv]

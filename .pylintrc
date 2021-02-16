@@ -137,6 +137,8 @@ ignored-classes=SQLObject
 # expressions are accepted.
 generated-members=REQUEST,acl_users,aq_parent
 
+ignored-modules=py
+
 
 [VARIABLES]
 

@@ -1,9 +1,8 @@
-"""Provides LSP session helpers for testing"""
+"""Provides LSP session helpers for testing."""
 
 import os
 import subprocess
 import sys
-import py
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 
@@ -17,7 +16,7 @@ LSP_EXIT_TIMEOUT = 5000
 
 
 class LspSession(MethodDispatcher):
-    """Send and Receive messages over LSP as a test LS Client"""
+    """Send and Receive messages over LSP as a test LS Client."""
 
     def __init__(self, cwd=None):
         self.cwd = cwd if cwd else os.getcwd()
@@ -33,7 +32,11 @@ class LspSession(MethodDispatcher):
             [
                 sys.executable,
                 "-c",
-                "import sys;from jedi_language_server.cli import cli;sys.exit(cli())",
+                (
+                    "import sys;"
+                    + "from jedi_language_server.cli import cli;"
+                    + "sys.exit(cli())"
+                ),
             ],
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,

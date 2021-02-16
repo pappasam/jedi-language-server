@@ -1,4 +1,7 @@
+"""Test client main module."""
+
 import py
+
 from .utils import as_uri
 
 TEST_ROOT = py.path.local(__file__) / ".."

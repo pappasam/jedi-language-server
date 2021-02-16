@@ -1,4 +1,4 @@
-"""Test file for test_refactoring"""
+"""Test file for test_refactoring."""
 
 
 def myfunc1():

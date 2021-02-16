@@ -35,6 +35,7 @@ repos:
         entry: poetry run pylint
         language: system
         types: [python]
+        exclude: ^tests/test_data/
   - repo: local
     hooks:
       - id: mypy

@@ -1,4 +1,4 @@
-"""Tests for document completion requests"""
+"""Tests for document completion requests."""
 
 from hamcrest import assert_that, is_
 
@@ -6,12 +6,11 @@ from tests import TEST_DATA
 from tests.lsp_test_client import session
 from tests.lsp_test_client.utils import as_uri
 
-
 COMPLETION_TEST_ROOT = TEST_DATA / "completion"
 
 
 def test_lsp_completion() -> None:
-    """Test a simple completion request
+    """Test a simple completion request.
 
     Test Data: tests/test_data/completion/completion_test1.py
     """
