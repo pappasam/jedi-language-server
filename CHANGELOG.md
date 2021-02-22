@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.25.4
+
+### Fixed
+
+- SymbolKind and CompletionItemKind now support `Property`. Support is still a bit finicky, and I'm not sure whether it's Jedi's issue or an issue with jedi-language-server at this time.
+- `jedi_utils.line_column` now ensures that line length never falls below 0. Resolves <https://github.com/pappasam/jedi-language-server/issues/74>
+
 ## 0.25.3
 
 ### Changed
