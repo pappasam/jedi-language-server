@@ -211,7 +211,7 @@ def line_column(jedi_script: Script, position: Position) -> Dict[str, int]:
     line_length = len(lines[position.line])
     return dict(
         line=position.line + 1,
-        column=min(position.character, line_length - 1),
+        column=min(position.character, line_length - 1 if line_length else 0),
     )
 
 
