@@ -13,6 +13,7 @@ _JEDI_COMPLETION_TYPE_MAP = {
     "param": CompletionItemKind.Variable,
     "path": CompletionItemKind.File,
     "keyword": CompletionItemKind.Keyword,
+    "property": CompletionItemKind.Property,
     "statement": CompletionItemKind.Variable,
 }
 
@@ -24,6 +25,7 @@ _JEDI_SYMBOL_TYPE_MAP = {
     "param": SymbolKind.Variable,
     "path": SymbolKind.File,
     "keyword": SymbolKind.Class,
+    "property": SymbolKind.Property,
     "statement": SymbolKind.Variable,
 }
 
