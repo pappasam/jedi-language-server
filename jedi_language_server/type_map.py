@@ -25,7 +25,7 @@ _JEDI_SYMBOL_TYPE_MAP = {
     "param": SymbolKind.Variable,
     "path": SymbolKind.File,
     "keyword": SymbolKind.Class,
-    "property": CompletionItemKind.Property,
+    "property": SymbolKind.Property,
     "statement": SymbolKind.Variable,
 }
 
