@@ -48,3 +48,35 @@ def test_lsp_completion() -> None:
             ],
         }
         assert_that(actual, is_(expected))
+
+        actual = ls_session.completion_item_resolve(
+            {
+                "label": "my_function",
+                "kind": 3,
+                "sortText": "z",
+                "filterText": "my_function",
+                "insertText": "my_function()$0",
+                "insertTextFormat": 2,
+            }
+        )
+        expected = {
+            "label": "my_function",
+            "kind": 3,
+            "detail": "def my_function",
+            "documentation": {
+                "kind": "markdown",
+                "value": "```\nmy_function()\n\nSimple test function.\n```\n",
+            },
+            "deprecated": None,
+            "preselect": None,
+            "sortText": "z",
+            "filterText": "my_function",
+            "insertText": "my_function()$0",
+            "insertTextFormat": 2,
+            "textEdit": None,
+            "additionalTextEdits": None,
+            "commitCharacters": None,
+            "command": None,
+            "data": None,
+        }
+        assert_that(actual, is_(expected))

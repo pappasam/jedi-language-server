@@ -119,6 +119,13 @@ class LspSession(MethodDispatcher):
         fut = self._send_request("textDocument/rename", params=rename_params)
         return fut.result()
 
+    def completion_item_resolve(self, resolve_params):
+        """Sends completion item resolve request to LSP server."""
+        fut = self._send_request(
+            "completionItem/resolve", params=resolve_params
+        )
+        return fut.result()
+
     def _send_request(
         self, name, params=None, handle_response=lambda f: f.done()
     ):
