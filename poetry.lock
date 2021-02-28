@@ -136,6 +136,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "docformatter"
+version = "1.4"
+description = "Formats docstrings to follow PEP 257."
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+untokenize = "*"
+
+[[package]]
 name = "docstring-to-markdown"
 version = "0.5"
 description = "On the fly conversion of Python docstrings to markdown"
@@ -560,6 +571,14 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "untokenize"
+version = "0.1.1"
+description = "Transforms tokens into original source code (while preserving whitespace)."
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "virtualenv"
 version = "20.4.2"
 description = "Virtual Python Environment builder"
@@ -610,7 +629,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "89c20065ea32dfe34d3a0a65492f86808cbc9bdcc3f97f3ebb90d0c08cf0b9d0"
+content-hash = "6741458096f12005673c1381be51d987dc67e18bf236564ca4685748a0dd7251"
 
 [metadata.files]
 appdirs = [
@@ -710,6 +729,9 @@ dataclasses = [
 distlib = [
     {file = "distlib-0.3.1-py2.py3-none-any.whl", hash = "sha256:8c09de2c67b3e7deef7184574fc060ab8a793e7adbb183d942c389c8b13c52fb"},
     {file = "distlib-0.3.1.zip", hash = "sha256:edf6116872c863e1aa9d5bb7cb5e05a022c519a4594dc703843343a9ddd9bff1"},
+]
+docformatter = [
+    {file = "docformatter-1.4.tar.gz", hash = "sha256:064e6d81f04ac96bc0d176cbaae953a0332482b22d3ad70d47c8a7f2732eef6f"},
 ]
 docstring-to-markdown = [
     {file = "docstring-to-markdown-0.5.tar.gz", hash = "sha256:c9c24bec9fdada4191851b181bfff4649f35ee554478e0ce7ace65ae0d233a70"},
@@ -1003,6 +1025,9 @@ ujson = [
     {file = "ujson-4.0.2-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:b5c70704962cf93ec6ea3271a47d952b75ae1980d6c56b8496cec2a722075939"},
     {file = "ujson-4.0.2-cp39-cp39-win_amd64.whl", hash = "sha256:aad6d92f4d71e37ea70e966500f1951ecd065edca3a70d3861b37b176dd6702c"},
     {file = "ujson-4.0.2.tar.gz", hash = "sha256:c615a9e9e378a7383b756b7e7a73c38b22aeb8967a8bfbffd4741f7ffd043c4d"},
+]
+untokenize = [
+    {file = "untokenize-0.1.1.tar.gz", hash = "sha256:3865dbbbb8efb4bb5eaa72f1be7f3e0be00ea8b7f125c69cbd1f5fda926f37a2"},
 ]
 virtualenv = [
     {file = "virtualenv-20.4.2-py2.py3-none-any.whl", hash = "sha256:2be72df684b74df0ea47679a7df93fd0e04e72520022c57b479d8f881485dbe3"},
