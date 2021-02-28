@@ -21,7 +21,6 @@ class LspSession(MethodDispatcher):
     def __init__(self, cwd=None):
         self.cwd = cwd if cwd else os.getcwd()
         self._thread_executor = ThreadPoolExecutor()
-        self._server_initialized = Event()
         self._sub = None
         self._writer = None
         self._reader = None
@@ -53,8 +52,6 @@ class LspSession(MethodDispatcher):
         self._thread_executor.submit(
             self._reader.listen, self._endpoint.consume
         )
-        self.initialize()
-        self._server_initialized.wait()
         return self
 
     def __exit__(self, typ, value, _tb):
@@ -72,12 +69,13 @@ class LspSession(MethodDispatcher):
         process_server_capabilities=None,
     ):
         """Sends the initialize request to LSP server."""
+        server_initialized = Event()
 
         def _after_initialize(fut):
             if process_server_capabilities:
                 process_server_capabilities(fut.result())
             self.initialized()
-            self._server_initialized.set()
+            server_initialized.set()
 
         self._send_request(
             "initialize",
@@ -88,6 +86,8 @@ class LspSession(MethodDispatcher):
             ),
             handle_response=_after_initialize,
         )
+
+        server_initialized.wait()
 
     def initialized(self, initialized_params=None):
         """Sends the initialized notification to LSP server."""
