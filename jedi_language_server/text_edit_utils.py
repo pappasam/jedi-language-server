@@ -184,7 +184,7 @@ def get_opcode_position_lookup(
     start = 0
     for line, code_line in enumerate(original_lines):
         end = start + len(code_line)
-        key = range(start, end + 1)  # must be 1 greater than last item
+        key = range(start, end)
         line_lookup[key] = LinePosition(start, end, line, code_line)
         start = end
     return line_lookup
