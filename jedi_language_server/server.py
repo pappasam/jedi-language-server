@@ -131,7 +131,7 @@ def completion_item_resolve(
     item = CompletionItem(
         label=params.label,
         kind=getattr(params, "kind", None),
-        detail=getattr(params, "details", None),
+        detail=getattr(params, "detail", None),
         documentation=getattr(params, "documentation", None),
         deprecated=getattr(params, "deprecated", None),
         preselect=getattr(params, "preselect", None),
