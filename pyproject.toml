@@ -11,7 +11,7 @@ line_length = 79
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.25.4"
+version = "0.25.5"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -68,7 +68,7 @@ jedi-language-server = 'jedi_language_server.cli:cli'
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py36,py37,py38
+envlist = py36,py37,py38,py39
 isolated_build = true
 skipsdist = true
 [testenv]
