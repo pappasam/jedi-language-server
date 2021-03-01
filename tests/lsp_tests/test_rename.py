@@ -12,6 +12,7 @@ REFACTOR_TEST_ROOT = TEST_DATA / "refactoring"
 def test_lsp_rename_function():
     """Tests single file function rename."""
     with session.LspSession() as ls_session:
+        ls_session.initialize()
         uri = as_uri((REFACTOR_TEST_ROOT / "rename_test1.py"))
         actual = ls_session.text_document_rename(
             {
