@@ -60,6 +60,7 @@ black = "^20.8b1"
 PyHamcrest = "^2.0.2"
 python-jsonrpc-server = "^0.4.0"
 pytest-cov = "^2.11.1"
+docformatter = "^1.4"
 
 [tool.poetry.scripts]
 jedi-language-server = 'jedi_language_server.cli:cli'
