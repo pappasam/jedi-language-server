@@ -104,7 +104,7 @@ def lsp_text_edits(changed_file: ChangedFile) -> List[TextEdit]:
     for opcode in get_opcodes(old_code, new_code):
         if opcode.op in _OPCODES_CHANGE:
             start = opcode_position_lookup_old[opcode.old_start]
-            end = opcode_position_lookup_old[opcode.old_end]
+            end = opcode_position_lookup_old[opcode.old_end - 1]
             start_char = opcode.old_start - start.range_start
             end_char = opcode.old_end - end.range_start
             new_text = new_code[opcode.new_start : opcode.new_end]
