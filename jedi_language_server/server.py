@@ -7,7 +7,7 @@ Official language server spec:
 """
 
 import itertools
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from jedi import Project
 from jedi.api.refactoring import RefactoringError
@@ -122,7 +122,7 @@ SERVER = JediLanguageServer(protocol_cls=JediLanguageServerProtocol)
 
 @SERVER.feature(COMPLETION_ITEM_RESOLVE)
 def completion_item_resolve(
-    server: JediLanguageServer, params: CompletionItem
+    server: JediLanguageServer, params: Any
 ) -> CompletionItem:
     """Resolves documentation and detail of given completion item."""
     markup_kind = _choose_markup(server)
@@ -130,20 +130,20 @@ def completion_item_resolve(
     # but a namedtuple complying with CompletionItem protocol
     item = CompletionItem(
         label=params.label,
-        kind=params.kind,
-        detail=params.detail,
-        documentation=params.documentation,
-        deprecated=params.deprecated,
-        preselect=params.preselect,
-        sort_text=params.sortText,
-        filter_text=params.filterText,
-        insert_text=params.insertText,
-        insert_text_format=params.insertTextFormat,
-        text_edit=params.textEdit,
-        additional_text_edits=params.additionalTextEdits,
-        commit_characters=params.commitCharacters,
-        command=params.command,
-        data=params.data,
+        kind=getattr(params, "kind", None),
+        detail=getattr(params, "detail", None),
+        documentation=getattr(params, "documentation", None),
+        deprecated=getattr(params, "deprecated", None),
+        preselect=getattr(params, "preselect", None),
+        sort_text=getattr(params, "sortText", None),
+        filter_text=getattr(params, "filterText", None),
+        insert_text=getattr(params, "insertText", None),
+        insert_text_format=getattr(params, "insertTextFormat", None),
+        text_edit=getattr(params, "textEdit", None),
+        additional_text_edits=getattr(params, "additionalTextEdits", None),
+        commit_characters=getattr(params, "commitCharacters", None),
+        command=getattr(params, "command", None),
+        data=getattr(params, "data", None),
     )
     return jedi_utils.lsp_completion_item_resolve(
         item, markup_kind=markup_kind

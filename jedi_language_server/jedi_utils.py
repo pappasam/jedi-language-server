@@ -357,12 +357,12 @@ def lsp_completion_item(
         insert_text=name_clean,
         insert_text_format=InsertTextFormat.PlainText,
     )
+
+    _MOST_RECENT_COMPLETIONS[completion_name] = completion
     if resolve_eagerly:
         completion_item = lsp_completion_item_resolve(
             completion_item, markup_kind=markup_kind
         )
-    else:
-        _MOST_RECENT_COMPLETIONS[completion_name] = completion
 
     if not enable_snippets:
         return completion_item
