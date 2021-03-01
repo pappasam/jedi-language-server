@@ -83,6 +83,7 @@ def test_lsp_rename_function():
 def test_lsp_rename_variable_at_line_start():
     """Tests renaming a variable that appears at the start of a line."""
     with session.LspSession() as ls_session:
+        ls_session.initialize()
         uri = as_uri((REFACTOR_TEST_ROOT / "rename_test2.py"))
         actual = ls_session.text_document_rename(
             {
