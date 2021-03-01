@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## 0.25.5
 
+### Fixed
+
 - Fix renaming a variable that appears at the start of a line
 - Fix handling of `completionItem/resolve` when not all fields are present on the `CompletionItem`.
 - Fix handling of eager resolution of completions.
@@ -431,8 +433,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - `mypy`, `pylint`, `black`, `toml-sort`, and `isort` all pass.
-npm notice 
-npm notice New minor version of npm available! 7.5.6 -> 7.6.0
-npm notice Changelog: <https://github.com/npm/cli/releases/tag/v7.6.0>
-npm notice Run `npm install -g npm@7.6.0` to update!
-npm notice 
