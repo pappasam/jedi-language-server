@@ -78,3 +78,38 @@ def test_lsp_rename_function():
             ],
         }
         assert_that(actual, is_(expected))
+
+
+def test_lsp_rename_variable_at_line_start():
+    """Tests renaming a variable that appears at the start of a line."""
+    with session.LspSession() as ls_session:
+        uri = as_uri((REFACTOR_TEST_ROOT / "rename_test2.py"))
+        actual = ls_session.text_document_rename(
+            {
+                "textDocument": {"uri": uri},
+                "position": {"line": 1, "character": 0},
+                "newName": "y",
+            }
+        )
+
+        expected = {
+            "changes": None,
+            "documentChanges": [
+                {
+                    "textDocument": {
+                        "uri": uri,
+                        "version": 0,
+                    },
+                    "edits": [
+                        {
+                            "range": {
+                                "start": {"line": 1, "character": 0},
+                                "end": {"line": 1, "character": 1},
+                            },
+                            "newText": "y",
+                        },
+                    ],
+                }
+            ],
+        }
+        assert_that(actual, is_(expected))
