@@ -295,11 +295,6 @@ def get_snippet_signature(signature: Signature) -> str:
             signature_list.append(result)
             count += 1
             continue
-        if param.kind == Parameter.KEYWORD_ONLY:
-            result = param_name + "=${" + f"{count}:..." + "}"
-            signature_list.append(result)
-            count += 1
-            continue
     if not signature_list:
         return "($0)"
     return "(" + ", ".join(signature_list) + ")$0"
