@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.26.0
+
+### Added
+
+- Initialization option `workspace.maxSymbols` to set the max workspace symbols returned by Jedi. Set to 0 or fewer to disable the setting of max and to return as many symbols as are found.
+
 ## 0.25.7
 
 ### Fixed
