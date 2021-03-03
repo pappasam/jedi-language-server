@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.27.0
+
+### Added
+
+- Initialization option `workspace.symbols.ignoreFolders` to set names of folders that are ignored during the workspace symbols action. For performance reasons; things slow down a LOT when symbols come from 3rd party library locations.
+
+### Changed
+
+- (Breaking from 0.26.0) Initialization option `workspace.maxSymbols` changed to `workspace.symbols.maxSymbols`.
+
 ## 0.26.0
 
 ### Added

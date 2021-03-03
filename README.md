@@ -86,7 +86,7 @@ We recommend using [coc-jedi](https://github.com/pappasam/coc-jedi) and followin
 If you are configuring manually, jedi-language-server supports the following [initializationOptions](https://microsoft.github.io/language-server-protocol/specification#initialize):
 
 ```json
-...
+{
   "initializationOptions": {
     "markupKindPreferred": null,
     "jediSettings": {
@@ -105,10 +105,13 @@ If you are configuring manually, jedi-language-server supports the following [in
     },
     "workspace": {
       "extraPaths": [],
-      "maxSymbols": 20
+      "symbols": {
+        "ignoreFolders": [".nox", ".tox", ".venv", "__pycache__", "venv"],
+        "maxSymbols": 20
+      }
     }
   }
-...
+}
 ```
 
 See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi#configuration) for an explanation of the above configurations.
