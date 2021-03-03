@@ -231,12 +231,33 @@ class InitializeParamsParser:
         return rgetattr(self._initialize_params, path, default)  # type: ignore
 
     @cached_property
-    def initializationOptions_workspace_maxSymbols(
+    def initializationOptions_workspace_symbols_ignoreFolders(
+        self,
+    ) -> List[str]:
+        _path = (
+            "initializationOptions",
+            "workspace",
+            "symbols",
+            "ignoreFolders",
+        )
+        path = ".".join(_path)
+        default = [
+            ".nox",
+            ".tox",
+            ".venv",
+            "__pycache__",
+            "venv",
+        ]
+        return rgetattr(self._initialize_params, path, default)  # type: ignore
+
+    @cached_property
+    def initializationOptions_workspace_symbols_maxSymbols(
         self,
     ) -> int:
         _path = (
             "initializationOptions",
             "workspace",
+            "symbols",
             "maxSymbols",
         )
         path = ".".join(_path)

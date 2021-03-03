@@ -58,7 +58,6 @@ from pygls.types import (
 )
 
 from . import jedi_utils, pygls_utils, text_edit_utils
-from .constants import JEDI_IGNORE_FOLDERS
 from .initialize_params_parser import InitializeParamsParser
 from .pygls_type_overrides import (
     ParameterInformation,
@@ -345,12 +344,12 @@ def document_symbol(
     return symbol_information if symbol_information else None
 
 
-def _ignore_folder(path_check: str) -> bool:
+def _ignore_folder(path_check: str, jedi_ignore_folders: List[str]) -> bool:
     """Determines whether there's an ignore folder in the path.
 
     Intended to be used with the `workspace_symbol` function
     """
-    for ignore_folder in JEDI_IGNORE_FOLDERS:
+    for ignore_folder in jedi_ignore_folders:
         if f"/{ignore_folder}/" in path_check:
             return True
     return False
@@ -371,15 +370,18 @@ def workspace_symbol(
     """
     names = server.project.complete_search(params.query)
     workspace_root = server.workspace.root_path
+    ignore_folders = (
+        server.initialize_params.initializationOptions_workspace_symbols_ignoreFolders
+    )
     _symbols = (
         jedi_utils.lsp_symbol_information(name)
         for name in names
         if name.module_path
         and str(name.module_path).startswith(workspace_root)
-        and not _ignore_folder(str(name.module_path))
+        and not _ignore_folder(str(name.module_path), ignore_folders)
     )
     max_symbols = (
-        server.initialize_params.initializationOptions_workspace_maxSymbols
+        server.initialize_params.initializationOptions_workspace_symbols_maxSymbols
     )
     symbols = (
         list(itertools.islice(_symbols, max_symbols))
