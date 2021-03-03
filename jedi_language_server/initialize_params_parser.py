@@ -229,3 +229,16 @@ class InitializeParamsParser:
         path = ".".join(_path)
         default: List[str] = []
         return rgetattr(self._initialize_params, path, default)  # type: ignore
+
+    @cached_property
+    def initializationOptions_workspace_maxSymbols(
+        self,
+    ) -> int:
+        _path = (
+            "initializationOptions",
+            "workspace",
+            "maxSymbols",
+        )
+        path = ".".join(_path)
+        default = 20
+        return rgetattr(self._initialize_params, path, default)  # type: ignore

@@ -362,7 +362,8 @@ def workspace_symbol(
 ) -> Optional[List[SymbolInformation]]:
     """Document Python workspace symbols.
 
-    Returns up to 20 symbols, ignoring the following symbols:
+    Returns up to maxSymbols, or all symbols if maxSymbols is <= 0, ignoring
+    the following symbols:
 
     1. Those that don't have a module_path associated with them (built-ins)
     2. Those that are not rooted in the current workspace.
@@ -377,7 +378,14 @@ def workspace_symbol(
         and str(name.module_path).startswith(workspace_root)
         and not _ignore_folder(str(name.module_path))
     )
-    symbols = list(itertools.islice(_symbols, 20))
+    max_symbols = (
+        server.initialize_params.initializationOptions_workspace_maxSymbols
+    )
+    symbols = (
+        list(itertools.islice(_symbols, max_symbols))
+        if max_symbols > 0
+        else list(_symbols)
+    )
     return symbols if symbols else None
 
 

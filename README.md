@@ -104,7 +104,8 @@ If you are configuring manually, jedi-language-server supports the following [in
       "didSave": true
     },
     "workspace": {
-      "extraPaths": []
+      "extraPaths": [],
+      "maxSymbols": 20
     }
   }
 ...
