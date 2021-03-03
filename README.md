@@ -69,6 +69,14 @@ Users may choose 1 of the following options:
 
 Note: this list is non-exhaustive. If you know of a great choice not included in this list, please submit a PR!
 
+### Visual Studio Code (vscode)
+
+With [this release](https://github.com/microsoft/vscode-python/releases/tag/2021.2.576481509) there is a new setting for `python.languageServer` to use jedi-language-server: set `python.languageServer` to `JediLSP`.
+
+Note: this is experimental and uses an older version (for now) to support python 2.7.
+
+See: <https://github.com/pappasam/jedi-language-server/issues/50#issuecomment-781101169>
+
 ### Command line (bash / zsh)
 
 At your terminal prompt:
