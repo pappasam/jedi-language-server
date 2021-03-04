@@ -23,7 +23,6 @@ def test_lsp_rename_function():
         )
 
         expected = {
-            "changes": None,
             "documentChanges": [
                 {
                     "textDocument": {
@@ -94,7 +93,6 @@ def test_lsp_rename_variable_at_line_start():
         )
 
         expected = {
-            "changes": None,
             "documentChanges": [
                 {
                     "textDocument": {
@@ -134,7 +132,6 @@ def test_lsp_rename_last_line():
         )
 
         expected = {
-            "changes": None,
             "documentChanges": [
                 {
                     "textDocument": {
