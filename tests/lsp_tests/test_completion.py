@@ -35,19 +35,12 @@ def test_lsp_completion() -> None:
                 {
                     "label": "my_function",
                     "kind": 3,
-                    "detail": None,
-                    "documentation": None,
                     "deprecated": False,
                     "preselect": False,
                     "sortText": "z",
                     "filterText": "my_function",
                     "insertText": "my_function()$0",
                     "insertTextFormat": 2,
-                    "textEdit": None,
-                    "additionalTextEdits": None,
-                    "commitCharacters": None,
-                    "command": None,
-                    "data": None,
                 }
             ],
         }
@@ -71,17 +64,10 @@ def test_lsp_completion() -> None:
                 "kind": "markdown",
                 "value": "```\nmy_function()\n\nSimple test function.\n```\n",
             },
-            "deprecated": None,
-            "preselect": None,
             "sortText": "z",
             "filterText": "my_function",
             "insertText": "my_function()$0",
             "insertTextFormat": 2,
-            "textEdit": None,
-            "additionalTextEdits": None,
-            "commitCharacters": None,
-            "command": None,
-            "data": None,
         }
         assert_that(actual, is_(expected))
 
@@ -127,11 +113,6 @@ def test_eager_lsp_completion() -> None:
                     "filterText": "my_function",
                     "insertText": "my_function()$0",
                     "insertTextFormat": 2,
-                    "textEdit": None,
-                    "additionalTextEdits": None,
-                    "commitCharacters": None,
-                    "command": None,
-                    "data": None,
                 }
             ],
         }
