@@ -17,6 +17,7 @@ from pygls.types import (
     TextEdit,
     VersionedTextDocumentIdentifier,
 )
+from pygls.workspace import Workspace
 
 
 class RenameFile:  # pylint: disable=too-few-public-methods
@@ -33,13 +34,14 @@ class RenameFile:  # pylint: disable=too-few-public-methods
 
 
 def lsp_document_changes(
+    workspace: Workspace,
     refactoring: Refactoring,
 ) -> List[Union[TextDocumentEdit, RenameFile]]:
     """Get lsp text document edits from Jedi refactoring.
 
     This is the main public function that you probably want
     """
-    converter = RefactoringConverter(refactoring)
+    converter = RefactoringConverter(workspace, refactoring)
     return [
         *converter.lsp_text_document_edits(),
         *converter.lsp_renames(),
@@ -49,7 +51,8 @@ def lsp_document_changes(
 class RefactoringConverter:
     """Convert jedi Refactoring objects into renaming machines."""
 
-    def __init__(self, refactoring: Refactoring) -> None:
+    def __init__(self, workspace: Workspace, refactoring: Refactoring) -> None:
+        self.workspace = workspace
         self.refactoring = refactoring
 
     def lsp_renames(self) -> Iterator[RenameFile]:
@@ -64,24 +67,17 @@ class RefactoringConverter:
             )
 
     def lsp_text_document_edits(self) -> Iterator[TextDocumentEdit]:
-        """Get all text document edits.
-
-        Note: version number defaults to `0` because the spec changed from 3.15
-        to 3.16, introducing a new concept of
-        `OptionalVersionedTextDocumentIdentifier` and disallowing a `null`
-        version for `VersionedTextDocumentIdentifier`.
-
-        TODO: more elegantly support textDocumentEdit versions in case they
-        turn out to be either useful or necessary for some clients.
-        """
+        """Get all text document edits."""
         changed_files = self.refactoring.get_changed_files()
         for path, changed_file in changed_files.items():
             uri = path.as_uri()
+            document = self.workspace.get_document(uri)
+            version = 0 if document.version is None else document.version
             text_edits = lsp_text_edits(changed_file)
             yield TextDocumentEdit(
                 text_document=VersionedTextDocumentIdentifier(
                     uri=uri,
-                    version=0,
+                    version=version,
                 ),
                 edits=text_edits,
             )
