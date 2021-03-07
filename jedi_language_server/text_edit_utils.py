@@ -6,7 +6,7 @@ This module is a bridge between `jedi.Refactoring` and
 
 
 import difflib
-from typing import Dict, Iterator, List, NamedTuple, Union
+from typing import Dict, Iterator, List, NamedTuple, Optional, Union
 
 from jedi.api.refactoring import ChangedFile, Refactoring
 from pygls.types import (
@@ -23,7 +23,10 @@ class RenameFile:  # pylint: disable=too-few-public-methods
     """Pygls has bug right now, this would be simple pull request."""
 
     def __init__(
-        self, old_uri: str, new_uri: str, options: RenameFileOptions = None
+        self,
+        old_uri: str,
+        new_uri: str,
+        options: Optional[RenameFileOptions] = None,
     ):
         # pylint: disable=invalid-name
         self.kind = "rename"

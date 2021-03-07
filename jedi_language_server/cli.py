@@ -14,4 +14,4 @@ def cli() -> None:
 
         Run from stdio : jedi-language-server
     """
-    SERVER.start_io()
+    SERVER.start_io()  # type: ignore

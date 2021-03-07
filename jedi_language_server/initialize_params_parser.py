@@ -137,7 +137,7 @@ class InitializeParamsParser:
         return bool(rgetattr(self._initialize_params, path, default))
 
     @cached_property
-    def initializationOptions_completion_resolveEagerly(self):
+    def initializationOptions_completion_resolveEagerly(self) -> bool:
         _path = (
             "initializationOptions",
             "completion",
