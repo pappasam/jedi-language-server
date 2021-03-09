@@ -88,7 +88,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
                 server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
             if ip.initializationOptions_diagnostics_didSave:
                 server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
-        initialize_result = super().bf_initialize(params)
+        initialize_result: InitializeResult = super().bf_initialize(params)
         server.project = Project(
             path=server.workspace.root_path,
             added_sys_path=ip.initializationOptions_workspace_extraPaths,
@@ -108,7 +108,7 @@ class JediLanguageServer(LanguageServer):
 
     project: Project
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.initialize_params = InitializeParamsParser()
         super().__init__(*args, **kwargs)
 
@@ -289,7 +289,7 @@ def hover(
         contents = MarkupContent(kind=markup_kind, value=docstring_clean)
         document = server.workspace.get_document(params.textDocument.uri)
         _range = pygls_utils.current_word_range(document, params.position)
-        return Hover(contents=contents, range=_range)
+        return Hover(contents=contents, range=_range)  # type: ignore
     return None
 
 
@@ -438,7 +438,7 @@ def code_action(
             raise RefactoringError("inline only viable for single-line range")
         inline_refactoring = jedi_script.inline(**jedi_lines)
     except (RefactoringError, AttributeError, IndexError):
-        inline_changes = []  # type: ignore
+        inline_changes = []
     else:
         inline_changes = text_edit_utils.lsp_document_changes(
             server.workspace, inline_refactoring
@@ -460,7 +460,7 @@ def code_action(
             new_name=extract_var, **jedi_lines_extract
         )
     except (RefactoringError, AttributeError, IndexError):
-        extract_variable_changes = []  # type: ignore
+        extract_variable_changes = []
     else:
         extract_variable_changes = text_edit_utils.lsp_document_changes(
             server.workspace, extract_variable_refactoring
@@ -482,7 +482,7 @@ def code_action(
             new_name=extract_func, **jedi_lines_extract
         )
     except (RefactoringError, AttributeError, IndexError):
-        extract_function_changes = []  # type: ignore
+        extract_function_changes = []
     else:
         extract_function_changes = text_edit_utils.lsp_document_changes(
             server.workspace, extract_function_refactoring
@@ -516,7 +516,7 @@ def did_change_configuration(
 # Static capability or initializeOptions functions that rely on a specific
 # client capability or user configuration. These are associated with
 # JediLanguageServer within JediLanguageServerProtocol.bf_initialize
-def _publish_diagnostics(server: JediLanguageServer, uri: str):
+def _publish_diagnostics(server: JediLanguageServer, uri: str) -> None:
     """Helper function to publish diagnostics for a file."""
     document = server.workspace.get_document(uri)
     jedi_script = jedi_utils.script(server.project, document)
@@ -526,7 +526,9 @@ def _publish_diagnostics(server: JediLanguageServer, uri: str):
 
 
 # TEXT_DOCUMENT_DID_SAVE
-def did_save(server: JediLanguageServer, params: DidSaveTextDocumentParams):
+def did_save(
+    server: JediLanguageServer, params: DidSaveTextDocumentParams
+) -> None:
     """Actions run on textDocument/didSave."""
     _publish_diagnostics(server, params.textDocument.uri)
 
@@ -534,13 +536,15 @@ def did_save(server: JediLanguageServer, params: DidSaveTextDocumentParams):
 # TEXT_DOCUMENT_DID_CHANGE
 def did_change(
     server: JediLanguageServer, params: DidChangeTextDocumentParams
-):
+) -> None:
     """Actions run on textDocument/didChange."""
     _publish_diagnostics(server, params.textDocument.uri)
 
 
 # TEXT_DOCUMENT_DID_OPEN
-def did_open(server: JediLanguageServer, params: DidOpenTextDocumentParams):
+def did_open(
+    server: JediLanguageServer, params: DidOpenTextDocumentParams
+) -> None:
     """Actions run on textDocument/didOpen."""
     _publish_diagnostics(server, params.textDocument.uri)
 

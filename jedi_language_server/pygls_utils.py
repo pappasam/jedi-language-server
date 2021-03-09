@@ -33,14 +33,14 @@ def rgetattr(obj: object, attr: str, default: object = None) -> object:
 def _rgetattr(obj: object, attr: str) -> object:
     """Get nested attributes, recursively."""
 
-    def _getattr(obj, attr):
+    def _getattr(obj: object, attr: str) -> object:
         return getattr(obj, attr, _SENTINEL)
 
     return functools.reduce(_getattr, [obj] + attr.split("."))  # type: ignore
 
 
 def char_before_cursor(
-    document: Document, position: Position, default=""
+    document: Document, position: Position, default: str = ""
 ) -> str:
     """Get the character directly before the cursor."""
     try:
@@ -50,7 +50,7 @@ def char_before_cursor(
 
 
 def char_after_cursor(
-    document: Document, position: Position, default=""
+    document: Document, position: Position, default: str = ""
 ) -> str:
     """Get the character directly before the cursor."""
     try:

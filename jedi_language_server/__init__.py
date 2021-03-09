@@ -17,6 +17,7 @@ Remove when either version 0.10 or 1.0 is released for pygls.
 
 import os
 import sys
+from typing import Any, Optional
 
 import pygls.protocol
 
@@ -28,14 +29,14 @@ except Exception:  # pylint: disable=broad-except
     unicode = str
 
 
-def is_json_basic_type(obj):
+def is_json_basic_type(obj: Any) -> bool:
     """Checks if the object is an int, float, bool, or str."""
     if isinstance(obj, (int, float, bool, str)):
         return True
     return sys.version_info < (3,) and isinstance(obj, unicode)
 
 
-def handle_null_fields(obj, obj_field_name=None):
+def handle_null_fields(obj: Any, obj_field_name: Optional[str] = None) -> None:
     """Removes fields with a 'None' value.
 
     The LS Client in VS Code expects optional fields that are not needed
@@ -83,7 +84,9 @@ def handle_null_fields(obj, obj_field_name=None):
             handle_null_fields(member, attr)
 
 
-def patched_without_none_fields(resp):
+def patched_without_none_fields(
+    resp: pygls.protocol.JsonRPCResponseMessage,
+) -> pygls.protocol.JsonRPCResponseMessage:
     """Monkeypatch for `JsonRPCResponseMessage.without_none_fields` to remove
     `None` results."""
     if resp.error is None:

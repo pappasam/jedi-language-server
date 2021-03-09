@@ -144,7 +144,9 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
         ):
             # special case for __init__ method in class; names defined here
             symbol.kind = SymbolKind.Method
-            _name_lookup[parent].children.append(symbol)  # type: ignore
+            parent_symbol = _name_lookup[parent]
+            assert parent_symbol.children is not None
+            parent_symbol.children.append(symbol)
             _name_lookup[name] = symbol
         elif parent not in _name_lookup:
             # unqualified names are not included in the tree
@@ -154,7 +156,9 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
         ):
             # handle attribute creation on __init__ method
             symbol.kind = SymbolKind.Property
-            _name_lookup[parent].children.append(symbol)  # type: ignore
+            parent_symbol = _name_lookup[parent]
+            assert parent_symbol.children is not None
+            parent_symbol.children.append(symbol)
         elif parent.type == "class":
             # children are added for class scopes
             if name.type == "function":
@@ -164,7 +168,9 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
                 symbol.kind = SymbolKind.Method
             else:
                 symbol.kind = SymbolKind.Property
-            _name_lookup[parent].children.append(symbol)  # type: ignore
+            parent_symbol = _name_lookup[parent]
+            assert parent_symbol.children is not None
+            parent_symbol.children.append(symbol)
     return results
 
 
@@ -240,7 +246,8 @@ def compare_names(name1: Name, name2: Name) -> bool:
     without needing to directly import anything from jedi into
     `server.py`
     """
-    return name1 == name2
+    equal: bool = name1 == name2
+    return equal
 
 
 def complete_sort_name(name: Completion) -> str:
@@ -317,7 +324,8 @@ def is_import(script_: Script, line: int, column: int) -> bool:
     name = script_._get_module_context().create_name(tree_name)
     if name is None:
         return False
-    return name.is_import()
+    name_is_import: bool = name.is_import()
+    return name_is_import
 
 
 _LSP_TYPE_FOR_SNIPPET = {
@@ -328,7 +336,7 @@ _LSP_TYPE_FOR_SNIPPET = {
 _MOST_RECENT_COMPLETIONS: Dict[str, Completion] = {}
 
 
-def clear_completions_cache():
+def clear_completions_cache() -> None:
     """Clears the cache of completions used for completionItem/resolve."""
     _MOST_RECENT_COMPLETIONS.clear()
 
