@@ -403,7 +403,9 @@ def rename(
         refactoring = jedi_script.rename(new_name=params.newName, **jedi_lines)
     except RefactoringError:
         return None
-    changes = text_edit_utils.lsp_document_changes(refactoring)
+    changes = text_edit_utils.lsp_document_changes(
+        server.workspace, refactoring
+    )
     return WorkspaceEdit(document_changes=changes) if changes else None  # type: ignore
 
 
@@ -439,7 +441,7 @@ def code_action(
         inline_changes = []  # type: ignore
     else:
         inline_changes = text_edit_utils.lsp_document_changes(
-            inline_refactoring
+            server.workspace, inline_refactoring
         )
     if inline_changes:
         code_actions.append(
@@ -461,7 +463,7 @@ def code_action(
         extract_variable_changes = []  # type: ignore
     else:
         extract_variable_changes = text_edit_utils.lsp_document_changes(
-            extract_variable_refactoring
+            server.workspace, extract_variable_refactoring
         )
     if extract_variable_changes:
         code_actions.append(
@@ -483,7 +485,7 @@ def code_action(
         extract_function_changes = []  # type: ignore
     else:
         extract_function_changes = text_edit_utils.lsp_document_changes(
-            extract_function_refactoring
+            server.workspace, extract_function_refactoring
         )
     if extract_function_changes:
         code_actions.append(
