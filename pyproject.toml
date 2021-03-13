@@ -44,7 +44,7 @@ python = "^3.6.1"
 click = ">=7.0"
 jedi = "0.18.0"
 pygls = "^0.10.0"
-cached-property = { version = ">=1.5.1", python = "~3.6 || ~3.7" }
+pydantic = "^1.7"
 docstring-to-markdown = "0.*"
 
 [tool.poetry.dev-dependencies]

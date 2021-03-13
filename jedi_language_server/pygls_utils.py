@@ -4,20 +4,10 @@ Helper functions that simplify working with pygls
 """
 
 
-import functools
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from pygls.lsp.types import Position, Range
 from pygls.workspace import Document
-
-
-def rget(dictionary: Optional[Dict[str, Any]], path: List[str]) -> Any:
-    """Get the value at a given path in a nested dictionary."""
-    return functools.reduce(
-        lambda d, key: None if d is None else d.get(key),
-        path,
-        dictionary,
-    )
 
 
 def char_before_cursor(
