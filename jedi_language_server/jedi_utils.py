@@ -31,23 +31,23 @@ from pygls.lsp.types import (
 )
 from pygls.workspace import Document
 
-from .initialize_params_parser import InitializeParamsParser
+from .initialize_options_parser import InitializationOptionsParser
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
 
 def set_jedi_settings(  # pylint: disable=invalid-name
-    ip: InitializeParamsParser,
+    iop: InitializationOptionsParser,
 ) -> None:
     """Sets jedi settings."""
     jedi.settings.auto_import_modules = list(
         set(
             jedi.settings.auto_import_modules
-            + ip.initializationOptions_jediSettings_autoImportModules
+            + iop.jediSettings_autoImportModules
         )
     )
 
     jedi.settings.case_insensitive_completion = (
-        ip.initializationOptions_jediSettings_caseInsensitiveCompletion
+        iop.jediSettings_caseInsensitiveCompletion
     )
 
 

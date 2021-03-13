@@ -64,9 +64,7 @@ from pygls.protocol import LanguageServerProtocol
 from pygls.server import LanguageServer
 
 from . import jedi_utils, pygls_utils, text_edit_utils
-from .initialize_params_parser import InitializeParamsParser
-
-# pylint: disable=line-too-long
+from .initialize_options_parser import InitializationOptionsParser
 
 
 class JediLanguageServerProtocol(LanguageServerProtocol):
@@ -79,20 +77,20 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         on client capabilities and initializationOptions.
         """
         server: "JediLanguageServer" = self._server
-        ip = server.initialize_params  # pylint: disable=invalid-name
-        ip.set_initialize_params(params)
-        jedi_utils.set_jedi_settings(ip)
-        if ip.initializationOptions_diagnostics_enable:
-            if ip.initializationOptions_diagnostics_didOpen:
+        iop = server.initialize_options  # pylint: disable=invalid-name
+        iop.initialization_options = params.initialization_options
+        jedi_utils.set_jedi_settings(iop)
+        if iop.diagnostics_enable:
+            if iop.diagnostics_didOpen:
                 server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
-            if ip.initializationOptions_diagnostics_didChange:
+            if iop.diagnostics_didChange:
                 server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
-            if ip.initializationOptions_diagnostics_didSave:
+            if iop.diagnostics_didSave:
                 server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
         initialize_result: InitializeResult = super().bf_initialize(params)
         server.project = Project(
             path=server.workspace.root_path,
-            added_sys_path=ip.initializationOptions_workspace_extraPaths,
+            added_sys_path=iop.workspace_extraPaths,
             smart_sys_path=True,
             load_unsafe_extensions=False,
         )
@@ -102,7 +100,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
 class JediLanguageServer(LanguageServer):
     """Jedi language server.
 
-    :attr initialize_params: initialized in bf_initialize from the protocol_cls
+    :attr initialize_options: initialized in bf_initialize from the protocol_cls
     :attr project: a Jedi project. This value is created in
                    `JediLanguageServerProtocol.bf_initialize`
     """
@@ -110,7 +108,7 @@ class JediLanguageServer(LanguageServer):
     project: Project
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self.initialize_params = InitializeParamsParser()
+        self.initialize_options = InitializationOptionsParser()
         super().__init__(*args, **kwargs)
 
 
@@ -142,15 +140,11 @@ def completion(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     completions_jedi = jedi_script.complete(**jedi_lines)
-    snippet_support = (
-        server.initialize_params.capabilities_textDocument_completion_completionItem_snippetSupport
+    snippet_support = server.client_capabilities.get_capability(
+        "text_document.completion.completion_item.snippet_support", False
     )
-    snippet_disable = (
-        server.initialize_params.initializationOptions_completion_disableSnippets
-    )
-    resolve_eagerly = (
-        server.initialize_params.initializationOptions_completion_resolveEagerly
-    )
+    snippet_disable = server.initialize_options.completion_disableSnippets
+    resolve_eagerly = server.initialize_options.completion_resolveEagerly
     markup_kind = _choose_markup(server)
     is_import_context = jedi_utils.is_import(
         script_=jedi_script,
@@ -317,8 +311,9 @@ def document_symbol(
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     names = jedi_script.get_names(all_scopes=True, definitions=True)
-    if (
-        server.initialize_params.capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport
+    if server.client_capabilities.get_capability(
+        "text_document.document_symbol.hierarchical_document_symbol_support",
+        False,
     ):
         document_symbols = jedi_utils.lsp_document_symbols(names)
         return document_symbols if document_symbols else None
@@ -356,9 +351,7 @@ def workspace_symbol(
     """
     names = server.project.complete_search(params.query)
     workspace_root = server.workspace.root_path
-    ignore_folders = (
-        server.initialize_params.initializationOptions_workspace_symbols_ignoreFolders
-    )
+    ignore_folders = server.initialize_options.workspace_symbols_ignoreFolders
     _symbols = (
         jedi_utils.lsp_symbol_information(name)
         for name in names
@@ -366,9 +359,7 @@ def workspace_symbol(
         and str(name.module_path).startswith(workspace_root)
         and not _ignore_folder(str(name.module_path), ignore_folders)
     )
-    max_symbols = (
-        server.initialize_params.initializationOptions_workspace_symbols_maxSymbols
-    )
+    max_symbols = server.initialize_options.workspace_symbols_maxSymbols
     symbols = (
         list(itertools.islice(_symbols, max_symbols))
         if max_symbols > 0
@@ -541,12 +532,12 @@ def did_open(
 
 def _choose_markup(server: JediLanguageServer) -> MarkupKind:
     """Returns the preferred or first of supported markup kinds."""
-    markup_preferred = (
-        server.initialize_params.initializationOptions_markupKindPreferred
+    markup_preferred = server.initialize_options.markupKindPreferred
+    markup_supported = server.client_capabilities.get_capability(
+        "text_document.completion.completion_item.documentation_format",
+        [MarkupKind.PlainText],
     )
-    markup_supported = (
-        server.initialize_params.capabilities_textDocument_completion_completionItem_documentationFormat
-    )
+
     return MarkupKind(
         markup_preferred
         if markup_preferred in markup_supported
