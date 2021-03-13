@@ -7,11 +7,11 @@ This parser handles the following tasks for the InitializeParams:
 - organizing initialization values in one place
 """
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from pygls.types import InitializeParams, MarkupKind
+from pygls.lsp.types import InitializeParams, MarkupKind
 
-from .pygls_utils import rgetattr
+from .pygls_utils import rget
 
 try:
     from functools import cached_property  # type: ignore
@@ -37,6 +37,11 @@ class InitializeParamsParser:
             raise ValueError("InitializeParams not set")
         return self._initialize_params_store
 
+    @property
+    def _initialization_options(self) -> Optional[Dict[str, Any]]:
+        """Get the initialization options."""
+        return self._initialize_params.initialization_options
+
     def set_initialize_params(self, params: InitializeParams) -> None:
         """Set the initialize params."""
         self._initialize_params_store = params
@@ -45,202 +50,156 @@ class InitializeParamsParser:
     def capabilities_textDocument_completion_completionItem_documentationFormat(
         self,
     ) -> List[MarkupKind]:
-        _path = (
-            "capabilities",
-            "textDocument",
-            "completion",
-            "completionItem",
-            "documentationFormat",
+        result = self._initialize_params.capabilities.get_capability(
+            "text_document.completion.completion_item.documentation_format",
+            [MarkupKind.PlainText]
         )
-        path = ".".join(_path)
-        default = [MarkupKind.PlainText]
-        return rgetattr(self._initialize_params, path, default)  # type: ignore
+        return result
 
     @cached_property
     def capabilities_textDocument_completion_completionItem_snippetSupport(
         self,
     ) -> bool:
-        _path = (
-            "capabilities",
-            "textDocument",
-            "completion",
-            "completionItem",
-            "snippetSupport",
+        result = self._initialize_params.capabilities.get_capability(
+            "text_document.completion.completion_item.snippet_support",
+            False
         )
-        path = ".".join(_path)
-        default = False
-        return bool(rgetattr(self._initialize_params, path, default))
+        return result
 
     @cached_property
     def capabilities_textDocument_documentSymbol_hierarchicalDocumentSymbolSupport(
         self,
     ) -> bool:
-        _path = (
-            "capabilities",
-            "textDocument",
-            "documentSymbol",
-            "hierarchicalDocumentSymbolSupport",
+        result = self._initialize_params.capabilities.get_capability(
+            "text_document.document_symbol.hierarchical_document_symbol_support",
+            False
         )
-        path = ".".join(_path)
-        default = False
-        return bool(rgetattr(self._initialize_params, path, default))
+        return result
 
     @cached_property
     def capabilities_textDocument_hover_contentFormat(
         self,
     ) -> List[MarkupKind]:
-        _path = (
-            "capabilities",
-            "textDocument",
-            "hover",
-            "contentFormat",
+        result = self._initialize_params.capabilities.get_capability(
+            "text_document.hover.content_format",
+            [MarkupKind.PlainText]
         )
-        path = ".".join(_path)
-        default = [MarkupKind.PlainText]
-        return rgetattr(self._initialize_params, path, default)  # type: ignore
+        return result
 
     @cached_property
     def capabilities_textDocument_signatureHelp_contentFormat(
         self,
     ) -> List[str]:
-        _path = (
-            "capabilities",
-            "textDocument",
-            "hover",
-            "contentFormat",
+        result = self._initialize_params.capabilities.get_capability(
+            "text_document.signature_help.content_format",
+            [MarkupKind.PlainText]
         )
-        path = ".".join(_path)
-        default = [MarkupKind.PlainText]
-        return rgetattr(self._initialize_params, path, default)  # type: ignore
+        return result
 
     @cached_property
     def initializationOptions_markupKindPreferred(
         self,
     ) -> Optional[MarkupKind]:
-        _path = (
-            "initializationOptions",
-            "markupKindPreferred",
-        )
-        path = ".".join(_path)
-        result = rgetattr(self._initialize_params, path)
+        path = ["markupKindPreferred"]
+        result = rget(self._initialization_options, path)
         return result if result is None else MarkupKind(result)
 
     @cached_property
     def initializationOptions_completion_disableSnippets(self) -> bool:
-        _path = (
-            "initializationOptions",
+        path = [
             "completion",
             "disableSnippets",
-        )
-        path = ".".join(_path)
-        default = False
-        return bool(rgetattr(self._initialize_params, path, default))
+        ]
+        result = rget(self._initialization_options, path)
+        return False if result is None else result
 
     @cached_property
     def initializationOptions_completion_resolveEagerly(self) -> bool:
-        _path = (
-            "initializationOptions",
+        path = [
             "completion",
             "resolveEagerly",
-        )
-        path = ".".join(_path)
-        default = False
-        return bool(rgetattr(self._initialize_params, path, default))
+        ]
+        result = rget(self._initialization_options, path)
+        return False if result is None else result
 
     @cached_property
     def initializationOptions_diagnostics_enable(self) -> bool:
-        _path = (
-            "initializationOptions",
+        path = [
             "diagnostics",
             "enable",
-        )
-        path = ".".join(_path)
-        default = True
-        return bool(rgetattr(self._initialize_params, path, default))
+        ]
+        result = rget(self._initialization_options, path)
+        return True if result is None else result
 
     @cached_property
     def initializationOptions_diagnostics_didOpen(self) -> bool:
-        _path = (
-            "initializationOptions",
+        path = [
             "diagnostics",
             "didOpen",
-        )
-        path = ".".join(_path)
-        default = True
-        return bool(rgetattr(self._initialize_params, path, default))
+        ]
+        result = rget(self._initialization_options, path)
+        return True if result is None else result
 
     @cached_property
     def initializationOptions_diagnostics_didSave(self) -> bool:
-        _path = (
-            "initializationOptions",
+        path = [
             "diagnostics",
             "didSave",
-        )
-        path = ".".join(_path)
-        default = True
-        return bool(rgetattr(self._initialize_params, path, default))
+        ]
+        result = rget(self._initialization_options, path)
+        return True if result is None else result
 
     @cached_property
     def initializationOptions_diagnostics_didChange(self) -> bool:
-        _path = (
-            "initializationOptions",
+        path = [
             "diagnostics",
             "didChange",
-        )
-        path = ".".join(_path)
-        default = True
-        return bool(rgetattr(self._initialize_params, path, default))
+        ]
+        result = rget(self._initialization_options, path)
+        return True if result is None else result
 
     @cached_property
     def initializationOptions_jediSettings_autoImportModules(
         self,
     ) -> List[str]:
-        _path = (
-            "initializationOptions",
+        path = [
             "jediSettings",
             "autoImportModules",
-        )
-        path = ".".join(_path)
-        default: List[str] = []
-        return rgetattr(self._initialize_params, path, default)  # type: ignore
+        ]
+        result = rget(self._initialization_options, path)
+        return [] if result is None else result
 
     @cached_property
     def initializationOptions_jediSettings_caseInsensitiveCompletion(
         self,
     ) -> bool:
-        _path = (
-            "initializationOptions",
+        path = [
             "jediSettings",
             "caseInsensitiveCompletion",
-        )
-        path = ".".join(_path)
-        default = True
-        return rgetattr(self._initialize_params, path, default)  # type: ignore
+        ]
+        result = rget(self._initialization_options, path)
+        return True if result is None else result
 
     @cached_property
     def initializationOptions_workspace_extraPaths(
         self,
     ) -> List[str]:
-        _path = (
-            "initializationOptions",
+        path = [
             "workspace",
             "extraPaths",
-        )
-        path = ".".join(_path)
-        default: List[str] = []
-        return rgetattr(self._initialize_params, path, default)  # type: ignore
+        ]
+        result = rget(self._initialization_options, path)
+        return [] if result is None else result
 
     @cached_property
     def initializationOptions_workspace_symbols_ignoreFolders(
         self,
     ) -> List[str]:
-        _path = (
-            "initializationOptions",
+        path = [
             "workspace",
             "symbols",
             "ignoreFolders",
-        )
-        path = ".".join(_path)
+        ]
         default = [
             ".nox",
             ".tox",
@@ -248,18 +207,17 @@ class InitializeParamsParser:
             "__pycache__",
             "venv",
         ]
-        return rgetattr(self._initialize_params, path, default)  # type: ignore
+        result = rget(self._initialization_options, path)
+        return default if result is None else result
 
     @cached_property
     def initializationOptions_workspace_symbols_maxSymbols(
         self,
     ) -> int:
-        _path = (
-            "initializationOptions",
+        path = [
             "workspace",
             "symbols",
             "maxSymbols",
-        )
-        path = ".".join(_path)
-        default = 20
-        return rgetattr(self._initialize_params, path, default)  # type: ignore
+        ]
+        result = rget(self._initialization_options, path)
+        return 20 if result is None else result

@@ -14,7 +14,7 @@ import jedi.inference.references
 import jedi.settings
 from jedi import Project, Script
 from jedi.api.classes import Completion, Name, ParamName, Signature
-from pygls.types import (
+from pygls.lsp.types import (
     CompletionItem,
     CompletionItemKind,
     Diagnostic,
@@ -107,8 +107,8 @@ def _document_symbol_range(name: Name) -> Range:
     (start_line, start_column) = start
     (end_line, end_column) = end
     return Range(
-        start=Position(start_line - 1, start_column),
-        end=Position(end_line - 1, end_column),
+        start=Position(line=start_line - 1, character=start_column),
+        end=Position(line=end_line - 1, character=end_column),
     )
 
 
@@ -381,8 +381,8 @@ def lsp_completion_item(
     except Exception:  # pylint: disable=broad-except
         return completion_item
     new_text = completion_name + snippet_signature
-    completion_item.insertText = new_text
-    completion_item.insertTextFormat = InsertTextFormat.Snippet
+    completion_item.insert_text = new_text
+    completion_item.insert_text_format = InsertTextFormat.Snippet
     return completion_item
 
 

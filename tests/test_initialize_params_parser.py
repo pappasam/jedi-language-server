@@ -1,7 +1,7 @@
 """Test the InitializeParamsParser class."""
 
 import pytest
-from pygls.types import MarkupKind
+from pygls.lsp.types import ClientCapabilities, InitializeParams, MarkupKind
 
 from jedi_language_server.initialize_params_parser import (
     InitializeParamsParser,
@@ -59,7 +59,9 @@ def test_error_when_init_params_not_set(setting, _) -> None:
 def test_default(setting, expected) -> None:
     """This test ensures the defaults don't change by accident."""
     init_params = InitializeParamsParser()
-    init_params.set_initialize_params({})
+    default_capabilities = ClientCapabilities()
+    default_params = InitializeParams(capabilities=default_capabilities)
+    init_params.set_initialize_params(default_params)
 
     actual = getattr(init_params, setting)
     assert actual == expected
