@@ -5,21 +5,19 @@
 [![image-python-versions](https://img.shields.io/pypi/pyversions/jedi-language-server.svg)](https://python.org/pypi/jedi-language-server)
 [![image-pypi-downloads](https://pepy.tech/badge/jedi-language-server)](https://pepy.tech/project/jedi-language-server)
 
-A [Language Server](https://microsoft.github.io/language-server-protocol/) for the latest version(s) of [Jedi](https://jedi.readthedocs.io/en/latest/). If using Neovim/Vim, we recommend using with [coc-jedi](https://github.com/pappasam/coc-jedi).
+A [Language Server](https://microsoft.github.io/language-server-protocol/) for the latest version(s) of [Jedi](https://jedi.readthedocs.io/en/latest/). If using Neovim/Vim, we recommend using with [coc-jedi](https://github.com/pappasam/coc-jedi). Supports Python versions 3.6.1 and newer.
 
 **Note:** this tool is actively used by its primary author. He's happy to review pull requests / respond to issues you may discover.
 
 ## Installation
 
-From your command line (bash / zsh), run:
+Some frameworks, like coc-jedi and vscode-python, will install and manage jedi-language-server for you. If you're setting up manually, you can run the following from your command line (bash / zsh):
 
 ```bash
 pip install -U jedi-language-server
 ```
 
-`-U` ensures that you're pulling the latest version from pypi.
-
-Alternatively, consider using [pipx](https://github.com/pipxproject/pipx) to keep jedi-language-server isolated from your other Python dependencies. Don't worry, jedi is smart enough to figure out which Virtual environment you're currently using!
+Alternatively (and preferably), use [pipx](https://github.com/pipxproject/pipx) to keep jedi-language-server and its dependencies isolated from your other Python dependencies. Don't worry, jedi is smart enough to figure out which Virtual environment you're currently using!
 
 ## Capabilities
 
@@ -173,7 +171,7 @@ make test
 Palantir's [python-language-server](https://github.com/palantir/python-language-server) inspired this project. Unlike python-language-server, jedi-language-server:
 
 - Uses [pygls](https://github.com/openlawlibrary/pygls) instead of creating its own low-level Language Server Protocol bindings
-- Supports one powerful 3rd party library: Jedi. By only supporting Jedi, we can focus on supporting all Jedi features without exposing ourselves to too many broken 3rd party dependencies (I'm looking at you, [rope](https://github.com/python-rope/rope)).
+- Supports one powerful 3rd party static analysis / completion / refactoring library: Jedi. By only supporting Jedi, we can focus on supporting all Jedi features without exposing ourselves to too many broken 3rd party dependencies (I'm looking at you, [rope](https://github.com/python-rope/rope)).
 - Is supremely simple because of its scope constraints. Leave complexity to the Jedi [master](https://github.com/davidhalter). If the force is strong with you, please submit a PR!
 
 ## Written by
