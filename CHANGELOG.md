@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.28.0
+
+### Changed
+
+- pygls `0.10.0`. This version explicitly uses `pydantic` and better supports initialization options. This enables use to remove the `cached-property` dependency for Python versions 3.6 and 3.7.
+- pydantic is now used for initialization options parsing. Simplified so much that we were able to remove initializationOption-specific tests.
+
+### Removed
+
+- Support for Python 3.6.0. We now only support Python 3.6.1+.
+- Monkeypatch for `null` versus `missing` attributes. `pydantic` / `pygls>=0.10.0` handles this.
+
 ## 0.27.2
 
 ### Fixed
