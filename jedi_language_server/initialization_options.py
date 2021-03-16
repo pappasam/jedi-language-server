@@ -9,6 +9,9 @@ from typing import List, Optional
 from pydantic import BaseModel
 from pygls.lsp.types import MarkupKind
 
+# pylint: disable=missing-class-docstring
+# pylint: disable=too-few-public-methods
+
 
 def snake_to_camel(string: str) -> str:
     """Convert from snake_case to camelCase."""

@@ -107,9 +107,10 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
 class JediLanguageServer(LanguageServer):
     """Jedi language server.
 
-    :attr initialization_options: initialized in bf_initialize from the protocol_cls
+    :attr initialization_options: initialized in bf_initialize from the
+        protocol_cls.
     :attr project: a Jedi project. This value is created in
-                   `JediLanguageServerProtocol.bf_initialize`
+        `JediLanguageServerProtocol.bf_initialize`.
     """
 
     project: Project

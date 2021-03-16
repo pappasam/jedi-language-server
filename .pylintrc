@@ -13,6 +13,8 @@ persistent=yes
 # usually to register additional checkers.
 load-plugins=
 
+# pydantic override
+extension-pkg-whitelist=pydantic
 
 [MESSAGES CONTROL]
 # can opt to enable instead if you want
