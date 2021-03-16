@@ -35,8 +35,6 @@ def test_lsp_completion() -> None:
                 {
                     "label": "my_function",
                     "kind": 3,
-                    "deprecated": False,
-                    "preselect": False,
                     "sortText": "z",
                     "filterText": "my_function",
                     "insertText": "my_function()$0",
@@ -107,8 +105,6 @@ def test_eager_lsp_completion() -> None:
                         "kind": "markdown",
                         "value": "```\nmy_function()\n\nSimple test function.\n```\n",
                     },
-                    "deprecated": False,
-                    "preselect": False,
                     "sortText": "z",
                     "filterText": "my_function",
                     "insertText": "my_function()$0",

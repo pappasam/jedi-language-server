@@ -40,19 +40,19 @@ include = ["README.md"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.6.1"
 click = ">=7.0"
 jedi = "0.18.0"
-pygls = "^0.9.1"
-cached-property = { version = ">=1.5.1", python = "~3.6 || ~3.7" }
+pygls = "^0.10.0"
+pydantic = "^1.7"
 docstring-to-markdown = "0.*"
 
 [tool.poetry.dev-dependencies]
-pre-commit = "^1.18"
+pre-commit = "^2.11"
 tox = "^3.13"
-pytest = "^5.0"
+pytest = "^6.2"
 tox-asdf = "^0.1.0"
-toml-sort = "^0.17.0"
+toml-sort = "^0.18.0"
 isort = "^5.7.0"
 pylint = "^2.6.0"
 mypy = "^0.812"
