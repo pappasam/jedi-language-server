@@ -283,11 +283,11 @@ def hover(
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
+    markup_kind = _choose_markup(server)
     for name in jedi_script.help(**jedi_lines):
         docstring = name.docstring()
         if not docstring:
             continue
-        markup_kind = _choose_markup(server)
         docstring_clean = jedi_utils.convert_docstring(docstring, markup_kind)
         contents = MarkupContent(kind=markup_kind, value=docstring_clean)
         document = server.workspace.get_document(params.text_document.uri)
