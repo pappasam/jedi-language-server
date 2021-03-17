@@ -153,7 +153,10 @@ def completion_item_resolve(
 
 
 @SERVER.feature(
-    COMPLETION, CompletionOptions(trigger_characters=[".", "'", '"'])
+    COMPLETION,
+    CompletionOptions(
+        trigger_characters=[".", "'", '"'], resolve_provider=True
+    ),
 )
 def completion(
     server: JediLanguageServer, params: CompletionParams
