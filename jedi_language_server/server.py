@@ -205,14 +205,27 @@ def completion(
 def signature_help(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[SignatureHelp]:
-    """Returns signature help."""
+    """Returns signature help.
+
+    Note: for docstring, we currently choose plaintext because coc doesn't
+    handle markdown well in the signature. Will update if this changes in the
+    future.
+    """
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     signatures_jedi = jedi_script.get_signatures(**jedi_lines)
+    markup_kind = _choose_markup(server)
     signatures = [
         SignatureInformation(
             label=signature.to_string(),
+            documentation=MarkupContent(
+                kind=markup_kind,
+                value=jedi_utils.convert_docstring(
+                    signature.docstring(raw=True),
+                    markup_kind,
+                ),
+            ),
             parameters=[
                 ParameterInformation(label=info.to_string())
                 for info in signature.params
