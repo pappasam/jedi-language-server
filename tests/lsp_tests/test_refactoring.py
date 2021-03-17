@@ -4,7 +4,7 @@ from hamcrest import assert_that, is_
 
 from tests import TEST_DATA
 from tests.lsp_test_client import session
-from tests.lsp_test_client.utils import as_uri
+from tests.lsp_test_client.utils import as_uri, StringPattern
 
 REFACTOR_TEST_ROOT = TEST_DATA / "refactoring"
 
@@ -171,4 +171,70 @@ def test_lsp_rename_last_line():
                 }
             ],
         }
+        assert_that(actual, is_(expected))
+
+
+def test_lsp_code_action() -> None:
+    """Tests code actions like extract variable and extract function."""
+
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        uri = as_uri((REFACTOR_TEST_ROOT / "code_action_test1.py"))
+        actual = ls_session.text_document_code_action(
+            {
+                "textDocument": {"uri": uri},
+                "range": {
+                    "start": {"line": 4, "character": 10},
+                    "end": {"line": 4, "character": 10},
+                },
+                "context": {"diagnostics": []},
+            }
+        )
+
+        expected = [
+            {
+                "title": StringPattern(
+                    "Extract expression into variable 'var_\w+'"
+                ),
+                "kind": "refactor.extract",
+                "edit": {
+                    "documentChanges": [
+                        {
+                            "textDocument": {
+                                "uri": uri,
+                                "version": 0,
+                            },
+                            "edits": [],
+                        }
+                    ]
+                },
+            },
+            {
+                "title": StringPattern(
+                    "Extract expression into function 'func_\w+'"
+                ),
+                "kind": "refactor.extract",
+                "edit": {
+                    "documentChanges": [
+                        {
+                            "textDocument": {
+                                "uri": uri,
+                                "version": 0,
+                            },
+                            "edits": [],
+                        }
+                    ]
+                },
+            },
+        ]
+
+        # Cannot use hamcrest directly for this due to unpredictable
+        # variations in how the text edits are generated.
+
+        assert_that(len(actual), is_(len(expected)))
+
+        # Remove the edits
+        actual[0]["edit"]["documentChanges"][0]["edits"] = []
+        actual[1]["edit"]["documentChanges"][0]["edits"] = []
+
         assert_that(actual, is_(expected))
