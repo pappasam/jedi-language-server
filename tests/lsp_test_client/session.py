@@ -30,17 +30,16 @@ class LspSession(MethodDispatcher):
         self._sub = subprocess.Popen(
             [
                 sys.executable,
-                "-c",
-                (
-                    "import sys;"
-                    + "from jedi_language_server.cli import cli;"
-                    + "sys.exit(cli())"
-                ),
+                os.path.join(os.path.dirname(__file__), "lsp_run.py"),
             ],
             stdout=subprocess.PIPE,
             stdin=subprocess.PIPE,
             bufsize=0,
             cwd=self.cwd,
+            env=os.environ,
+            shell=os.getenv(
+                "WITH_COVERAGE", False
+            ),  #  shell=True is needed for pytest-cov to work in subprocess
         )
         self._writer = JsonRpcStreamWriter(
             os.fdopen(self._sub.stdin.fileno(), "wb")
@@ -117,6 +116,13 @@ class LspSession(MethodDispatcher):
     def text_document_rename(self, rename_params):
         """Sends text document rename request to LSP server."""
         fut = self._send_request("textDocument/rename", params=rename_params)
+        return fut.result()
+
+    def text_document_code_action(self, code_action_params):
+        """Sends text document code action request to LSP server."""
+        fut = self._send_request(
+            "textDocument/codeAction", params=code_action_params
+        )
         return fut.result()
 
     def completion_item_resolve(self, resolve_params):
