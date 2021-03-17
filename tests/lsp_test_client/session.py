@@ -27,6 +27,10 @@ class LspSession(MethodDispatcher):
         self._endpoint = None
 
     def __enter__(self):
+        """Context manager entrypoint.
+
+        shell=True needed for pytest-cov to work in subprocess.
+        """
         self._sub = subprocess.Popen(
             [
                 sys.executable,
@@ -37,9 +41,7 @@ class LspSession(MethodDispatcher):
             bufsize=0,
             cwd=self.cwd,
             env=os.environ,
-            shell=os.getenv(
-                "WITH_COVERAGE", False
-            ),  #  shell=True is needed for pytest-cov to work in subprocess
+            shell="WITH_COVERAGE" in os.environ,
         )
         self._writer = JsonRpcStreamWriter(
             os.fdopen(self._sub.stdin.fileno(), "wb")

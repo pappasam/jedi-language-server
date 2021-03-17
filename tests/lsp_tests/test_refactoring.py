@@ -4,7 +4,7 @@ from hamcrest import assert_that, is_
 
 from tests import TEST_DATA
 from tests.lsp_test_client import session
-from tests.lsp_test_client.utils import as_uri, StringPattern
+from tests.lsp_test_client.utils import StringPattern, as_uri
 
 REFACTOR_TEST_ROOT = TEST_DATA / "refactoring"
 
@@ -194,7 +194,7 @@ def test_lsp_code_action() -> None:
         expected = [
             {
                 "title": StringPattern(
-                    "Extract expression into variable 'var_\w+'"
+                    r"Extract expression into variable 'var_\w+'"
                 ),
                 "kind": "refactor.extract",
                 "edit": {
@@ -211,7 +211,7 @@ def test_lsp_code_action() -> None:
             },
             {
                 "title": StringPattern(
-                    "Extract expression into function 'func_\w+'"
+                    r"Extract expression into function 'func_\w+'"
                 ),
                 "kind": "refactor.extract",
                 "edit": {

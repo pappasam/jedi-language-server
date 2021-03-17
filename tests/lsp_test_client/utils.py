@@ -19,13 +19,13 @@ def as_uri(path: py.path.local) -> str:
 
 
 class StringPattern:
-    """Matches string patterns"""
+    """Matches string patterns."""
 
     def __init__(self, pattern):
         self.pattern = pattern
 
     def __eq__(self, o):
-        """Compares against pattern when possible"""
+        """Compares against pattern when possible."""
         if isinstance(o, str):
             match = re.match(self.pattern, o)
             return match is not None
@@ -36,5 +36,5 @@ class StringPattern:
         return False
 
     def match(self, test_str):
-        """Returns matches if pattern matches are found in the test string"""
+        """Returns matches if pattern matches are found in the test string."""
         return re.match(self.pattern, test_str)

@@ -1,4 +1,4 @@
-"""Test file for code action tests in test_refactoring"""
+"""Test file for code action tests in test_refactoring."""
 
 
 def do_something(x):
