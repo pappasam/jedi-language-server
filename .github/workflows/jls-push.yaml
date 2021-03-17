@@ -1,0 +1,30 @@
+name: jls push
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.7', '3.8', '3.9']
+        poetry-version: ['1.1.5']
+        pip-version: ['20.2.4']
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup, Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      - name: Tox, Python ${{ matrix.python-version }}
+        run: |
+          # Python
+          python -m pip install --upgrade pip==${{ matrix.pip-version }}
+          # Poetry
+          curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py > get-poetry.py
+          python get-poetry.py --preview
+          rm get-poetry.py
+          source $HOME/.poetry/env
+          poetry self update --preview ${{ matrix.poetry-version }}
+          # Tox
+          pip install tox==3.23.0
+          tox -e py
