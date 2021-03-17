@@ -87,13 +87,28 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
 
         initialization_options = server.initialization_options
         jedi_utils.set_jedi_settings(initialization_options)
-        if initialization_options.diagnostics.enable:
-            if initialization_options.diagnostics.did_open:
-                server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
-            if initialization_options.diagnostics.did_change:
-                server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
-            if initialization_options.diagnostics.did_save:
-                server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
+
+        # Configure didOpen, didChange, and didSave
+        # currently need to be configured manually
+        diagnostics = initialization_options.diagnostics
+        did_open = (
+            did_open_diagnostics
+            if diagnostics.enable and diagnostics.did_open
+            else did_open_default
+        )
+        did_change = (
+            did_change_diagnostics
+            if diagnostics.enable and diagnostics.did_change
+            else did_change_default
+        )
+        did_save = (
+            did_save_diagnostics
+            if diagnostics.enable and diagnostics.did_save
+            else did_save_default
+        )
+        server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
+        server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
+        server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
         initialize_result: InitializeResult = super().bf_initialize(params)
         server.project = Project(
             path=server.workspace.root_path,
@@ -517,27 +532,48 @@ def _publish_diagnostics(server: JediLanguageServer, uri: str) -> None:
 
 
 # TEXT_DOCUMENT_DID_SAVE
-def did_save(
+def did_save_diagnostics(
     server: JediLanguageServer, params: DidSaveTextDocumentParams
 ) -> None:
-    """Actions run on textDocument/didSave."""
+    """Actions run on textDocument/didSave: diagnostics."""
     _publish_diagnostics(server, params.text_document.uri)
+
+
+def did_save_default(
+    server: JediLanguageServer,  # pylint: disable=unused-argument
+    params: DidSaveTextDocumentParams,  # pylint: disable=unused-argument
+) -> None:
+    """Actions run on textDocument/didSave: default."""
 
 
 # TEXT_DOCUMENT_DID_CHANGE
-def did_change(
+def did_change_diagnostics(
     server: JediLanguageServer, params: DidChangeTextDocumentParams
 ) -> None:
-    """Actions run on textDocument/didChange."""
+    """Actions run on textDocument/didChange: diagnostics."""
     _publish_diagnostics(server, params.text_document.uri)
+
+
+def did_change_default(
+    server: JediLanguageServer,  # pylint: disable=unused-argument
+    params: DidChangeTextDocumentParams,  # pylint: disable=unused-argument
+) -> None:
+    """Actions run on textDocument/didChange: default."""
 
 
 # TEXT_DOCUMENT_DID_OPEN
-def did_open(
+def did_open_diagnostics(
     server: JediLanguageServer, params: DidOpenTextDocumentParams
 ) -> None:
-    """Actions run on textDocument/didOpen."""
+    """Actions run on textDocument/didOpen: diagnostics."""
     _publish_diagnostics(server, params.text_document.uri)
+
+
+def did_open_default(
+    server: JediLanguageServer,  # pylint: disable=unused-argument
+    params: DidOpenTextDocumentParams,  # pylint: disable=unused-argument
+) -> None:
+    """Actions run on textDocument/didOpen: default."""
 
 
 def _choose_markup(server: JediLanguageServer) -> MarkupKind:

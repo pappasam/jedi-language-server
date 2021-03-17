@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - pygls `0.10.0`. This version explicitly uses `pydantic` and better supports initialization options. This enables use to remove the `cached-property` dependency for Python versions 3.6 and 3.7.
 - pydantic is now used for initialization options parsing. Simplified so much that we were able to remove initializationOption-specific tests.
+- Explicitly add method for `did_open`, for some weird reason the latest pygls bugs out if you don't explicitly set this function to at least an empty function.
 
 ### Removed
 
