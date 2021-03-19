@@ -21,7 +21,7 @@ Alternatively (and preferably), use [pipx](https://github.com/pipxproject/pipx) 
 
 ## Capabilities
 
-jedi-language-server aims to support all of Jedi's capabilities and expose them through the Language Server Protocol. It currently supports the following Language Server capabilities:
+jedi-language-server aims to support Jedi's capabilities and expose them through the Language Server Protocol. It supports the following Language Server capabilities:
 
 ### Language Features
 
