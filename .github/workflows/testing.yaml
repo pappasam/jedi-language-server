@@ -18,14 +18,15 @@ jobs:
           architecture: x64
       - name: Tox, Python ${{ matrix.python-version }}
         run: |
-          # Python
+          # Set up Python
           python -m pip install --upgrade pip==${{ matrix.pip-version }}
-          # Poetry
+          # Set up Poetry
           curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py > get-poetry.py
-          python get-poetry.py --preview
+          python get-poetry.py
           rm get-poetry.py
           source $HOME/.poetry/env
-          poetry self update --preview ${{ matrix.poetry-version }}
-          # Tox
+          poetry self update ${{ matrix.poetry-version }}
+          # Set up Tox
           pip install tox==3.23.0
+          # Run Tox on current Python version
           tox -e py
