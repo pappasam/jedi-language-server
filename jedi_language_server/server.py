@@ -136,10 +136,10 @@ class JediLanguageServer(LanguageServer):
         `JediLanguageServerProtocol.bf_initialize`.
     """
 
+    initialization_options: InitializationOptions
     project: Optional[Project]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        self.initialization_options = InitializationOptions()
         super().__init__(*args, **kwargs)
 
 
