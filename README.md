@@ -78,13 +78,23 @@ See: <https://github.com/pappasam/jedi-language-server/issues/50#issuecomment-78
 
 ### Command line (bash / zsh)
 
-At your terminal prompt:
+If you'd like to see whether jedi-language-server is installed and in your path, at your terminal prompt, run:
 
 ```bash
 jedi-language-server
 ```
 
-jedi-language-server currently works only over IO. This may change in the future.
+jedi-language-server works over IO, but this may change in the future. On a POSIX-compliant system, you can test out the server by storing an example JSON RPC request in a file called `request.json`. You can send the file's data to jedi-language-server like so:
+
+```bash
+jedi-language-server < request.json
+```
+
+With Windows Powershell:
+
+```powershell
+get-content request.json | jedi-language-server
+```
 
 ## Configuration
 
