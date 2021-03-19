@@ -51,6 +51,7 @@ from pygls.lsp.types import (
     Location,
     MarkupContent,
     MarkupKind,
+    MessageType,
     ParameterInformation,
     RenameParams,
     SignatureHelp,
@@ -82,8 +83,11 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
             server.initialization_options = InitializationOptions.parse_obj(
                 params.initialization_options
             )
-        except ValidationError:
-            pass
+        except ValidationError as error:
+            msg = f"Invalid InitializationOptions, using defaults: {error}"
+            server.show_message(msg, msg_type=MessageType.Error)
+            server.show_message_log(msg, msg_type=MessageType.Error)
+            server.initialization_options = InitializationOptions()
 
         initialization_options = server.initialization_options
         jedi_utils.set_jedi_settings(initialization_options)
@@ -110,11 +114,15 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
         server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
         initialize_result: InitializeResult = super().bf_initialize(params)
-        server.project = Project(
-            path=server.workspace.root_path,
-            added_sys_path=initialization_options.workspace.extra_paths,
-            smart_sys_path=True,
-            load_unsafe_extensions=False,
+        server.project = (
+            Project(
+                path=server.workspace.root_path,
+                added_sys_path=initialization_options.workspace.extra_paths,
+                smart_sys_path=True,
+                load_unsafe_extensions=False,
+            )
+            if server.workspace.root_path
+            else None
         )
         return initialize_result
 
@@ -128,7 +136,7 @@ class JediLanguageServer(LanguageServer):
         `JediLanguageServerProtocol.bf_initialize`.
     """
 
-    project: Project
+    project: Optional[Project]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.initialization_options = InitializationOptions()
@@ -388,6 +396,8 @@ def workspace_symbol(
     2. Those that are not rooted in the current workspace.
     3. Those whose folders contain a directory that is ignored (.venv, etc)
     """
+    if not server.project:
+        return None
     names = server.project.complete_search(params.query)
     workspace_root = server.workspace.root_path
     ignore_folders = (

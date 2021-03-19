@@ -6,7 +6,7 @@ Translates pygls types back and forth with Jedi
 import random
 import string  # pylint: disable=deprecated-module
 from inspect import Parameter
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import docstring_to_markdown
 import jedi.api.errors
@@ -51,7 +51,7 @@ def set_jedi_settings(  # pylint: disable=invalid-name
     )
 
 
-def script(project: Project, document: Document) -> Script:
+def script(project: Optional[Project], document: Document) -> Script:
     """Simplifies getting jedi Script."""
     return Script(code=document.source, path=document.path, project=project)
 
