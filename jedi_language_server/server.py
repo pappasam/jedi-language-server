@@ -51,6 +51,7 @@ from pygls.lsp.types import (
     Location,
     MarkupContent,
     MarkupKind,
+    MessageType,
     ParameterInformation,
     RenameParams,
     SignatureHelp,
@@ -82,8 +83,11 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
             server.initialization_options = InitializationOptions.parse_obj(
                 params.initialization_options
             )
-        except ValidationError:
-            pass
+        except ValidationError as error:
+            msg = f"Invalid InitializationOptions, using defaults: {error}"
+            server.show_message(msg, msg_type=MessageType.Error)
+            server.show_message_log(msg, msg_type=MessageType.Error)
+            server.initialization_options = InitializationOptions()
 
         initialization_options = server.initialization_options
         jedi_utils.set_jedi_settings(initialization_options)
