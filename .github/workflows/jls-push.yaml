@@ -1,5 +1,5 @@
-name: jls push
-on: [push]
+name: testing
+on: [push, pull_request]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
