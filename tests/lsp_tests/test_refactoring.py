@@ -238,3 +238,25 @@ def test_lsp_code_action() -> None:
         actual[1]["edit"]["documentChanges"][0]["edits"] = []
 
         assert_that(actual, is_(expected))
+
+
+def test_lsp_code_action2() -> None:
+    """Tests edge case for code actions.
+
+    Identified in: https://github.com/pappasam/jedi-language-server/issues/96
+    """
+
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        uri = as_uri((REFACTOR_TEST_ROOT / "code_action_test2.py"))
+        actual = ls_session.text_document_code_action(
+            {
+                "textDocument": {"uri": uri},
+                "range": {
+                    "start": {"line": 2, "character": 6},
+                    "end": {"line": 2, "character": 6},
+                },
+                "context": {"diagnostics": []},
+            }
+        )
+        assert_that(actual, is_(None))
