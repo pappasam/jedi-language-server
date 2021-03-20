@@ -5,6 +5,7 @@ This module is a bridge between `jedi.Refactoring` and
 """
 
 
+import ast
 import difflib
 from typing import Dict, Iterator, List, NamedTuple, Union
 
@@ -19,6 +20,15 @@ from pygls.lsp.types import (
     VersionedTextDocumentIdentifier,
 )
 from pygls.workspace import Workspace
+
+
+def is_valid_python(code: str) -> bool:
+    """Check whether Python code is syntactically valid."""
+    try:
+        ast.parse(code)
+    except SyntaxError:
+        return False
+    return True
 
 
 def lsp_document_changes(
@@ -62,13 +72,14 @@ class RefactoringConverter:
             document = self.workspace.get_document(uri)
             version = 0 if document.version is None else document.version
             text_edits = lsp_text_edits(changed_file)
-            yield TextDocumentEdit(
-                text_document=VersionedTextDocumentIdentifier(
-                    uri=uri,
-                    version=version,
-                ),
-                edits=text_edits,
-            )
+            if text_edits:
+                yield TextDocumentEdit(
+                    text_document=VersionedTextDocumentIdentifier(
+                        uri=uri,
+                        version=version,
+                    ),
+                    edits=text_edits,
+                )
 
 
 _OPCODES_CHANGE = {"replace", "delete", "insert"}
@@ -77,12 +88,16 @@ _OPCODES_CHANGE = {"replace", "delete", "insert"}
 def lsp_text_edits(changed_file: ChangedFile) -> List[TextEdit]:
     """Take a jedi `ChangedFile` and convert to list of text edits.
 
-    Handles inserts, replaces, and deletions within a text file
+    Handles inserts, replaces, and deletions within a text file.
+
+    Additionally, makes sure returned code is syntactically valid Python.
     """
     old_code = (
         changed_file._module_node.get_code()  # pylint: disable=protected-access
     )
     new_code = changed_file.get_new_code()
+    if not is_valid_python(new_code):
+        return []
     opcode_position_lookup_old = get_opcode_position_lookup(old_code)
     text_edits = []
     for opcode in get_opcodes(old_code, new_code):

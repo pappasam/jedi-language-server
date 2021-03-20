@@ -259,33 +259,4 @@ def test_lsp_code_action2() -> None:
                 "context": {"diagnostics": []},
             }
         )
-
-        expected = [
-            {
-                "title": StringPattern(
-                    r"Extract expression into function 'func_\w+'"
-                ),
-                "kind": "refactor.extract",
-                "edit": {
-                    "documentChanges": [
-                        {
-                            "textDocument": {
-                                "uri": uri,
-                                "version": 0,
-                            },
-                            "edits": [],
-                        }
-                    ]
-                },
-            },
-        ]
-
-        # Cannot use hamcrest directly for this due to unpredictable
-        # variations in how the text edits are generated.
-
-        assert_that(len(actual), is_(len(expected)))
-
-        # Remove the edits
-        actual[0]["edit"]["documentChanges"][0]["edits"] = []
-
-        assert_that(actual, is_(expected))
+        assert_that(actual, is_(None))
