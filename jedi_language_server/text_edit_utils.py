@@ -162,13 +162,20 @@ def get_opcode_position_lookup(
     structure within which one can look up opcode-friendly values. It
     relies on the `RangeDict` above, which lets you look up a value
     within a range of linear values
+
+    Range contains padding at the start and the end to accommodate edge cases
+    within editors.
     """
     original_lines = code.splitlines(keepends=True)
     line_lookup = RangeDict()
+    last_line_number = len(original_lines) - 1
     start = 0
     for line, code_line in enumerate(original_lines):
         end = start + len(code_line)
-        key = range(start, end)
+        key = range(
+            start if line != 0 else start - 1,
+            end if line != last_line_number else end + 1,
+        )
         line_lookup[key] = LinePosition(start, end, line, code_line)
         start = end
     return line_lookup
