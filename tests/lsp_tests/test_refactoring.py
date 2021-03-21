@@ -114,6 +114,42 @@ def test_lsp_rename_variable_at_line_start():
         assert_that(actual, is_(expected))
 
 
+def test_lsp_rename_inserts_at_line_start():
+    """Tests renaming a variable by inserting text at the start of a line."""
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        uri = as_uri((REFACTOR_TEST_ROOT / "rename_test2.py"))
+        actual = ls_session.text_document_rename(
+            {
+                "textDocument": {"uri": uri},
+                "position": {"line": 1, "character": 0},
+                # old name is "x", so we will insert "a"
+                "newName": "ax",
+            }
+        )
+
+        expected = {
+            "documentChanges": [
+                {
+                    "textDocument": {
+                        "uri": uri,
+                        "version": 0,
+                    },
+                    "edits": [
+                        {
+                            "range": {
+                                "start": {"line": 1, "character": 0},
+                                "end": {"line": 1, "character": 0},
+                            },
+                            "newText": "a",
+                        },
+                    ],
+                }
+            ],
+        }
+        assert_that(actual, is_(expected))
+
+
 def test_lsp_rename_last_line():
     """Tests whether rename works for end of file edge case.
 
