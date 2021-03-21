@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.28.6
+
+### Fixed
+
+General TextEdit fixes for code refactoring:
+
+- Update fix from 0.28.5 so that it doesn't pad at the start; no opcode will refer to old[-1:n].
+- Revert opcode.old_end -> opcode.old_end - 1. This becomes unnecessary with prior update, and indeed could be a bad idea when in the middle of a file (if you're unlucky, you could end up finding the line before the one you wanted).
+- Use pygls.document to get the old code, rather than the private jedi method.
+
 ## 0.28.5
 
 ### Fixed
