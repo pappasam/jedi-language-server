@@ -19,7 +19,7 @@ from pygls.lsp.types import (
     TextEdit,
     VersionedTextDocumentIdentifier,
 )
-from pygls.workspace import Workspace
+from pygls.workspace import Document, Workspace
 
 
 def is_valid_python(code: str) -> bool:
@@ -71,7 +71,7 @@ class RefactoringConverter:
             uri = path.as_uri()
             document = self.workspace.get_document(uri)
             version = 0 if document.version is None else document.version
-            text_edits = lsp_text_edits(changed_file)
+            text_edits = lsp_text_edits(document, changed_file)
             if text_edits:
                 yield TextDocumentEdit(
                     text_document=VersionedTextDocumentIdentifier(
@@ -85,25 +85,26 @@ class RefactoringConverter:
 _OPCODES_CHANGE = {"replace", "delete", "insert"}
 
 
-def lsp_text_edits(changed_file: ChangedFile) -> List[TextEdit]:
+def lsp_text_edits(
+    document: Document, changed_file: ChangedFile
+) -> List[TextEdit]:
     """Take a jedi `ChangedFile` and convert to list of text edits.
 
     Handles inserts, replaces, and deletions within a text file.
 
     Additionally, makes sure returned code is syntactically valid Python.
     """
-    old_code = (
-        changed_file._module_node.get_code()  # pylint: disable=protected-access
-    )
     new_code = changed_file.get_new_code()
     if not is_valid_python(new_code):
         return []
+
+    old_code = document.source
     opcode_position_lookup_old = get_opcode_position_lookup(old_code)
     text_edits = []
     for opcode in get_opcodes(old_code, new_code):
         if opcode.op in _OPCODES_CHANGE:
             start = opcode_position_lookup_old[opcode.old_start]
-            end = opcode_position_lookup_old[opcode.old_end - 1]
+            end = opcode_position_lookup_old[opcode.old_end]
             start_char = opcode.old_start - start.range_start
             end_char = opcode.old_end - end.range_start
             new_text = new_code[opcode.new_start : opcode.new_end]
@@ -178,8 +179,8 @@ def get_opcode_position_lookup(
     relies on the `RangeDict` above, which lets you look up a value
     within a range of linear values
 
-    Range contains padding at the start and the end to accommodate edge cases
-    within editors.
+    Range contains padding at the end so that opcodes making changes at the
+    end of the file always correspond to the last line.
     """
     original_lines = code.splitlines(keepends=True)
     line_lookup = RangeDict()
@@ -188,7 +189,7 @@ def get_opcode_position_lookup(
     for line, code_line in enumerate(original_lines):
         end = start + len(code_line)
         key = range(
-            start if line != 0 else start - 1,
+            start,
             end if line != last_line_number else end + 1,
         )
         line_lookup[key] = LinePosition(start, end, line, code_line)
