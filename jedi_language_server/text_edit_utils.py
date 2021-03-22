@@ -7,7 +7,8 @@ This module is a bridge between `jedi.Refactoring` and
 
 import ast
 import difflib
-from typing import Dict, Iterator, List, NamedTuple, Union
+from bisect import bisect_right
+from typing import Iterator, List, NamedTuple, Union
 
 from jedi.api.refactoring import ChangedFile, Refactoring
 from pygls.lsp.types import (
@@ -99,21 +100,16 @@ def lsp_text_edits(
         return []
 
     old_code = document.source
-    opcode_position_lookup_old = get_opcode_position_lookup(old_code)
+    position_lookup = PositionLookup(old_code)
     text_edits = []
     for opcode in get_opcodes(old_code, new_code):
         if opcode.op in _OPCODES_CHANGE:
-            start = opcode_position_lookup_old[opcode.old_start]
-            end = opcode_position_lookup_old[opcode.old_end]
-            start_char = opcode.old_start - start.range_start
-            end_char = opcode.old_end - end.range_start
+            start = position_lookup.get(opcode.old_start)
+            end = position_lookup.get(opcode.old_end)
             new_text = new_code[opcode.new_start : opcode.new_end]
             text_edits.append(
                 TextEdit(
-                    range=Range(
-                        start=Position(line=start.line, character=start_char),
-                        end=Position(line=end.line, character=end_char),
-                    ),
+                    range=Range(start=start, end=end),
                     new_text=new_text,
                 )
             )
@@ -145,53 +141,22 @@ def get_opcodes(old: str, new: str) -> List[Opcode]:
     return [Opcode(*opcode) for opcode in diff.get_opcodes()]
 
 
-class LinePosition(NamedTuple):
-    """Container to map absolute text position to lines and columns."""
+# pylint: disable=too-few-public-methods
+class PositionLookup:
+    """Data structure to convert a byte offset in a file to a line number and
+    character."""
 
-    range_start: int
-    range_end: int
-    line: int
-    code: str
+    def __init__(self, code: str) -> None:
+        # Create a list saying at what offset in the file each line starts.
+        self.line_starts = []
+        offset = 0
+        for line in code.splitlines(keepends=True):
+            self.line_starts.append(offset)
+            offset += len(line)
 
-
-class RangeDict(dict):
-    """Range dict.
-
-    Copied from: https://stackoverflow.com/a/39358140
-    """
-
-    def __getitem__(self, item):
-        if not isinstance(item, range):
-            for key in self:
-                if item in key:
-                    return self[key]
-            raise KeyError(item)
-        return super().__getitem__(item)
-
-
-def get_opcode_position_lookup(
-    code: str,
-) -> Dict[int, LinePosition]:
-    """Obtain the opcode lookup position.
-
-    This function is beautiful. It takes code and creates a data
-    structure within which one can look up opcode-friendly values. It
-    relies on the `RangeDict` above, which lets you look up a value
-    within a range of linear values
-
-    Range contains padding at the end so that opcodes making changes at the
-    end of the file always correspond to the last line.
-    """
-    original_lines = code.splitlines(keepends=True)
-    line_lookup = RangeDict()
-    last_line_number = len(original_lines) - 1
-    start = 0
-    for line, code_line in enumerate(original_lines):
-        end = start + len(code_line)
-        key = range(
-            start,
-            end if line != last_line_number else end + 1,
-        )
-        line_lookup[key] = LinePosition(start, end, line, code_line)
-        start = end
-    return line_lookup
+    def get(self, offset: int) -> Position:
+        """Get the position in the file that corresponds to the given
+        offset."""
+        line = bisect_right(self.line_starts, offset) - 1
+        character = offset - self.line_starts[line]
+        return Position(line=line, character=character)
