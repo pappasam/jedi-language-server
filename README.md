@@ -185,6 +185,10 @@ Palantir's [python-language-server](https://github.com/palantir/python-language-
 - Supports one powerful 3rd party static analysis / completion / refactoring library: Jedi. By only supporting Jedi, we can focus on supporting all Jedi features without exposing ourselves to too many broken 3rd party dependencies (I'm looking at you, [rope](https://github.com/python-rope/rope)).
 - Is supremely simple because of its scope constraints. Leave complexity to the Jedi [master](https://github.com/davidhalter). If the force is strong with you, please submit a PR!
 
+## Articles
+
+- [Python in VS Code Improves Jedi Language Server Support](https://visualstudiomagazine.com/articles/2021/03/17/vscode-jedi.aspx)
+
 ## Written by
 
 Samuel Roeca _samuel.roeca@gmail.com_
