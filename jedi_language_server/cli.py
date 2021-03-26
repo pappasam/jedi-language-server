@@ -1,17 +1,48 @@
 """Jedi Language Server command line interface."""
 
-import click
+
+import argparse
+import sys
 
 from .server import SERVER
 
 
-@click.command()
-@click.version_option()
+def _get_version() -> str:
+    """Get the program version."""
+    # pylint: disable=import-outside-toplevel
+    try:
+        from importlib.metadata import version
+    except ImportError:
+        try:
+            # Below ignored because this a redefinition from above.
+            # Ignored because this is intentional.
+            from importlib_metadata import version  # type: ignore
+        except ImportError:
+            print(
+                "Unable to get version. "
+                "If using Python < 3.8, you must install "
+                "`importlib_metadata` to get the version.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+    return version("jedi-language-server")
+
+
 def cli() -> None:
-    """Jedi language server.
+    """Jedi language server cli entrypoint."""
+    parser = argparse.ArgumentParser(
+        prog="jedi-language-server",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="Jedi language server: an LSP wrapper for jedi.",
+        epilog="""\
+Examples:
 
-    Examples:
-
-        Run from stdio : jedi-language-server
-    """
-    SERVER.start_io()  # type: ignore
+    Run from stdio: jedi-language-server
+""",
+    )
+    parser.add_argument("--version", action="store_true")
+    args = parser.parse_args()
+    if args.version:
+        print(_get_version())
+        sys.exit(0)
+    SERVER.start_io()
