@@ -41,7 +41,6 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.6.1"
-click = ">=7.0"
 jedi = "0.18.0"
 pygls = "^0.10.0"
 pydantic = "^1.7"
