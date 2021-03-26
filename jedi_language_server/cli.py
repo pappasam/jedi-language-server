@@ -7,19 +7,22 @@ import sys
 from .server import SERVER
 
 
-def _get_version() -> str:
+def get_version() -> str:
     """Get the program version."""
     # pylint: disable=import-outside-toplevel
     try:
-        from importlib.metadata import version
+        # Type checker for Python < 3.8 fails.
+        # Since this ony happens here, we just ignore.
+        from importlib.metadata import version  # type: ignore
     except ImportError:
         try:
-            # Below ignored because this a redefinition from above.
-            # Ignored because this is intentional.
+            # Below ignored both because this a redefinition from above, and
+            # because importlib_metadata isn't known by mypy. Ignored because
+            # this is intentional.
             from importlib_metadata import version  # type: ignore
         except ImportError:
             print(
-                "Unable to get version. "
+                "Error: unable to get version. "
                 "If using Python < 3.8, you must install "
                 "`importlib_metadata` to get the version.",
                 file=sys.stderr,
@@ -43,6 +46,6 @@ Examples:
     parser.add_argument("--version", action="store_true")
     args = parser.parse_args()
     if args.version:
-        print(_get_version())
+        print(get_version())
         sys.exit(0)
     SERVER.start_io()
