@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.28.8
+
+### Changed
+
+- Updated cli to use `argparse` instead of `click`.
+- Required pygls version updated to `0.10.2` to accommodate recent bugfixes / prevent users from filing issues based on old version.
+
+### Removed
+
+- Removed `click` from dependencies.
+
 ## 0.28.7
 
 ### Changed
