@@ -42,7 +42,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.6.1"
 jedi = "0.18.0"
-pygls = "^0.10.0"
+pygls = "^0.10.2"
 pydantic = "^1.7"
 docstring-to-markdown = "0.*"
 
