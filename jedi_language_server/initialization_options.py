@@ -63,5 +63,5 @@ class InitializationOptions(Model):
     completion: Completion = Completion()
     diagnostics: Diagnostics = Diagnostics()
     jedi_settings: JediSettings = JediSettings()
-    markup_kind_preferred: Optional[MarkupKind] = None
+    markup_kind_preferred: Optional[MarkupKind]
     workspace: Workspace = Workspace()
