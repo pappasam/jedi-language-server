@@ -81,7 +81,9 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         server: "JediLanguageServer" = self._server
         try:
             server.initialization_options = InitializationOptions.parse_obj(
-                params.initialization_options
+                {}
+                if params.initialization_options is None
+                else params.initialization_options
             )
         except ValidationError as error:
             msg = f"Invalid InitializationOptions, using defaults: {error}"
