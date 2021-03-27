@@ -76,25 +76,33 @@ Note: this is experimental and uses an older version (for now) to support python
 
 See: <https://github.com/pappasam/jedi-language-server/issues/50#issuecomment-781101169>
 
-### Command line (bash / zsh)
+## Command line
 
-If you'd like to see whether jedi-language-server is installed and in your path, at your terminal prompt, run:
+jedi-language-server can be run directly from the command line.
 
-```bash
-jedi-language-server
+```console
+$ jedi-language-server --help
+usage: jedi-language-server [-h] [--version] [--tcp] [--host HOST]
+                            [--port PORT] [--log-file LOG_FILE] [-v]
+
+Jedi language server: an LSP wrapper for jedi.
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --version            display version information and exit
+  --tcp                use TCP server instead of stdio
+  --host HOST          host for TCP server (default 127.0.0.1)
+  --port PORT          port for TCP server (default 2087)
+  --log-file LOG_FILE  redirect logs to the given file instead of writing to
+                       stderr
+  -v, --verbose        increase verbosity of log output
+
+Examples:
+
+    Run from stdio: jedi-language-server
 ```
 
-jedi-language-server works over IO, but this may change in the future. On a POSIX-compliant system, you can test out the server by storing an example JSON RPC request in a file called `request.json`. You can send the file's data to jedi-language-server like so:
-
-```bash
-jedi-language-server < request.json
-```
-
-With Windows Powershell:
-
-```powershell
-get-content request.json | jedi-language-server
-```
+Note
 
 ## Configuration
 
@@ -179,7 +187,9 @@ make test
 
 ## Inspiration
 
-Palantir's [python-language-server](https://github.com/palantir/python-language-server) inspired this project. Unlike python-language-server, jedi-language-server:
+Palantir's [python-language-server](https://github.com/palantir/python-language-server) inspired this project. In fact, for consistency's sake, many of python-language-server's CLI options are used as-in in jedi-language-server.
+
+Unlike python-language-server, jedi-language-server:
 
 - Uses [pygls](https://github.com/openlawlibrary/pygls) instead of creating its own low-level Language Server Protocol bindings
 - Supports one powerful 3rd party static analysis / completion / refactoring library: Jedi. By only supporting Jedi, we can focus on supporting all Jedi features without exposing ourselves to too many broken 3rd party dependencies (I'm looking at you, [rope](https://github.com/python-rope/rope)).
