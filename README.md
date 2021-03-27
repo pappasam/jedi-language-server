@@ -102,8 +102,6 @@ Examples:
     Run from stdio: jedi-language-server
 ```
 
-Note
-
 ## Configuration
 
 We recommend using [coc-jedi](https://github.com/pappasam/coc-jedi) and following its [configuration instructions](https://github.com/pappasam/coc-jedi#configuration).
