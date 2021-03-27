@@ -486,7 +486,9 @@ def code_action(
             )
         )
 
-    extract_var = jedi_utils.random_var("var_")
+    extract_var = (
+        server.initialization_options.code_action.name_extract_variable
+    )
     try:
         extract_variable_refactoring = jedi_script.extract_variable(
             new_name=extract_var, **jedi_lines_extract
@@ -508,7 +510,9 @@ def code_action(
             )
         )
 
-    extract_func = jedi_utils.random_var("func_")
+    extract_func = (
+        server.initialization_options.code_action.name_extract_function
+    )
     try:
         extract_function_refactoring = jedi_script.extract_function(
             new_name=extract_func, **jedi_lines_extract
