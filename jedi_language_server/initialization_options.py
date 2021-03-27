@@ -26,6 +26,11 @@ class Model(BaseModel):
         alias_generator = snake_to_camel
 
 
+class CodeAction(Model):
+    name_extract_variable: str = "jls_extract_var"
+    name_extract_function: str = "jls_extract_def"
+
+
 class Completion(Model):
     disable_snippets: bool = False
     resolve_eagerly: bool = False
@@ -54,8 +59,9 @@ class Workspace(Model):
 
 
 class InitializationOptions(Model):
-    markup_kind_preferred: Optional[MarkupKind] = None
+    code_action: CodeAction = CodeAction()
     completion: Completion = Completion()
     diagnostics: Diagnostics = Diagnostics()
     jedi_settings: JediSettings = JediSettings()
+    markup_kind_preferred: Optional[MarkupKind] = None
     workspace: Workspace = Workspace()

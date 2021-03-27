@@ -111,10 +111,9 @@ If you are configuring manually, jedi-language-server supports the following [in
 ```json
 {
   "initializationOptions": {
-    "markupKindPreferred": null,
-    "jediSettings": {
-      "autoImportModules": [],
-      "caseInsensitiveCompletion": true
+    "codeAction": {
+      "nameExtractVariable": "jls_extract_var",
+      "nameExtractFunction": "jls_extract_def"
     },
     "completion": {
       "disableSnippets": false,
@@ -126,6 +125,11 @@ If you are configuring manually, jedi-language-server supports the following [in
       "didChange": true,
       "didSave": true
     },
+    "jediSettings": {
+      "autoImportModules": [],
+      "caseInsensitiveCompletion": true
+    },
+    "markupKindPreferred": "markdown",
     "workspace": {
       "extraPaths": [],
       "symbols": {

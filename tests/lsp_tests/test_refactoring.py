@@ -230,7 +230,7 @@ def test_lsp_code_action() -> None:
         expected = [
             {
                 "title": StringPattern(
-                    r"Extract expression into variable 'var_\w+'"
+                    r"Extract expression into variable 'jls_extract_var'"
                 ),
                 "kind": "refactor.extract",
                 "edit": {
@@ -247,7 +247,7 @@ def test_lsp_code_action() -> None:
             },
             {
                 "title": StringPattern(
-                    r"Extract expression into function 'func_\w+'"
+                    r"Extract expression into function 'jls_extract_def'"
                 ),
                 "kind": "refactor.extract",
                 "edit": {

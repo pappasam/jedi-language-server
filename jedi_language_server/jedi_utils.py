@@ -3,8 +3,6 @@
 Translates pygls types back and forth with Jedi
 """
 
-import random
-import string  # pylint: disable=deprecated-module
 from inspect import Parameter
 from typing import Dict, List, Optional
 
@@ -428,16 +426,3 @@ def lsp_completion_item_resolve(
     docstring = convert_docstring(completion.docstring(), markup_kind)
     item.documentation = MarkupContent(kind=markup_kind, value=docstring)
     return item
-
-
-def random_var(
-    beginning: str,
-    random_length: int = 8,
-    letters: str = string.ascii_lowercase,
-) -> str:
-    """Generate a random variable name.
-
-    Useful for refactoring functions
-    """
-    ending = "".join(random.choice(letters) for _ in range(random_length))
-    return beginning + ending
