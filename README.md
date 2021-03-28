@@ -189,7 +189,7 @@ make test
 
 ## Inspiration
 
-Palantir's [python-language-server](https://github.com/palantir/python-language-server) inspired this project. In fact, for consistency's sake, many of python-language-server's CLI options are used as-in in jedi-language-server.
+Palantir's [python-language-server](https://github.com/palantir/python-language-server) inspired this project. In fact, for consistency's sake, many of python-language-server's CLI options are used as-is in jedi-language-server.
 
 Unlike python-language-server, jedi-language-server:
 
