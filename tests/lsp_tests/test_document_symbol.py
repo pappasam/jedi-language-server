@@ -167,4 +167,4 @@ def test_document_symbol() -> None:
             },
         ]
 
-    assert_that(actual, is_(expected))
+        assert_that(actual, is_(expected))
