@@ -11,7 +11,7 @@ line_length = 79
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.30.1"
+version = "0.30.2"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -45,6 +45,7 @@ jedi = "0.18.0"
 pygls = "^0.10.2"
 pydantic = "^1.7"
 docstring-to-markdown = "0.*"
+importlib-metadata = { version = "^3.10.0", python = "~3.6 || ~3.7" }
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.11"
