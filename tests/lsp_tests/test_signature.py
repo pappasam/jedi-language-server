@@ -1,7 +1,6 @@
 """Tests for signature help requests."""
 
 import pytest
-
 from hamcrest import assert_that, is_
 
 from tests import TEST_DATA
