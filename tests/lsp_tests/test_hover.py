@@ -1,4 +1,4 @@
-"""Tests for hover requests"""
+"""Tests for hover requests."""
 
 from hamcrest import assert_that, is_
 
@@ -10,7 +10,7 @@ HOVER_TEST_ROOT = TEST_DATA / "hover"
 
 
 def test_hover_on_module():
-    """Tests hover on the name of a imported module
+    """Tests hover on the name of a imported module.
 
     Test Data: tests/test_data/hover/hover_test1.py
     """
@@ -38,7 +38,7 @@ def test_hover_on_module():
 
 
 def test_hover_on_function():
-    """Tests hover on the name of a function
+    """Tests hover on the name of a function.
 
     Test Data: tests/test_data/hover/hover_test1.py
     """
@@ -66,7 +66,7 @@ def test_hover_on_function():
 
 
 def test_hover_on_class():
-    """Tests hover on the name of a class
+    """Tests hover on the name of a class.
 
     Test Data: tests/test_data/hover/hover_test1.py
     """
@@ -94,7 +94,7 @@ def test_hover_on_class():
 
 
 def test_hover_on_method():
-    """Tests hover on the name of a class method
+    """Tests hover on the name of a class method.
 
     Test Data: tests/test_data/hover/hover_test1.py
     """
@@ -122,7 +122,7 @@ def test_hover_on_method():
 
 
 def test_hover_on_method_no_docstring():
-    """Tests hover on the name of a class method without doc string
+    """Tests hover on the name of a class method without doc string.
 
     Test Data: tests/test_data/hover/hover_test1.py
     """

@@ -1,4 +1,4 @@
-"""Tests for signature help requests"""
+"""Tests for signature help requests."""
 
 import pytest
 
@@ -15,7 +15,7 @@ SIGNATURE_TEST_ROOT = TEST_DATA / "signature"
     ["trigger_char", "column", "active_param"], [("(", 14, 0), (",", 18, 1)]
 )
 def test_signature_help(trigger_char, column, active_param):
-    """Tests signature help response for a function
+    """Tests signature help response for a function.
 
     Test Data: tests/test_data/signature/signature_test1.py
     """

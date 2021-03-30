@@ -1,4 +1,4 @@
-"""Tests for definition requests"""
+"""Tests for definition requests."""
 
 from hamcrest import assert_that, is_
 
@@ -10,7 +10,7 @@ DEFINITION_TEST_ROOT = TEST_DATA / "definition"
 
 
 def test_definition():
-    """Tests definition on a function imported from module
+    """Tests definition on a function imported from module.
 
     Test Data: tests/test_data/definition/definition_test1.py
     """

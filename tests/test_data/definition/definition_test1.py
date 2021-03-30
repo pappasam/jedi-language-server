@@ -1,4 +1,4 @@
-"""Test file for definition tests"""
+"""Test file for definition tests."""
 
 from . import somemodule
 from . import somemodule2

@@ -1,4 +1,4 @@
-"""Test data for hover"""
+"""Test data for hover."""
 
 import somemodule
 
