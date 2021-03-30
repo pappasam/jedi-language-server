@@ -146,6 +146,20 @@ class LspSession(MethodDispatcher):
         )
         return fut.result()
 
+    def text_document_symbol(self, document_symbol_params):
+        """Sends text document symbol request to LSP server."""
+        fut = self._send_request(
+            "textDocument/documentSymbol", params=document_symbol_params
+        )
+        return fut.result()
+
+    def workspace_symbol(self, workspace_symbol_params):
+        """Sends workspace symbol request to LSP server."""
+        fut = self._send_request(
+            "workspace/symbol", params=workspace_symbol_params
+        )
+        return fut.result()
+
     def completion_item_resolve(self, resolve_params):
         """Sends completion item resolve request to LSP server."""
         fut = self._send_request(

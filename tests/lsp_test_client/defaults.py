@@ -209,4 +209,5 @@ VSCODE_DEFAULT_INITIALIZE = {
     },
     "trace": "verbose",
     "workspaceFolders": [{"uri": lsp_client.PROJECT_URI, "name": "jedi_lsp"}],
+    "initializationOptions": {"workspace": {"symbols": {"maxSymbols": 0}}},
 }
