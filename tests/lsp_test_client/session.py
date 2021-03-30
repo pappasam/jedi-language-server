@@ -127,6 +127,25 @@ class LspSession(MethodDispatcher):
         )
         return fut.result()
 
+    def text_document_hover(self, hover_params):
+        """Sends text document hover request to LSP server."""
+        fut = self._send_request("textDocument/hover", params=hover_params)
+        return fut.result()
+
+    def text_document_signature_help(self, signature_help_params):
+        """Sends text document hover request to LSP server."""
+        fut = self._send_request(
+            "textDocument/signatureHelp", params=signature_help_params
+        )
+        return fut.result()
+
+    def text_document_definition(self, definition_params):
+        """Sends text document defintion request to LSP server."""
+        fut = self._send_request(
+            "textDocument/definition", params=definition_params
+        )
+        return fut.result()
+
     def completion_item_resolve(self, resolve_params):
         """Sends completion item resolve request to LSP server."""
         fut = self._send_request(
