@@ -20,7 +20,7 @@ def test_definition():
         actual = ls_session.text_document_definition(
             {
                 "textDocument": {"uri": uri},
-                "position": {"line": 7, "character": 20},
+                "position": {"line": 5, "character": 20},
             }
         )
 
