@@ -16,25 +16,33 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Setup, Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      - name: Tox, Python ${{ matrix.python-version }}
+
+      - name: Update pip ${{ matrix.pip-version }}
+        run: python -m pip install --upgrade pip==${{ matrix.pip-version }}
+        shell: bash
+
+      - name: Set up Poetry ${{ matrix.poetry-version }}
         run: |
-          # Set up Python
-          python -m pip install --upgrade pip==${{ matrix.pip-version }}
-          # Set up Poetry
           curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py > get-poetry.py
           python get-poetry.py
           rm get-poetry.py
           source $HOME/.poetry/env
           poetry self update ${{ matrix.poetry-version }}
-          # Set up Tox
-          pip install tox==3.23.0
-          # Run Tox on current Python version
-          tox -e py
+        shell: bash
+
+      - name: Set up Tox
+        run: python -m pip install tox==3.23.0
+        shell: bash
+
+      - name: Run Tox on current Python version
+        run: tox -e py
+        shell: bash
 
   coverage:
     runs-on: windows-latest
@@ -46,18 +54,27 @@ jobs:
         with:
           python-version: 3.9
           architecture: x64
-      - name: Coverage Python 3.9
+      - name: Update pip
+        run: python -m pip install --upgrade pip==20.2.4
+        shell: bash
+
+      - name: Set up Python
+        run: python -m pip install --upgrade pip==20.2.4
+        shell: bash
+
+      - name: Set up Poetry
         run: |
-          # Set up Python
-          python -m pip install --upgrade pip==20.2.4
-          # Set up Poetry
           curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py > get-poetry.py
           python get-poetry.py
           rm get-poetry.py
           source $HOME/.poetry/env
           poetry self update 1.1.5
-          # Set up Tox
-          pip install tox==3.23.0
-          # Run Tox on current Python version
-          tox -e py39-cov
+        shell: bash
+
+      - name: Set up Tox
+        run: python -m pip install tox==3.23.0
+        shell: bash
+
+      - name: Coverage
+        run: tox -e py39-cov
         shell: bash
