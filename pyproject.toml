@@ -86,5 +86,6 @@ commands =
   !cov: poetry run pylint jedi_language_server tests
   !cov: poetry run pytest tests
 
+  cov: export WITH_COVERAGE=1
   cov: poetry run pytest --cov=jedi_language_server --cov-report=term-missing tests
 """

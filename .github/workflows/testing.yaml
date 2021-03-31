@@ -59,5 +59,4 @@ jobs:
           # Set up Tox
           pip install tox==3.23.0
           # Run Tox on current Python version
-          export WITH_COVERAGE=1
           tox -e py39-cov
