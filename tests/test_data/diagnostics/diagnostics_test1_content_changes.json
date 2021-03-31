@@ -1,0 +1,24 @@
+[
+    {
+        "textDocument": {
+            "uri": "",
+            "version": 1
+        },
+        "contentChanges": [
+            {
+                "range": {
+                    "start": {
+                        "line": 5,
+                        "character": 15
+                    },
+                    "end": {
+                        "line": 5,
+                        "character": 15
+                    }
+                },
+                "rangeLength": 0,
+                "text": "="
+            }
+        ]
+    }
+]
