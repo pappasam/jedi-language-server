@@ -9,7 +9,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
         python-version: ["3.6", "3.7", "3.8", "3.9"]
         poetry-version: ["1.1.5"]
         pip-version: ["20.2.4"]
@@ -37,7 +37,7 @@ jobs:
           tox -e py
 
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -46,7 +46,7 @@ jobs:
         with:
           python-version: 3.9
           architecture: x64
-      - name: Tox, Python 3.9
+      - name: Coverage Python 3.9
         run: |
           # Set up Python
           python -m pip install --upgrade pip==20.2.4
@@ -60,3 +60,4 @@ jobs:
           pip install tox==3.23.0
           # Run Tox on current Python version
           tox -e py39-cov
+        shell: bash
