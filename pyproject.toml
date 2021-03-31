@@ -73,25 +73,25 @@ isolated_build = true
 skipsdist = true
 [testenv]
 platform = linux
-whitelist_externals = poetry
+whitelist_externals = python
 skip_install = true
 commands =
-  poetry install
+  python -m poetry install
 
-  poetry run black --check --diff jedi_language_server tests
-  poetry run docformatter --check --recursive jedi_language_server tests
-  poetry run isort --check jedi_language_server tests
+  python -m poetry run black --check --diff jedi_language_server tests
+  python -m poetry run docformatter --check --recursive jedi_language_server tests
+  python -m poetry run isort --check jedi_language_server tests
 
-  poetry run mypy jedi_language_server
-  poetry run pylint jedi_language_server tests
-  poetry run pytest tests
+  python -m poetry run mypy jedi_language_server
+  python -m poetry run pylint jedi_language_server tests
+  python -m poetry run pytest tests
 [testenv:py39-cov]
 platform = linux
-whitelist_externals = poetry
+whitelist_externals = python
 skip_install = true
 setenv =
   WITH_COVERAGE = 1
 commands =
-  poetry install
-  poetry run pytest --cov=jedi_language_server --cov-report=term-missing tests
+  python -m poetry install
+  python -m poetry run pytest --cov=jedi_language_server --cov-report=term-missing tests
 """
