@@ -1,63 +1,94 @@
-name: testing
+name: Testing
+
 on:
   push:
     branches:
       - main
   pull_request:
+
 jobs:
-  tests:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.6", "3.7", "3.8", "3.9"]
-        poetry-version: ["1.1.5"]
-        pip-version: ["20.2.4"]
+  lint:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Select Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+          architecture: x64
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install -U pip
+          python -m pip install wheel
+          python -m pip install poetry
+          poetry install
+
+      - name: Run black formatter check
+        run: poetry run black --check --diff jedi_language_server tests
+
+      - name: Run docformatter check
+        run: poetry run docformatter --check --recursive jedi_language_server tests
+
+      - name: Run isort check
+        run: poetry run isort --check jedi_language_server tests
+
+      - name: Run mypy check
+        run: poetry run mypy jedi_language_server
+
+      - name: Run pylint
+        run: poetry run pylint jedi_language_server tests
+
+  tests:
+    needs: [lint]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.6", "3.7", "3.8", "3.9"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Setup, Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      - name: Tox, Python ${{ matrix.python-version }}
+
+      - name: Install Dependencies
         run: |
-          # Set up Python
-          python -m pip install --upgrade pip==${{ matrix.pip-version }}
-          # Set up Poetry
-          curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py > get-poetry.py
-          python get-poetry.py
-          rm get-poetry.py
-          source $HOME/.poetry/env
-          poetry self update ${{ matrix.poetry-version }}
-          # Set up Tox
-          pip install tox==3.23.0
-          # Run Tox on current Python version
-          tox -e py
+          python -m pip install -U pip
+          python -m pip install wheel
+          python -m pip install poetry
+          poetry install
+
+      - name: Run Tests
+        run: poetry run pytest tests
 
   coverage:
-    runs-on: ubuntu-latest
+    needs: [lint]
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup, Python 3.9
+
+      - name: Select Python 3.9
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
           architecture: x64
-      - name: Tox, Python 3.9
+
+      - name: Install Dependencies
         run: |
-          # Set up Python
-          python -m pip install --upgrade pip==20.2.4
-          # Set up Poetry
-          curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py > get-poetry.py
-          python get-poetry.py
-          rm get-poetry.py
-          source $HOME/.poetry/env
-          poetry self update 1.1.5
-          # Set up Tox
-          pip install tox==3.23.0
-          # Run Tox on current Python version
-          export WITH_COVERAGE=1
-          tox -e py39-cov
+          python -m pip install -U pip
+          python -m pip install wheel
+          python -m pip install poetry
+          poetry install
+
+      - name: Run Coverage
+        env:
+          WITH_COVERAGE: true
+        run: poetry run pytest --cov=jedi_language_server --cov-report=term-missing tests
