@@ -3,7 +3,7 @@
 import os
 import subprocess
 import sys
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from threading import Event
 
 from pyls_jsonrpc.dispatchers import MethodDispatcher
@@ -15,16 +15,20 @@ from tests.lsp_test_client import defaults
 LSP_EXIT_TIMEOUT = 5000
 
 
+PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
+
+
 class LspSession(MethodDispatcher):
     """Send and Receive messages over LSP as a test LS Client."""
 
     def __init__(self, cwd=None):
         self.cwd = cwd if cwd else os.getcwd()
-        self._thread_executor = ThreadPoolExecutor()
+        self._thread_pool = ThreadPoolExecutor()
         self._sub = None
         self._writer = None
         self._reader = None
         self._endpoint = None
+        self._notification_callbacks = {}
 
     def __enter__(self):
         """Context manager entrypoint.
@@ -43,16 +47,17 @@ class LspSession(MethodDispatcher):
             env=os.environ,
             shell="WITH_COVERAGE" in os.environ,
         )
+
         self._writer = JsonRpcStreamWriter(
             os.fdopen(self._sub.stdin.fileno(), "wb")
         )
         self._reader = JsonRpcStreamReader(
             os.fdopen(self._sub.stdout.fileno(), "rb")
         )
-        self._endpoint = Endpoint(self, self._writer.write)
-        self._thread_executor.submit(
-            self._reader.listen, self._endpoint.consume
-        )
+
+        dispatcher = {PUBLISH_DIAGNOSTICS: self._publish_diagnostics}
+        self._endpoint = Endpoint(dispatcher, self._writer.write)
+        self._thread_pool.submit(self._reader.listen, self._endpoint.consume)
         return self
 
     def __exit__(self, typ, value, _tb):
@@ -62,7 +67,7 @@ class LspSession(MethodDispatcher):
         except Exception:  # pylint:disable=broad-except
             pass
         self._endpoint.shutdown()
-        self._thread_executor.shutdown()
+        self._thread_pool.shutdown()
 
     def initialize(
         self,
@@ -167,6 +172,48 @@ class LspSession(MethodDispatcher):
         )
         return fut.result()
 
+    def notify_did_change(self, did_change_params):
+        """Sends did change notification to LSP Server."""
+        self._send_notification(
+            "textDocument/didChange", params=did_change_params
+        )
+
+    def notify_did_save(self, did_save_params):
+        """Sends did save notification to LSP Server."""
+        self._send_notification("textDocument/didSave", params=did_save_params)
+
+    def notify_did_open(self, did_open_params):
+        """Sends did open notification to LSP Server."""
+        self._send_notification("textDocument/didOpen", params=did_open_params)
+
+    def set_notification_callback(self, notification_name, callback):
+        """Set custom LS notification handler."""
+        self._notification_callbacks[notification_name] = callback
+
+    def get_notification_callback(self, notification_name):
+        """Gets callback if set or default callback for a given LS
+        notification."""
+        try:
+            return self._notification_callbacks[notification_name]
+        except KeyError:
+
+            def _default_handler(_params):
+                """Default notification handler."""
+
+            return _default_handler
+
+    def _publish_diagnostics(self, publish_diagnostics_params):
+        """Internal handler for text document publish diagnostics."""
+        fut = Future()
+
+        def _handler():
+            callback = self.get_notification_callback(PUBLISH_DIAGNOSTICS)
+            callback(publish_diagnostics_params)
+            fut.set_result(None)
+
+        self._thread_pool.submit(_handler)
+        return fut
+
     def _send_request(
         self, name, params=None, handle_response=lambda f: f.done()
     ):
@@ -174,3 +221,7 @@ class LspSession(MethodDispatcher):
         fut = self._endpoint.request(name, params)
         fut.add_done_callback(handle_response)
         return fut
+
+    def _send_notification(self, name, params=None):
+        """Sends {name} notification to the LSP server."""
+        self._endpoint.notify(name, params)

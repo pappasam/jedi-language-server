@@ -1,7 +1,10 @@
 """Provides LSP client side utilities for easier testing."""
+
+import os
 import pathlib
 import platform
 import re
+from random import choice
 
 import py
 
@@ -38,3 +41,25 @@ class StringPattern:
     def match(self, test_str):
         """Returns matches if pattern matches are found in the test string."""
         return re.match(self.pattern, test_str)
+
+
+class PythonFile:
+    """Create python file on demand for testing."""
+
+    def __init__(self, contents, root):
+        self.contents = contents
+        self.basename = "".join(
+            choice("abcdefghijklmnopqrstuvwxyz") if i < 8 else ".py"
+            for i in range(9)
+        )
+        self.fullpath = py.path.local(root) / self.basename
+
+    def __enter__(self):
+        """Creates a python file for  testing."""
+        with open(self.fullpath, "w") as py_file:
+            py_file.write(self.contents)
+        return self
+
+    def __exit__(self, typ, value, _tb):
+        """Cleans up and deletes the python file."""
+        os.unlink(self.fullpath)

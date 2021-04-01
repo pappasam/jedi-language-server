@@ -1,0 +1,6 @@
+"""Test data for problem diagnostics."""
+
+
+def some_function():
+    """Function to test diagnostics."""
+    return 1 == 1
