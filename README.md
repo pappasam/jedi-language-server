@@ -111,31 +111,33 @@ If you are configuring manually, jedi-language-server supports the following [in
 ```json
 {
   "initializationOptions": {
-    "codeAction": {
-      "nameExtractVariable": "jls_extract_var",
-      "nameExtractFunction": "jls_extract_def"
-    },
-    "completion": {
-      "disableSnippets": false,
-      "resolveEagerly": false
-    },
-    "diagnostics": {
-      "enable": true,
-      "didOpen": true,
-      "didChange": true,
-      "didSave": true
-    },
-    "jediSettings": {
-      "autoImportModules": [],
-      "caseInsensitiveCompletion": true
-    },
-    "markupKindPreferred": "markdown",
-    "workspace": {
-      "extraPaths": [],
-      "symbols": {
-        "ignoreFolders": [".nox", ".tox", ".venv", "__pycache__", "venv"],
-        "maxSymbols": 20
-      }
+    "jedi": {
+      "codeAction": {
+        "nameExtractVariable": "jls_extract_var",
+        "nameExtractFunction": "jls_extract_def"
+      },
+      "completion": {
+        "disableSnippets": false,
+        "resolveEagerly": false
+      },
+      "diagnostics": {
+        "enable": true,
+        "didOpen": true,
+        "didChange": true,
+        "didSave": true
+      },
+      "jediSettings": {
+        "autoImportModules": [],
+        "caseInsensitiveCompletion": true
+      },
+      "markupKindPreferred": "markdown",
+      "workspace": {
+        "extraPaths": [],
+        "symbols": {
+          "ignoreFolders": [".nox", ".tox", ".venv", "__pycache__", "venv"],
+          "maxSymbols": 20
+        }
+      }    
     }
   }
 }
