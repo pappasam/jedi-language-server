@@ -158,6 +158,20 @@ class LspSession(MethodDispatcher):
         )
         return fut.result()
 
+    def text_document_highlight(self, document_highlight_params):
+        """Sends text document highlight request to LSP server."""
+        fut = self._send_request(
+            "textDocument/documentHighlight", params=document_highlight_params
+        )
+        return fut.result()
+
+    def text_document_references(self, references_params):
+        """Sends text document references request to LSP server."""
+        fut = self._send_request(
+            "textDocument/references", params=references_params
+        )
+        return fut.result()
+
     def workspace_symbol(self, workspace_symbol_params):
         """Sends workspace symbol request to LSP server."""
         fut = self._send_request(
