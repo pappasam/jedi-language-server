@@ -1,9 +1,12 @@
 """Tests for document symbols requests."""
 
+import copy
+
 from hamcrest import assert_that, is_
 
 from tests import TEST_DATA
 from tests.lsp_test_client import session
+from tests.lsp_test_client.defaults import VSCODE_DEFAULT_INITIALIZE
 from tests.lsp_test_client.utils import as_uri
 
 SYMBOL_TEST_ROOT = TEST_DATA / "symbol"
@@ -167,4 +170,145 @@ def test_document_symbol() -> None:
             },
         ]
 
+        assert_that(actual, is_(expected))
+
+
+def test_document_symbol_no_hierarchy() -> None:
+    """Test document symbol request with hierarchy turned off.
+
+    Test Data: tests/test_data/symbol/symbol_test1.py
+    """
+    initialize_params = copy.deepcopy(VSCODE_DEFAULT_INITIALIZE)
+    initialize_params["capabilities"]["textDocument"]["documentSymbol"][
+        "hierarchicalDocumentSymbolSupport"
+    ] = False
+    with session.LspSession() as ls_session:
+        ls_session.initialize(initialize_params)
+        uri = as_uri(SYMBOL_TEST_ROOT / "symbol_test1.py")
+        actual = ls_session.text_document_symbol(
+            {"textDocument": {"uri": uri}}
+        )
+
+        expected = [
+            {
+                "name": "Any",
+                "kind": 5,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 2, "character": 19},
+                        "end": {"line": 2, "character": 22},
+                    },
+                },
+                "containerName": "typing.Any",
+            },
+            {
+                "name": "somemodule",
+                "kind": 2,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 4, "character": 14},
+                        "end": {"line": 4, "character": 24},
+                    },
+                },
+                "containerName": "somemodule",
+            },
+            {
+                "name": "somemodule2",
+                "kind": 2,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 4, "character": 26},
+                        "end": {"line": 4, "character": 37},
+                    },
+                },
+                "containerName": "somemodule2",
+            },
+            {
+                "name": "SOME_CONSTANT",
+                "kind": 13,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 6, "character": 0},
+                        "end": {"line": 6, "character": 13},
+                    },
+                },
+                "containerName": "tests.test_data.symbol.symbol_test1.SOME_CONSTANT",
+            },
+            {
+                "name": "do_work",
+                "kind": 12,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 9, "character": 4},
+                        "end": {"line": 9, "character": 11},
+                    },
+                },
+                "containerName": "tests.test_data.symbol.symbol_test1.do_work",
+            },
+            {
+                "name": "SomeClass",
+                "kind": 5,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 15, "character": 6},
+                        "end": {"line": 15, "character": 15},
+                    },
+                },
+                "containerName": "tests.test_data.symbol.symbol_test1.SomeClass",
+            },
+            {
+                "name": "__init__",
+                "kind": 12,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 18, "character": 8},
+                        "end": {"line": 18, "character": 16},
+                    },
+                },
+                "containerName": "tests.test_data.symbol.symbol_test1.SomeClass.__init__",
+            },
+            {
+                "name": "somedata",
+                "kind": 13,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 19, "character": 13},
+                        "end": {"line": 19, "character": 21},
+                    },
+                },
+                "containerName": "tests.test_data.symbol.symbol_test1.SomeClass.__init__.somedata",
+            },
+            {
+                "name": "do_something",
+                "kind": 12,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 21, "character": 8},
+                        "end": {"line": 21, "character": 20},
+                    },
+                },
+                "containerName": "tests.test_data.symbol.symbol_test1.SomeClass.do_something",
+            },
+            {
+                "name": "so_something_else",
+                "kind": 12,
+                "location": {
+                    "uri": uri,
+                    "range": {
+                        "start": {"line": 24, "character": 8},
+                        "end": {"line": 24, "character": 25},
+                    },
+                },
+                "containerName": "tests.test_data.symbol.symbol_test1.SomeClass.so_something_else",
+            },
+        ]
         assert_that(actual, is_(expected))
