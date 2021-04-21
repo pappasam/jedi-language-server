@@ -16,6 +16,8 @@ LSP_EXIT_TIMEOUT = 5000
 
 
 PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
+WINDOW_LOG_MESSAGE = "window/logMessage"
+WINDOW_SHOW_MESSAGE = "window/showMessage"
 
 
 class LspSession(MethodDispatcher):
@@ -55,7 +57,10 @@ class LspSession(MethodDispatcher):
             os.fdopen(self._sub.stdout.fileno(), "rb")
         )
 
-        dispatcher = {PUBLISH_DIAGNOSTICS: self._publish_diagnostics}
+        dispatcher = {
+            PUBLISH_DIAGNOSTICS: self._publish_diagnostics,
+            WINDOW_SHOW_MESSAGE: self._window_show_message,
+        }
         self._endpoint = Endpoint(dispatcher, self._writer.write)
         self._thread_pool.submit(self._reader.listen, self._endpoint.consume)
         return self
@@ -223,6 +228,18 @@ class LspSession(MethodDispatcher):
         def _handler():
             callback = self.get_notification_callback(PUBLISH_DIAGNOSTICS)
             callback(publish_diagnostics_params)
+            fut.set_result(None)
+
+        self._thread_pool.submit(_handler)
+        return fut
+
+    def _window_show_message(self, window_show_message_params):
+        """Internal handler for text document publish diagnostics."""
+        fut = Future()
+
+        def _handler():
+            callback = self.get_notification_callback(WINDOW_SHOW_MESSAGE)
+            callback(window_show_message_params)
             fut.set_result(None)
 
         self._thread_pool.submit(_handler)
