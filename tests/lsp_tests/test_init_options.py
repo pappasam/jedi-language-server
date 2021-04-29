@@ -14,23 +14,40 @@ def test_invalid_initialization_options() -> None:
     initialize_params["initializationOptions"]["diagnostics"] = 1
 
     with session.LspSession() as ls_session:
-        done = Event()
+        window_show_message_done = Event()
+        window_log_message_done = Event()
+
         actual = []
 
-        def _handler(params):
+        def _window_show_message_handler(params):
             actual.append(params)
-            done.set()
+            window_show_message_done.set()
 
         ls_session.set_notification_callback(
-            session.WINDOW_SHOW_MESSAGE, _handler
+            session.WINDOW_SHOW_MESSAGE, _window_show_message_handler
+        )
+
+        def _window_log_message_handler(params):
+            actual.append(params)
+            window_log_message_done.set()
+
+        ls_session.set_notification_callback(
+            session.WINDOW_LOG_MESSAGE, _window_log_message_handler
         )
 
         ls_session.initialize(initialize_params)
+
+        window_show_message_done.wait(5)
+        window_log_message_done.wait(5)
         expected = [
             {
                 "type": 1,
                 "message": "Invalid InitializationOptions, using defaults: 1 validation error for InitializationOptions\ndiagnostics\n  value is not a valid dict (type=type_error.dict)",
-            }
+            },
+            {
+                "type": 1,
+                "message": "Invalid InitializationOptions, using defaults: 1 validation error for InitializationOptions\ndiagnostics\n  value is not a valid dict (type=type_error.dict)",
+            },
         ]
 
         assert_that(actual, is_(expected))
