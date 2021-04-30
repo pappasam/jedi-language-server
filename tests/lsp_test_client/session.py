@@ -16,6 +16,8 @@ LSP_EXIT_TIMEOUT = 5000
 
 
 PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
+WINDOW_LOG_MESSAGE = "window/logMessage"
+WINDOW_SHOW_MESSAGE = "window/showMessage"
 
 
 class LspSession(MethodDispatcher):
@@ -55,7 +57,11 @@ class LspSession(MethodDispatcher):
             os.fdopen(self._sub.stdout.fileno(), "rb")
         )
 
-        dispatcher = {PUBLISH_DIAGNOSTICS: self._publish_diagnostics}
+        dispatcher = {
+            PUBLISH_DIAGNOSTICS: self._publish_diagnostics,
+            WINDOW_SHOW_MESSAGE: self._window_show_message,
+            WINDOW_LOG_MESSAGE: self._window_log_message,
+        }
         self._endpoint = Endpoint(dispatcher, self._writer.write)
         self._thread_pool.submit(self._reader.listen, self._endpoint.consume)
         return self
@@ -218,11 +224,29 @@ class LspSession(MethodDispatcher):
 
     def _publish_diagnostics(self, publish_diagnostics_params):
         """Internal handler for text document publish diagnostics."""
+        return self._handle_notification(
+            PUBLISH_DIAGNOSTICS, publish_diagnostics_params
+        )
+
+    def _window_log_message(self, window_log_message_params):
+        """Internal handler for window log message."""
+        return self._handle_notification(
+            WINDOW_LOG_MESSAGE, window_log_message_params
+        )
+
+    def _window_show_message(self, window_show_message_params):
+        """Internal handler for window show message."""
+        return self._handle_notification(
+            WINDOW_SHOW_MESSAGE, window_show_message_params
+        )
+
+    def _handle_notification(self, notification_name, params):
+        """Internal handler for notifications."""
         fut = Future()
 
         def _handler():
-            callback = self.get_notification_callback(PUBLISH_DIAGNOSTICS)
-            callback(publish_diagnostics_params)
+            callback = self.get_notification_callback(notification_name)
+            callback(params)
             fut.set_result(None)
 
         self._thread_pool.submit(_handler)
