@@ -210,6 +210,51 @@ def test_lsp_rename_last_line():
         assert_that(actual, is_(expected))
 
 
+def test_rename_package() -> None:
+    """Tests renaming of an imported package."""
+
+    test_root = REFACTOR_TEST_ROOT / "rename_package_test1"
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        uri = as_uri(test_root / "rename_test_main.py")
+        actual = ls_session.text_document_rename(
+            {
+                "textDocument": {"uri": uri},
+                "position": {"line": 2, "character": 12},
+                "newName": "new_name",
+            }
+        )
+        old_name_uri = as_uri(test_root / "old_name")
+        new_name_uri = as_uri(test_root / "new_name")
+
+        expected = {
+            "documentChanges": [
+                {
+                    "textDocument": {
+                        "uri": uri,
+                        "version": 0,
+                    },
+                    "edits": [
+                        {
+                            "range": {
+                                "start": {"line": 2, "character": 5},
+                                "end": {"line": 2, "character": 8},
+                            },
+                            "newText": "new",
+                        }
+                    ],
+                },
+                {
+                    "kind": "rename",
+                    "oldUri": old_name_uri,
+                    "newUri": new_name_uri,
+                    "options": {"overwrite": True, "ignoreIfExists": True},
+                },
+            ]
+        }
+        assert_that(actual, is_(expected))
+
+
 def test_lsp_code_action() -> None:
     """Tests code actions like extract variable and extract function."""
 
