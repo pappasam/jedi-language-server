@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.30.3
+
+### Fixed
+
+RenameFile now works correctly: `kind` now correctly passed to RenameFile due to recently-released pygls updates. Minimum pygls version now 0.10.3.
+
 ## 0.30.2
 
 ### Changed
@@ -70,7 +76,7 @@ General TextEdit fixes for code refactoring:
 ### Fixed
 
 - Handle TextEdit edge case where opcode is checked for 1 past last character. Resolves <https://github.com/pappasam/jedi-language-server/issues/96>
-- No longer return textEdit actions from Jedi that aren't valid Python. Prevents all sorts of wonkyness.
+- No longer return textEdit actions from Jedi that aren't valid Python. Prevents all sorts of wonkiness.
 
 ## 0.28.4
 
@@ -106,7 +112,7 @@ Same functions as 0.28, but different tag.
 ### Removed
 
 - Support for Python 3.6.0. We now only support Python 3.6.1+.
-- Monkeypatch for `null` versus `missing` attributes. `pydantic` / `pygls>=0.10.0` handles this.
+- Monkey patch for `null` versus `missing` attributes. `pydantic` / `pygls>=0.10.0` handles this.
 
 ## 0.27.2
 
@@ -401,7 +407,7 @@ Same functions as 0.28, but different tag.
 
 ### Changed
 
-- jedi completion `param` sorts first in COMPLETION. Resolves https://github.com/pappasam/jedi-language-server/issues/19
+- jedi completion `param` sorts first in COMPLETION. Resolves <https://github.com/pappasam/jedi-language-server/issues/19>
 
 ## 0.12.1
 
@@ -577,3 +583,8 @@ Same functions as 0.28, but different tag.
 ### Fixed
 
 - `mypy`, `pylint`, `black`, `toml-sort`, and `isort` all pass.
+npm notice
+npm notice New minor version of npm available! 7.6.0 -> 7.15.0
+npm notice Changelog: <https://github.com/npm/cli/releases/tag/v7.15.0>
+npm notice Run `npm install -g npm@7.15.0` to update!
+npm notice
