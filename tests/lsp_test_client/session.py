@@ -25,6 +25,7 @@ class LspSession(MethodDispatcher):
 
     def __init__(self, cwd=None):
         self.cwd = cwd if cwd else os.getcwd()
+        # pylint: disable=consider-using-with
         self._thread_pool = ThreadPoolExecutor()
         self._sub = None
         self._writer = None
@@ -37,6 +38,7 @@ class LspSession(MethodDispatcher):
 
         shell=True needed for pytest-cov to work in subprocess.
         """
+        # pylint: disable=consider-using-with
         self._sub = subprocess.Popen(
             [
                 sys.executable,
