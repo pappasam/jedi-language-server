@@ -266,7 +266,7 @@ def complete_sort_name(name: Completion) -> str:
 def clean_completion_name(name: str, char_before_cursor: str) -> str:
     """Clean the completion name, stripping bad surroundings.
 
-    1. Remove all surrounding " and '. For
+    Currently, removes surrounding " and '.
     """
     if char_before_cursor in {"'", '"'}:
         return name.lstrip(char_before_cursor)
@@ -396,13 +396,9 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
     """
     if markup_kind == MarkupKind.Markdown:
         try:
-            return docstring_to_markdown.convert(docstring)
+            return docstring_to_markdown.convert(docstring).strip()
         except docstring_to_markdown.UnknownFormatError:
-            return (
-                "```\n" + str(docstring) + "\n```\n"
-                if docstring
-                else docstring
-            )
+            return docstring.strip()
         except Exception as error:  # pylint: disable=broad-except
             return (
                 docstring
@@ -412,8 +408,37 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
                 + "Please open issue at "
                 + "https://github.com/pappasam/jedi-language-server/issues. "
                 + f"Traceback:\n{error}"
-            )
-    return docstring
+            ).strip()
+    return docstring.strip()
+
+
+def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
+    """Get a hover string from a list of names."""
+    if not names:
+        return None
+    name = names[0]
+    name_str = name.name
+    full_name = name.full_name
+    description = name.description
+    docstring = name.docstring(raw=True, fast=True)
+    type_hint = name.get_type_hint()
+
+    result: List[str] = []
+    if name:
+        result.append(f"# {name_str}")
+        result.append("")
+    if docstring:
+        result.append(convert_docstring(docstring, markup_kind))
+        result.append("")
+    if description:
+        result.append(f"**Desc:** {description}")
+    if type_hint:
+        result.append(f"**Type:** {type_hint}")
+    if full_name:
+        result.append(f"**Path:** {full_name}")
+    if not result:
+        return None
+    return "\n".join(result).strip()
 
 
 def lsp_completion_item_resolve(
