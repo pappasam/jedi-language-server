@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.31.0
+
+### Changed
+
+- Markdown text that is not recognized by `docstring-to-markdown` is no longer automatically wrapped in a code block. I found that, more often than not, this resulted in annoying formatting for me.
+- Hover text now displays a lot more information, taking advantage of Jedi's Name methods and properties. Information now includes the module path to the name, the description, and an inferred type hint in addition to the docstring. This is all formatted with markdown so it looks pretty.
+
 ## 0.30.3
 
 ### Fixed
@@ -583,8 +590,3 @@ Same functions as 0.28, but different tag.
 ### Fixed
 
 - `mypy`, `pylint`, `black`, `toml-sort`, and `isort` all pass.
-npm notice
-npm notice New minor version of npm available! 7.6.0 -> 7.15.0
-npm notice Changelog: <https://github.com/npm/cli/releases/tag/v7.15.0>
-npm notice Run `npm install -g npm@7.15.0` to update!
-npm notice
