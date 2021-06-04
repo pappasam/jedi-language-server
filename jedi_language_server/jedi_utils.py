@@ -420,22 +420,26 @@ def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
     name_str = name.name
     full_name = name.full_name
     description = name.description
-    docstring = name.docstring(raw=True, fast=True)
-    type_hint = name.get_type_hint()
-
+    docstring = name.docstring()
+    try:
+        type_hint = name.get_type_hint()
+    except NotImplementedError:
+        # jedi randomly raises NotImplemented error when inferring some types
+        # one example from jls tests: test_hover.test_hover_on_method
+        type_hint = ""
     result: List[str] = []
     if name:
-        result.append(f"# {name_str}")
+        result.append(f"**Name:** {name_str}")
         result.append("")
     if docstring:
         result.append(convert_docstring(docstring, markup_kind))
         result.append("")
     if description:
-        result.append(f"**Desc:** {description}")
+        result.append(f"*Desc:* {description}")
     if type_hint:
-        result.append(f"**Type:** {type_hint}")
+        result.append(f"*Type:* {type_hint}")
     if full_name:
-        result.append(f"**Path:** {full_name}")
+        result.append(f"*Path:* {full_name}")
     if not result:
         return None
     return "\n".join(result).strip()
