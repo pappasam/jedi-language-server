@@ -60,7 +60,7 @@ def test_lsp_completion() -> None:
             "detail": "def my_function",
             "documentation": {
                 "kind": "markdown",
-                "value": "```\nmy_function()\n\nSimple test function.\n```\n",
+                "value": "my_function()\n\nSimple test function.",
             },
             "sortText": "z",
             "filterText": "my_function",
@@ -103,7 +103,7 @@ def test_eager_lsp_completion() -> None:
                     "detail": "def my_function",
                     "documentation": {
                         "kind": "markdown",
-                        "value": "```\nmy_function()\n\nSimple test function.\n```\n",
+                        "value": "my_function()\n\nSimple test function.",
                     },
                     "sortText": "z",
                     "filterText": "my_function",
@@ -149,7 +149,7 @@ def test_lsp_completion_class_method() -> None:
                     "detail": "def some_method",
                     "documentation": {
                         "kind": "markdown",
-                        "value": "```\nsome_method(x)\n\nGreat method.\n```\n",
+                        "value": "some_method(x)\n\nGreat method.",
                     },
                     "sortText": "z",
                     "filterText": "some_method",

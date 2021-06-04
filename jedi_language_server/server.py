@@ -310,16 +310,15 @@ def hover(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     markup_kind = _choose_markup(server)
-    for name in jedi_script.help(**jedi_lines):
-        docstring = name.docstring()
-        if not docstring:
-            continue
-        docstring_clean = jedi_utils.convert_docstring(docstring, markup_kind)
-        contents = MarkupContent(kind=markup_kind, value=docstring_clean)
-        document = server.workspace.get_document(params.text_document.uri)
-        _range = pygls_utils.current_word_range(document, params.position)
-        return Hover(contents=contents, range=_range)
-    return None
+    hover_text = jedi_utils.hover_text(
+        jedi_script.help(**jedi_lines), markup_kind
+    )
+    if not hover_text:
+        return None
+    contents = MarkupContent(kind=markup_kind, value=hover_text)
+    document = server.workspace.get_document(params.text_document.uri)
+    _range = pygls_utils.current_word_range(document, params.position)
+    return Hover(contents=contents, range=_range)
 
 
 @SERVER.feature(REFERENCES)
