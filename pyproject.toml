@@ -39,6 +39,10 @@ classifiers = [
 include = ["README.md"]
 license = "MIT"
 
+[tool.poetry.urls]
+Changelog = "https://github.com/pappasam/jedi-language-server/blob/main/CHANGELOG.md"
+Issues = "https://github.com/pappasam/jedi-language-server/issues"
+
 [tool.poetry.dependencies]
 python = "^3.6.1"
 jedi = "0.18.0"
