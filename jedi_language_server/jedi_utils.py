@@ -412,6 +412,16 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
     return docstring.strip()
 
 
+def _bold(value: str, markup_kind: MarkupKind) -> str:
+    """Add bold surrounding when markup_kind is markdown."""
+    return f"**{value}**" if markup_kind == MarkupKind.Markdown else value
+
+
+def _italic(value: str, markup_kind: MarkupKind) -> str:
+    """Add italic surrounding when markup_kind is markdown."""
+    return f"*{value}*" if markup_kind == MarkupKind.Markdown else value
+
+
 def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
     """Get a hover string from a list of names."""
     if not names:
@@ -423,23 +433,23 @@ def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
     docstring = name.docstring()
     try:
         type_hint = name.get_type_hint()
-    except NotImplementedError:
-        # jedi randomly raises NotImplemented error when inferring some types
-        # one example from jls tests: test_hover.test_hover_on_method
+    except Exception:  # pylint: disable=broad-except
+        # jedi randomly raises NotImplemented, TypeError, and possibly more
+        # errors here. One example from jls: test_hover.test_hover_on_method
         type_hint = ""
     result: List[str] = []
     if name:
-        result.append(f"**Name:** {name_str}")
+        result.append(f"{_bold('Name:', markup_kind)} {name_str}")
         result.append("")
     if docstring:
         result.append(convert_docstring(docstring, markup_kind))
         result.append("")
     if description:
-        result.append(f"*Desc:* {description}")
+        result.append(f"{_italic('Desc:', markup_kind)} {description}")
     if type_hint:
-        result.append(f"*Type:* {type_hint}")
+        result.append(f"{_italic('Type:', markup_kind)} {type_hint}")
     if full_name:
-        result.append(f"*Path:* {full_name}")
+        result.append(f"{_italic('Path:', markup_kind)} {full_name}")
     if not result:
         return None
     return "\n".join(result).strip()
