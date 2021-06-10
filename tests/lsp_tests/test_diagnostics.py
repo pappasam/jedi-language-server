@@ -17,6 +17,7 @@ TEMP_DIR = tempfile.gettempdir()
 
 
 def get_changes(changes_file):
+    """Obtain changes from a changes file."""
     with open(changes_file, "r") as ch_file:
         return json.load(ch_file)
 
