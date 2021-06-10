@@ -11,7 +11,7 @@ line_length = 79
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.31.1"
+version = "0.31.2"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -39,10 +39,6 @@ classifiers = [
 include = ["README.md"]
 license = "MIT"
 
-[tool.poetry.urls]
-Changelog = "https://github.com/pappasam/jedi-language-server/blob/main/CHANGELOG.md"
-Issues = "https://github.com/pappasam/jedi-language-server/issues"
-
 [tool.poetry.dependencies]
 python = "^3.6.1"
 jedi = "0.18.0"
@@ -68,6 +64,10 @@ docformatter = "^1.4"
 
 [tool.poetry.scripts]
 jedi-language-server = 'jedi_language_server.cli:cli'
+
+[tool.poetry.urls]
+Changelog = "https://github.com/pappasam/jedi-language-server/blob/main/CHANGELOG.md"
+Issues = "https://github.com/pappasam/jedi-language-server/issues"
 
 [tool.tox]
 legacy_tox_ini = """

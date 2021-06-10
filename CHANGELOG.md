@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.31.2
+
+### Fixed
+
+- Docstring now presents same information as before, but organized more-tersely, (arguably) more clearly, and with much better markdown syntax support. For example, the name / signature has been pulled out from the main docstring and wrapped in python triple backticks while the docstring is conditionally replaced with the description where relevant.
+
 ## 0.31.1
 
 ### Fixed
