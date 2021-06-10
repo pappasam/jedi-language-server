@@ -8,6 +8,8 @@ from tests.lsp_test_client.utils import as_uri
 
 HOVER_TEST_ROOT = TEST_DATA / "hover"
 
+# pylint: disable=line-too-long
+
 
 def test_hover_on_module():
     """Tests hover on the name of a imported module.
@@ -27,7 +29,7 @@ def test_hover_on_module():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "**Name:** somemodule\n\nModule doc string for testing.\n\n*Desc:* module somemodule\n*Path:* somemodule",
+                "value": "```python\nmodule somemodule\n```\n---\n```text\nModule doc string for testing.\n```\n**Path:** `somemodule`",
             },
             "range": {
                 "start": {"line": 2, "character": 7},
@@ -55,7 +57,7 @@ def test_hover_on_function():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "**Name:** do_something\n\ndo_something()\n\nFunction doc string for testing.\n\n*Desc:* def do_something\n*Type:* do_something()\n*Path:* somemodule.do_something",
+                "value": "```python\ndef do_something()\n```\n---\n```text\nFunction doc string for testing.\n```\n**Path:** `somemodule.do_something`",
             },
             "range": {
                 "start": {"line": 4, "character": 11},
@@ -83,7 +85,7 @@ def test_hover_on_class():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "**Name:** SomeClass\n\nSomeClass()\n\nClass doc string for testing.\n\n*Desc:* class SomeClass\n*Type:* Type[SomeClass]\n*Path:* somemodule.SomeClass",
+                "value": "```python\nclass SomeClass()\n```\n---\n```text\nClass doc string for testing.\n```\n**Path:** `somemodule.SomeClass`",
             },
             "range": {
                 "start": {"line": 6, "character": 15},
@@ -111,7 +113,7 @@ def test_hover_on_method():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "**Name:** some_method\n\nsome_method()\n\nMethod doc string for testing.\n\n*Desc:* def some_method\n*Path:* somemodule.SomeClass.some_method",
+                "value": "```python\ndef some_method()\n```\n---\n```text\nMethod doc string for testing.\n```\n**Path:** `somemodule.SomeClass.some_method`",
             },
             "range": {
                 "start": {"line": 8, "character": 2},
@@ -139,7 +141,7 @@ def test_hover_on_method_no_docstring():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "**Name:** some_method2\n\nsome_method2()\n\n*Desc:* def some_method2\n*Path:* somemodule.SomeClass.some_method2",
+                "value": "```python\ndef some_method2()\n```\n---\n**Path:** `somemodule.SomeClass.some_method2`",
             },
             "range": {
                 "start": {"line": 10, "character": 2},

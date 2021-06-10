@@ -39,7 +39,7 @@ def test_signature_help(trigger_char, column, active_param):
                     "label": "some_function(arg1: str, arg2: int, arg3: list)",
                     "documentation": {
                         "kind": "markdown",
-                        "value": "This is a test function.",
+                        "value": "```text\nThis is a test function.\n```",
                     },
                     "parameters": [
                         {"label": "arg1: str"},

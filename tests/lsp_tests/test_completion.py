@@ -11,6 +11,8 @@ from tests.lsp_test_client.utils import as_uri
 
 COMPLETION_TEST_ROOT = TEST_DATA / "completion"
 
+# pylint: disable=line-too-long
+
 
 def test_lsp_completion() -> None:
     """Test a simple completion request.
@@ -60,7 +62,7 @@ def test_lsp_completion() -> None:
             "detail": "def my_function",
             "documentation": {
                 "kind": "markdown",
-                "value": "my_function()\n\nSimple test function.",
+                "value": "```text\nmy_function()\n\nSimple test function.\n```",
             },
             "sortText": "z",
             "filterText": "my_function",
@@ -103,7 +105,7 @@ def test_eager_lsp_completion() -> None:
                     "detail": "def my_function",
                     "documentation": {
                         "kind": "markdown",
-                        "value": "my_function()\n\nSimple test function.",
+                        "value": "```text\nmy_function()\n\nSimple test function.\n```",
                     },
                     "sortText": "z",
                     "filterText": "my_function",
@@ -149,7 +151,7 @@ def test_lsp_completion_class_method() -> None:
                     "detail": "def some_method",
                     "documentation": {
                         "kind": "markdown",
-                        "value": "some_method(x)\n\nGreat method.",
+                        "value": "```text\nsome_method(x)\n\nGreat method.\n```",
                     },
                     "sortText": "z",
                     "filterText": "some_method",
