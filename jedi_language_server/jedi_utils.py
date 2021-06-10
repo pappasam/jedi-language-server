@@ -384,6 +384,39 @@ def lsp_completion_item(
     return completion_item
 
 
+def _md_bold(value: str, markup_kind: MarkupKind) -> str:
+    """Add bold surrounding when markup_kind is markdown."""
+    return f"**{value}**" if markup_kind == MarkupKind.Markdown else value
+
+
+def _md_italic(value: str, markup_kind: MarkupKind) -> str:
+    """Add italic surrounding when markup_kind is markdown."""
+    return f"*{value}*" if markup_kind == MarkupKind.Markdown else value
+
+
+def _md_text(value: str, markup_kind: MarkupKind) -> str:
+    """Surround a markdown string with a Python fence."""
+    return (
+        f"```text\n{value}\n```"
+        if markup_kind == MarkupKind.Markdown
+        else value
+    )
+
+
+def _md_python(value: str, markup_kind: MarkupKind) -> str:
+    """Surround a markdown string with a Python fence."""
+    return (
+        f"```python\n{value}\n```"
+        if markup_kind == MarkupKind.Markdown
+        else value
+    )
+
+
+def _md_text_sl(value: str, markup_kind: MarkupKind) -> str:
+    """Surround markdown text with single line backtick."""
+    return f"`{value}`" if markup_kind == MarkupKind.Markdown else value
+
+
 def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
     """Take a docstring and convert it to markup kind if possible.
 
@@ -398,10 +431,10 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
         try:
             return docstring_to_markdown.convert(docstring).strip()
         except docstring_to_markdown.UnknownFormatError:
-            return docstring.strip()
+            return _md_text(docstring.strip(), markup_kind)
         except Exception as error:  # pylint: disable=broad-except
-            return (
-                docstring
+            result = (
+                docstring.strip()
                 + "\n"
                 + "jedi-language-server error: "
                 + "Uncaught exception while converting docstring to markdown. "
@@ -409,47 +442,82 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
                 + "https://github.com/pappasam/jedi-language-server/issues. "
                 + f"Traceback:\n{error}"
             ).strip()
+            return _md_text(result, markup_kind)
     return docstring.strip()
 
 
-def _bold(value: str, markup_kind: MarkupKind) -> str:
-    """Add bold surrounding when markup_kind is markdown."""
-    return f"**{value}**" if markup_kind == MarkupKind.Markdown else value
+_HOVER_SIGNATURE_TYPES = {"class", "instance", "function"}
 
-
-def _italic(value: str, markup_kind: MarkupKind) -> str:
-    """Add italic surrounding when markup_kind is markdown."""
-    return f"*{value}*" if markup_kind == MarkupKind.Markdown else value
+_HOVER_TYPE_TRANSLATION = {
+    "module": "module",
+    "class": "class",
+    "instance": "instance",
+    "function": "def",
+    "param": "param",
+    "path": "path",
+    "keyword": "keyword",
+    "property": "property",
+    "statement": "statement",
+}
 
 
 def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
     """Get a hover string from a list of names."""
+    # pylint: disable=too-many-branches
     if not names:
         return None
     name = names[0]
+    name_type = name.type
+    hover_type = _HOVER_TYPE_TRANSLATION[name_type]
+    signatures = (
+        [f"{hover_type} {s.to_string()}" for s in name.get_signatures()]
+        if name_type in _HOVER_SIGNATURE_TYPES
+        else []
+    )
     name_str = name.name
     full_name = name.full_name
     description = name.description
-    docstring = name.docstring()
-    try:
-        type_hint = name.get_type_hint()
-    except Exception:  # pylint: disable=broad-except
-        # jedi randomly raises NotImplemented, TypeError, and possibly more
-        # errors here. One example from jls: test_hover.test_hover_on_method
+    docstring = name.docstring(raw=True)
+    if not signatures and name_type != "class":
+        try:
+            type_hint = name.get_type_hint()
+        except Exception:  # pylint: disable=broad-except
+            # jedi randomly raises NotImplemented, TypeError, and possibly more
+            # errors here. One example from jls -
+            # test_hover.test_hover_on_method
+            type_hint = ""
+    else:
         type_hint = ""
+
+    if signatures:
+        header_plain = "\n".join(signatures)
+    elif name_type == "class":
+        header_plain = f"{hover_type} {name_str}"
+    elif type_hint:
+        header_plain = f"{name_str}: {type_hint}"
+    else:
+        header_plain = f"{hover_type} {name_str}"
+    header = _md_python(header_plain, markup_kind)
+
     result: List[str] = []
-    if name:
-        result.append(f"{_bold('Name:', markup_kind)} {name_str}")
-        result.append("")
+    result.append(header)
     if docstring:
+        result.append("---")
         result.append(convert_docstring(docstring, markup_kind))
-        result.append("")
-    if description:
-        result.append(f"{_italic('Desc:', markup_kind)} {description}")
-    if type_hint:
-        result.append(f"{_italic('Type:', markup_kind)} {type_hint}")
+    elif header_plain.strip().startswith(description.strip()):
+        pass
+    else:
+        result.append("---")
+        result.append(_md_python(description, markup_kind))
+
     if full_name:
-        result.append(f"{_italic('Path:', markup_kind)} {full_name}")
+        if len(result) == 1:
+            result.append("---")
+        result.append(
+            _md_bold("Path:", markup_kind)
+            + " "
+            + _md_text_sl(full_name, markup_kind)
+        )
     if not result:
         return None
     return "\n".join(result).strip()
