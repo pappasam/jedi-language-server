@@ -128,15 +128,15 @@ If you are configuring manually, jedi-language-server supports the following [in
     "hover": {
       "enable": true,
       "disable": {
-        "class": { "all": false, "names": [], "full_names": [] },
-        "function": { "all": false, "names": [], "full_names": [] },
-        "instance": { "all": false, "names": [], "full_names": [] },
-        "keyword": { "all": false, "names": [], "full_names": [] },
-        "module": { "all": false, "names": [], "full_names": [] },
-        "param": { "all": false, "names": [], "full_names": [] },
-        "path": { "all": false, "names": [], "full_names": [] },
-        "property": { "all": false, "names": [], "full_names": [] },
-        "statement": { "all": false, "names": [], "full_names": [] }
+        "class": { "all": false, "names": [], "fullNames": [] },
+        "function": { "all": false, "names": [], "fullNames": [] },
+        "instance": { "all": false, "names": [], "fullNames": [] },
+        "keyword": { "all": false, "names": [], "fullNames": [] },
+        "module": { "all": false, "names": [], "fullNames": [] },
+        "param": { "all": false, "names": [], "fullNames": [] },
+        "path": { "all": false, "names": [], "fullNames": [] },
+        "property": { "all": false, "names": [], "fullNames": [] },
+        "statement": { "all": false, "names": [], "fullNames": [] }
       }
     },
     "jediSettings": {
