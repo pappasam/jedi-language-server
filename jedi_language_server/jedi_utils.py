@@ -4,7 +4,7 @@ Translates pygls types back and forth with Jedi
 """
 
 from inspect import Parameter
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import docstring_to_markdown
 import jedi.api.errors
@@ -29,7 +29,7 @@ from pygls.lsp.types import (
 )
 from pygls.workspace import Document
 
-from .initialization_options import InitializationOptions
+from .initialization_options import HoverIgnoreChoose, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
 
@@ -461,21 +461,39 @@ _HOVER_TYPE_TRANSLATION = {
 }
 
 
-def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
+def hover_text(
+    names: List[Name],
+    markup_kind: MarkupKind,
+    initialization_options: InitializationOptions,
+) -> Optional[str]:
     """Get a hover string from a list of names."""
     # pylint: disable=too-many-branches
     if not names:
         return None
     name = names[0]
+    name_str = name.name
+    if not name_str:
+        return None
     name_type = name.type
+    ignore_type: HoverIgnoreChoose = getattr(
+        initialization_options.hover.ignore, name_type + "_"
+    )
+    full_name = name.full_name
+    full_name_ignore = full_name or name_str
+    if ignore_type is False:
+        pass
+    elif ignore_type is True:
+        return None
+    elif name_str in ignore_type.names:
+        return None
+    elif full_name_ignore in ignore_type.full_names:
+        return None
     hover_type = _HOVER_TYPE_TRANSLATION[name_type]
     signatures = (
         [f"{hover_type} {s.to_string()}" for s in name.get_signatures()]
         if name_type in _HOVER_SIGNATURE_TYPES
         else []
     )
-    name_str = name.name
-    full_name = name.full_name
     description = name.description
     docstring = name.docstring(raw=True)
     if not signatures and name_type != "class":
@@ -518,8 +536,6 @@ def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
             + " "
             + _md_text_sl(full_name, markup_kind)
         )
-    if not result:
-        return None
     return "\n".join(result).strip()
 
 

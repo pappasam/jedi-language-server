@@ -311,7 +311,9 @@ def hover(
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     markup_kind = _choose_markup(server)
     hover_text = jedi_utils.hover_text(
-        jedi_script.help(**jedi_lines), markup_kind
+        jedi_script.help(**jedi_lines),
+        markup_kind,
+        server.initialization_options,
     )
     if not hover_text:
         return None
