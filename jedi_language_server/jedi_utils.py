@@ -4,7 +4,7 @@ Translates pygls types back and forth with Jedi
 """
 
 from inspect import Parameter
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 import docstring_to_markdown
 import jedi.api.errors

@@ -4,7 +4,7 @@ Provides a fully defaulted pydantic model for this language server's
 initialization options.
 """
 
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Set
 
 from pydantic import BaseModel, Field
 from pygls.lsp.types import MarkupKind
