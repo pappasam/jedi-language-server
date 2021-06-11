@@ -4,11 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.32.0
+
+### Added
+
+- Initialization options to granularly disable names and full names for hover operations based on their Jedi type. This is useful because some text editors will automatically send hover requests when a user pauses their cursor over text and the large amount of information can get annoying for some users. Resolves: <https://github.com/pappasam/jedi-language-server/issues/147>. Jedi types are currently: `module`, `class`, `instance`, `function`, `param`, `path`, `keyword`, `property`, and `statement`.
+- Initialization option to disable hover entirely. If `enable` is set to false, the hover language feature will not be registered. May consider adding something similar to most language server features if this proves useful.
+
+### Changed
+
+- In Hover, `Path` has been renamed to `Full name`, which is more accurate and is directly tied to the hover disabling options.
+- Restrict Python version support to >= 3.6.2. Upgraded development dependencies. Latest black doesn't support Python < 3.6.2, so to keep things simple here we're now not supporting Python versions below that version either.
+
 ## 0.31.2
 
 ### Fixed
 
-- Docstring now presents same information as before, but organized more-tersely, (arguably) more clearly, and with much better markdown syntax support. For example, the name / signature has been pulled out from the main docstring and wrapped in python triple backticks while the docstring is conditionally replaced with the description where relevant.
+- Docstring now presents same information as before, but organized more-tersely, (arguably) more clearly, and with much better markdown syntax support. For example, the name / signature has been pulled out from the main docstring and wrapped in python triple back ticks while the docstring is conditionally replaced with the description where relevant.
 
 ## 0.31.1
 
