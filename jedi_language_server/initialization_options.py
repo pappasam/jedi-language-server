@@ -43,12 +43,10 @@ class Diagnostics(Model):
     did_change: bool = True
 
 
-class HoverIgnoreChooseOptions(Model):
+class HoverIgnoreOptions(Model):
+    disable: bool = False
     names: Set[str] = set()
     full_names: Set[str] = set()
-
-
-HoverIgnoreChoose = Union[HoverIgnoreChooseOptions, bool]
 
 
 class HoverIgnore(Model):
@@ -59,16 +57,36 @@ class HoverIgnore(Model):
     underscore at the end.
     """
 
-    keyword_: HoverIgnoreChoose = Field(default=False, alias="keyword")
-    module_: HoverIgnoreChoose = Field(default=False, alias="module")
-    class_: HoverIgnoreChoose = Field(default=False, alias="class")
-    instance_: HoverIgnoreChoose = Field(default=False, alias="instance")
-    function_: HoverIgnoreChoose = Field(default=False, alias="function")
-    param_: HoverIgnoreChoose = Field(default=False, alias="param")
-    path_: HoverIgnoreChoose = Field(default=False, alias="path")
-    keyword_: HoverIgnoreChoose = Field(default=False, alias="keyword")
-    property_: HoverIgnoreChoose = Field(default=False, alias="property")
-    statement_: HoverIgnoreChoose = Field(default=False, alias="statement")
+    keyword_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="keyword"
+    )
+    module_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="module"
+    )
+    class_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="class"
+    )
+    instance_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="instance"
+    )
+    function_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="function"
+    )
+    param_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="param"
+    )
+    path_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="path"
+    )
+    keyword_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="keyword"
+    )
+    property_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="property"
+    )
+    statement_: HoverIgnoreOptions = Field(
+        default=HoverIgnoreOptions(), alias="statement"
+    )
 
 
 class Hover(Model):

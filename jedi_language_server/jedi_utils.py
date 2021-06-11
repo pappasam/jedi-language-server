@@ -29,7 +29,7 @@ from pygls.lsp.types import (
 )
 from pygls.workspace import Document
 
-from .initialization_options import HoverIgnoreChoose, InitializationOptions
+from .initialization_options import HoverIgnoreOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
 
@@ -461,6 +461,26 @@ _HOVER_TYPE_TRANSLATION = {
 }
 
 
+def _hover_ignore(name: Name, init: InitializationOptions) -> bool:
+    """True if hover should be ignored, false otherwise.
+
+    Split into separate function for readability.
+
+    Note: appends underscore to lookup because pydantic model requires it.
+    """
+    name_str = name.name
+    if not name_str:
+        return True
+    ignore_type: HoverIgnoreOptions = getattr(
+        init.hover.ignore, name.type + "_"
+    )
+    return (
+        ignore_type.disable is True
+        or name_str in ignore_type.names
+        or (name.full_name or name_str) in ignore_type.full_names
+    )
+
+
 def hover_text(
     names: List[Name],
     markup_kind: MarkupKind,
@@ -471,23 +491,11 @@ def hover_text(
     if not names:
         return None
     name = names[0]
+    if _hover_ignore(name, initialization_options):
+        return None
     name_str = name.name
-    if not name_str:
-        return None
     name_type = name.type
-    ignore_type: HoverIgnoreChoose = getattr(
-        initialization_options.hover.ignore, name_type + "_"
-    )
     full_name = name.full_name
-    full_name_ignore = full_name or name_str
-    if ignore_type is False:
-        pass
-    elif ignore_type is True:
-        return None
-    elif name_str in ignore_type.names:
-        return None
-    elif full_name_ignore in ignore_type.full_names:
-        return None
     hover_type = _HOVER_TYPE_TRANSLATION[name_type]
     signatures = (
         [f"{hover_type} {s.to_string()}" for s in name.get_signatures()]
@@ -522,7 +530,7 @@ def hover_text(
     if docstring:
         result.append("---")
         result.append(convert_docstring(docstring, markup_kind))
-    elif header_plain.strip().startswith(description.strip()):
+    elif header_plain.startswith(description):
         pass
     else:
         result.append("---")
