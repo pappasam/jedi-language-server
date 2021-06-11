@@ -532,7 +532,7 @@ def hover_text(
         if len(result) == 1:
             result.append("---")
         result.append(
-            _md_bold("Path:", markup_kind)
+            _md_bold("Full name:", markup_kind)
             + " "
             + _md_text_sl(full_name, markup_kind)
         )
