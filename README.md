@@ -125,6 +125,20 @@ If you are configuring manually, jedi-language-server supports the following [in
       "didChange": true,
       "didSave": true
     },
+    "hover": {
+      "enable": true,
+      "disable": {
+        "class": { "all": false, "names": [], "full_names": [] },
+        "function": { "all": false, "names": [], "full_names": [] },
+        "instance": { "all": false, "names": [], "full_names": [] },
+        "keyword": { "all": false, "names": [], "full_names": [] },
+        "module": { "all": false, "names": [], "full_names": [] },
+        "param": { "all": false, "names": [], "full_names": [] },
+        "path": { "all": false, "names": [], "full_names": [] },
+        "property": { "all": false, "names": [], "full_names": [] },
+        "statement": { "all": false, "names": [], "full_names": [] }
+      }
+    },
     "jediSettings": {
       "autoImportModules": [],
       "caseInsensitiveCompletion": true

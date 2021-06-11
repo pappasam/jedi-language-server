@@ -43,13 +43,13 @@ class Diagnostics(Model):
     did_change: bool = True
 
 
-class HoverIgnoreOptions(Model):
-    disable: bool = False
+class HoverDisableOptions(Model):
+    all: bool = False
     names: Set[str] = set()
     full_names: Set[str] = set()
 
 
-class HoverIgnore(Model):
+class HoverDisable(Model):
     """All Attributes have _ appended to avoid syntax conflicts.
 
     For example, the keyword class would have required a special case.
@@ -57,40 +57,38 @@ class HoverIgnore(Model):
     underscore at the end.
     """
 
-    keyword_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="keyword"
+    keyword_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="keyword"
     )
-    module_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="module"
+    module_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="module"
     )
-    class_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="class"
+    class_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="class"
     )
-    instance_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="instance"
+    instance_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="instance"
     )
-    function_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="function"
+    function_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="function"
     )
-    param_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="param"
+    param_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="param"
     )
-    path_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="path"
+    path_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="path"
     )
-    keyword_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="keyword"
+    property_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="property"
     )
-    property_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="property"
-    )
-    statement_: HoverIgnoreOptions = Field(
-        default=HoverIgnoreOptions(), alias="statement"
+    statement_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="statement"
     )
 
 
 class Hover(Model):
-    ignore: HoverIgnore = HoverIgnore()
+    enable: bool = True
+    disable: HoverDisable = HoverDisable()
 
 
 class JediSettings(Model):

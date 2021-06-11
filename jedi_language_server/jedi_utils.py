@@ -29,7 +29,7 @@ from pygls.lsp.types import (
 )
 from pygls.workspace import Document
 
-from .initialization_options import HoverIgnoreOptions, InitializationOptions
+from .initialization_options import HoverDisableOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
 
@@ -471,11 +471,11 @@ def _hover_ignore(name: Name, init: InitializationOptions) -> bool:
     name_str = name.name
     if not name_str:
         return True
-    ignore_type: HoverIgnoreOptions = getattr(
-        init.hover.ignore, name.type + "_"
+    ignore_type: HoverDisableOptions = getattr(
+        init.hover.disable, name.type + "_"
     )
     return (
-        ignore_type.disable is True
+        ignore_type.all is True
         or name_str in ignore_type.names
         or (name.full_name or name_str) in ignore_type.full_names
     )
