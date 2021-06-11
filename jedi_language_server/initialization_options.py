@@ -4,9 +4,9 @@ Provides a fully defaulted pydantic model for this language server's
 initialization options.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Set
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pygls.lsp.types import MarkupKind
 
 # pylint: disable=missing-class-docstring
@@ -43,6 +43,54 @@ class Diagnostics(Model):
     did_change: bool = True
 
 
+class HoverDisableOptions(Model):
+    all: bool = False
+    names: Set[str] = set()
+    full_names: Set[str] = set()
+
+
+class HoverDisable(Model):
+    """All Attributes have _ appended to avoid syntax conflicts.
+
+    For example, the keyword class would have required a special case.
+    To get around this, I decided it's simpler to always assume an
+    underscore at the end.
+    """
+
+    keyword_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="keyword"
+    )
+    module_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="module"
+    )
+    class_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="class"
+    )
+    instance_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="instance"
+    )
+    function_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="function"
+    )
+    param_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="param"
+    )
+    path_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="path"
+    )
+    property_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="property"
+    )
+    statement_: HoverDisableOptions = Field(
+        default=HoverDisableOptions(), alias="statement"
+    )
+
+
+class Hover(Model):
+    enable: bool = True
+    disable: HoverDisable = HoverDisable()
+
+
 class JediSettings(Model):
     auto_import_modules: List[str] = []
     case_insensitive_completion: bool = True
@@ -62,6 +110,7 @@ class InitializationOptions(Model):
     code_action: CodeAction = CodeAction()
     completion: Completion = Completion()
     diagnostics: Diagnostics = Diagnostics()
+    hover: Hover = Hover()
     jedi_settings: JediSettings = JediSettings()
     markup_kind_preferred: Optional[MarkupKind]
     workspace: Workspace = Workspace()

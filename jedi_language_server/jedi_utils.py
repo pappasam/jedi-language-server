@@ -29,7 +29,7 @@ from pygls.lsp.types import (
 )
 from pygls.workspace import Document
 
-from .initialization_options import InitializationOptions
+from .initialization_options import HoverDisableOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
 
@@ -461,21 +461,47 @@ _HOVER_TYPE_TRANSLATION = {
 }
 
 
-def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
+def _hover_ignore(name: Name, init: InitializationOptions) -> bool:
+    """True if hover should be ignored, false otherwise.
+
+    Split into separate function for readability.
+
+    Note: appends underscore to lookup because pydantic model requires it.
+    """
+    name_str = name.name
+    if not name_str:
+        return True
+    ignore_type: HoverDisableOptions = getattr(
+        init.hover.disable, name.type + "_"
+    )
+    return (
+        ignore_type.all is True
+        or name_str in ignore_type.names
+        or (name.full_name or name_str) in ignore_type.full_names
+    )
+
+
+def hover_text(
+    names: List[Name],
+    markup_kind: MarkupKind,
+    initialization_options: InitializationOptions,
+) -> Optional[str]:
     """Get a hover string from a list of names."""
     # pylint: disable=too-many-branches
     if not names:
         return None
     name = names[0]
+    if _hover_ignore(name, initialization_options):
+        return None
+    name_str = name.name
     name_type = name.type
+    full_name = name.full_name
     hover_type = _HOVER_TYPE_TRANSLATION[name_type]
     signatures = (
         [f"{hover_type} {s.to_string()}" for s in name.get_signatures()]
         if name_type in _HOVER_SIGNATURE_TYPES
         else []
     )
-    name_str = name.name
-    full_name = name.full_name
     description = name.description
     docstring = name.docstring(raw=True)
     if not signatures and name_type != "class":
@@ -504,7 +530,7 @@ def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
     if docstring:
         result.append("---")
         result.append(convert_docstring(docstring, markup_kind))
-    elif header_plain.strip().startswith(description.strip()):
+    elif header_plain.startswith(description):
         pass
     else:
         result.append("---")
@@ -514,12 +540,10 @@ def hover_text(names: List[Name], markup_kind: MarkupKind) -> Optional[str]:
         if len(result) == 1:
             result.append("---")
         result.append(
-            _md_bold("Path:", markup_kind)
+            _md_bold("Full name:", markup_kind)
             + " "
             + _md_text_sl(full_name, markup_kind)
         )
-    if not result:
-        return None
     return "\n".join(result).strip()
 
 

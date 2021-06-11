@@ -115,6 +115,10 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
         server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
         server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
+
+        if server.initialization_options.hover.enable:
+            server.feature(HOVER)(hover)
+
         initialize_result: InitializeResult = super().bf_initialize(params)
         server.project = (
             Project(
@@ -301,7 +305,7 @@ def highlight(
     return highlight_names if highlight_names else None
 
 
-@SERVER.feature(HOVER)
+# Registered with HOVER dynamically
 def hover(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[Hover]:
@@ -311,7 +315,9 @@ def hover(
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     markup_kind = _choose_markup(server)
     hover_text = jedi_utils.hover_text(
-        jedi_script.help(**jedi_lines), markup_kind
+        jedi_script.help(**jedi_lines),
+        markup_kind,
+        server.initialization_options,
     )
     if not hover_text:
         return None

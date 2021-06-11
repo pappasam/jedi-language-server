@@ -11,7 +11,7 @@ line_length = 79
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.31.2"
+version = "0.32.0"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -40,7 +40,7 @@ include = ["README.md"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
+python = "^3.6.2"
 jedi = "0.18.0"
 pygls = "^0.10.3"
 pydantic = "^1.7"
@@ -55,8 +55,8 @@ tox-asdf = "^0.1.0"
 toml-sort = "^0.18.0"
 isort = "^5.7.0"
 pylint = "^2.6.0"
-mypy = "^0.812"
-black = "^20.8b1"
+mypy = "^0.902"
+black = "^21.6b0"
 PyHamcrest = "^2.0.2"
 python-jsonrpc-server = "^0.4.0"
 pytest-cov = "^2.11.1"
