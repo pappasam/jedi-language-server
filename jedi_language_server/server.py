@@ -20,6 +20,7 @@ from pygls.lsp.methods import (
     DOCUMENT_HIGHLIGHT,
     DOCUMENT_SYMBOL,
     HOVER,
+    INITIALIZE,
     REFERENCES,
     RENAME,
     SIGNATURE_HELP,
@@ -62,7 +63,7 @@ from pygls.lsp.types import (
     WorkspaceEdit,
     WorkspaceSymbolParams,
 )
-from pygls.protocol import LanguageServerProtocol
+from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
 from . import jedi_utils, pygls_utils, text_edit_utils
@@ -72,7 +73,8 @@ from .initialization_options import InitializationOptions
 class JediLanguageServerProtocol(LanguageServerProtocol):
     """Override some built-in functions."""
 
-    def bf_initialize(self, params: InitializeParams) -> InitializeResult:
+    @lsp_method(INITIALIZE)
+    def lsp_initialize(self, params: InitializeParams) -> InitializeResult:
         """Override built-in initialization.
 
         Here, we can conditionally register functions to features based
@@ -119,7 +121,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         if server.initialization_options.hover.enable:
             server.feature(HOVER)(hover)
 
-        initialize_result: InitializeResult = super().bf_initialize(params)
+        initialize_result: InitializeResult = super().lsp_initialize(params)
         server.project = (
             Project(
                 path=server.workspace.root_path,
@@ -136,10 +138,10 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
 class JediLanguageServer(LanguageServer):
     """Jedi language server.
 
-    :attr initialization_options: initialized in bf_initialize from the
+    :attr initialization_options: initialized in lsp_initialize from the
         protocol_cls.
     :attr project: a Jedi project. This value is created in
-        `JediLanguageServerProtocol.bf_initialize`.
+        `JediLanguageServerProtocol.lsp_initialize`.
     """
 
     initialization_options: InitializationOptions
@@ -558,7 +560,7 @@ def did_change_configuration(
 
 # Static capability or initializeOptions functions that rely on a specific
 # client capability or user configuration. These are associated with
-# JediLanguageServer within JediLanguageServerProtocol.bf_initialize
+# JediLanguageServer within JediLanguageServerProtocol.lsp_initialize
 def _publish_diagnostics(server: JediLanguageServer, uri: str) -> None:
     """Helper function to publish diagnostics for a file."""
     document = server.workspace.get_document(uri)
