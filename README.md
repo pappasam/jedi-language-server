@@ -102,6 +102,37 @@ Examples:
     Run from stdio: jedi-language-server
 ```
 
+If testing sending requests over stdio manually from the command line, you must include Windows-style line endings: `\r\n` . For an example, from within this project, run the following:
+
+```console
+$ jedi-language-server < ./example-initialization-request.txt
+INFO:pygls.server:Starting IO server
+INFO:pygls.feature_manager:Registered "textDocument/didOpen" with options "None"
+INFO:pygls.feature_manager:Registered "textDocument/didChange" with options "None"
+INFO:pygls.feature_manager:Registered "textDocument/didSave" with options "None"
+INFO:pygls.feature_manager:Registered "textDocument/hover" with options "None"
+INFO:pygls.protocol:Language server initialized work_done_token=None process_id=None root_uri='file:///home/ubuntu/artifacts/' capabilities=ClientCapabilities(workspace=WorkspaceClientCapabilities(apply_edit=None, workspace_edit=None, did_change_configuration=DidChangeConfigurationClientCapabilities(dynamic_registration=True), did_change_watched_files=None, symbol=None, execute_command=None, workspace_folders=None, configuration=None, semantic_tokens=None, code_lens=None, file_operations=None), text_document=TextDocumentClientCapabilities(synchronization=TextDocumentSyncClientCapabilities(dynamic_registration=True, will_save=False, will_save_wait_until=False, did_save=False), completion=CompletionClientCapabilities(dynamic_registration=True, completion_item=CompletionItemClientCapabilities(snippet_support=False, commit_characters_support=True, documentation_format=[<MarkupKind.PlainText: 'plaintext'>, <MarkupKind.Markdown: 'markdown'>], deprecated_support=False, preselect_support=False, tag_support=None, insert_replace_support=None, resolve_support=None, insert_text_mode_support=None), completion_item_kind=None, context_support=False), hover=HoverClientCapabilities(dynamic_registration=True, content_format=[<MarkupKind.PlainText: 'plaintext'>, <MarkupKind.Markdown: 'markdown'>]), signature_help=SignatureHelpClientCapabilities(dynamic_registration=True, signature_information=SignatureHelpInformationClientCapabilities(documentation_format=[<MarkupKind.PlainText: 'plaintext'>, <MarkupKind.Markdown: 'markdown'>], parameter_information=None, active_parameter_support=None), context_support=None), declaration=DeclarationClientCapabilities(dynamic_registration=True, link_support=True), definition=DefinitionClientCapabilities(dynamic_registration=True, link_support=True), type_definition=TypeDefinitionClientCapabilities(dynamic_registration=True, link_support=True), implementation=ImplementationClientCapabilities(dynamic_registration=True, link_support=True), references=None, document_highlight=None, document_symbol=None, code_action=None, code_lens=None, document_link=None, color_provider=None, formatting=None, range_formatting=None, on_type_formatting=None, rename=None, publish_diagnostics=None, folding_range=None, selection_range=None, linked_editing_range=None, call_hierarchy=None, semantic_tokens=None, moniker=None), window=None, general=None, experimental=None) client_info=None locale=None root_path=None initialization_options=None trace=None workspace_folders=None
+INFO:pygls.protocol:Sending data: {"jsonrpc": "2.0", "id": 0, "result": {"capabilities": {"textDocumentSync": {"openClose": true, "change": 2, "willSave": false, "willSaveWaitUntil": false, "save": true}, "completionProvider": {"triggerCharacters": [".", "'", "\""], "resolveProvider": true}, "hoverProvider": true, "signatureHelpProvider": {"triggerCharacters": ["(", ","]}, "definitionProvider": true, "referencesProvider": true, "documentHighlightProvider": true, "documentSymbolProvider": true, "codeActionProvider": {"codeActionKinds": ["refactor.inline", "refactor.extract"]}, "renameProvider": true, "executeCommandProvider": {"commands": []}, "workspaceSymbolProvider": true, "workspace": {"workspaceFolders": {"supported": true, "changeNotifications": true}, "fileOperations": {}}}}}
+Content-Length: 758
+Content-Type: application/vscode-jsonrpc; charset=utf-8
+
+{"jsonrpc": "2.0", "id": 0, "result": {"capabilities": {"textDocumentSync": {"openClose": true, "change": 2, "willSave": false, "willSaveWaitUntil": false, "save": true}, "completionProvider": {"triggerCharacters": [".", "'", "\""], "resolveProvider": true}, "hoverProvider": true, "signatureHelpProvider": {"triggerCharacters": ["(", ","]}, "definitionProvider": true, "referencesProvider": true, "documentHighlightProvider": true, "documentSymbolProvider": true, "codeActionProvider": {"codeActionKinds": ["refactor.inline", "refactor.extract"]}, "renameProvider": true, "executeCommandProvider": {"commands": []}, "workspaceSymbolProvider": true, "workspace": {"workspaceFolders": {"supported": true, "changeNotifications": true}, "fileOperations": {}}}}}INFO:pygls.server:Shutting down the server
+INFO:pygls.server:Closing the event loop.
+```
+
+If testing interactively, be sure to manually insert carriage returns. Although this may differ between shell environments, within most bash terminals, you can explicitly insert the required line endings by typing `<C-v><C-m>`, which will insert a `^M`. See:
+
+```console
+$ jedi-language-server 2>logs
+Content-Length: 1062^M
+^M
+{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"capabilities":{"textDocument":{"hover":{"dynamicRegistration":true,"contentFormat":["plaintext","markdown"]},"synchronization":{"dynamicRegistration":true,"willSave":false,"didSave":false,"willSaveWaitUntil":false},"completion":{"dynamicRegistration":true,"completionItem":{"snippetSupport":false,"commitCharactersSupport":true,"documentationFormat":["plaintext","markdown"],"deprecatedSupport":false,"preselectSupport":false},"contextSupport":false},"signatureHelp":{"dynamicRegistration":true,"signatureInformation":{"documentationFormat":["plaintext","markdown"]}},"declaration":{"dynamicRegistration":true,"linkSupport":true},"definition":{"dynamicRegistration":true,"linkSupport":true},"typeDefinition":{"dynamicRegistration":true,"linkSupport":true},"implementation":{"dynamicRegistration":true,"linkSupport":true}},"workspace":{"didChangeConfiguration":{"dynamicRegistration":true}}},"initializationOptions":null,"processId":null,"rootUri":"file:///home/ubuntu/artifacts/","workspaceFolders":null}}^M
+Content-Length: 758
+Content-Type: application/vscode-jsonrpc; charset=utf-8
+
+{"jsonrpc": "2.0", "id": 0, "result": {"capabilities": {"textDocumentSync": {"openClose": true, "change": 2, "willSave": false, "willSaveWaitUntil": false, "save": true}, "completionProvider": {"triggerCharacters": [".", "'", "\""], "resolveProvider": true}, "hoverProvider": true, "signatureHelpProvider": {"triggerCharacters": ["(", ","]}, "definitionProvider": true, "referencesProvider": true, "documentHighlightProvider": true, "documentSymbolProvider": true, "codeActionProvider": {"codeActionKinds": ["refactor.inline", "refactor.extract"]}, "renameProvider": true, "executeCommandProvider": {"commands": []}, "workspaceSymbolProvider": true, "workspace": {"workspaceFolders": {"supported": true, "changeNotifications": true}, "fileOperations": {}}}}}
+```
+
 ## Configuration
 
 We recommend using [coc-jedi](https://github.com/pappasam/coc-jedi) and following its [configuration instructions](https://github.com/pappasam/coc-jedi#configuration).
