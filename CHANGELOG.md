@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.33.1
+
+### Added
+
+- Support for serving content over web sockets.
+
 ## 0.33.0
 
 ### Changed
@@ -622,8 +628,3 @@ Same functions as 0.28, but different tag.
 ### Fixed
 
 - `mypy`, `pylint`, `black`, `toml-sort`, and `isort` all pass.
-npm notice
-npm notice New minor version of npm available! 7.6.0 -> 7.19.0
-npm notice Changelog: <https://github.com/npm/cli/releases/tag/v7.19.0>
-npm notice Run `npm install -g npm@7.19.0` to update!
-npm notice

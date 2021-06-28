@@ -40,7 +40,18 @@ def cli() -> None:
         epilog="""\
 Examples:
 
-    Run from stdio: jedi-language-server
+    Run over stdio     : jedi-language-server
+    Run over tcp       : jedi-language-server --tcp
+    Run over websockets:
+        # only need to pip install once per env
+        pip install pygls[ws]
+        jedi-language-server --ws
+
+Notes:
+
+    For use with web sockets, user must first run
+    'pip install pygls[ws]' to install the correct
+    version of the websockets library.
 """,
     )
     parser.add_argument(
@@ -72,7 +83,7 @@ Examples:
     )
     parser.add_argument(
         "--log-file",
-        help="redirect logs to the given file instead of writing to stderr",
+        help="redirect logs to file specified",
         type=str,
     )
     parser.add_argument(

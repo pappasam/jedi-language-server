@@ -82,24 +82,34 @@ jedi-language-server can be run directly from the command line.
 
 ```console
 $ jedi-language-server --help
-usage: jedi-language-server [-h] [--version] [--tcp] [--host HOST]
-                            [--port PORT] [--log-file LOG_FILE] [-v]
+usage: jedi-language-server [-h] [--version] [--tcp] [--ws] [--host HOST] [--port PORT] [--log-file LOG_FILE] [-v]
 
 Jedi language server: an LSP wrapper for jedi.
 
 optional arguments:
   -h, --help           show this help message and exit
   --version            display version information and exit
-  --tcp                use TCP server instead of stdio
-  --host HOST          host for TCP server (default 127.0.0.1)
-  --port PORT          port for TCP server (default 2087)
-  --log-file LOG_FILE  redirect logs to the given file instead of writing to
-                       stderr
+  --tcp                use TCP web server instead of stdio
+  --ws                 use web socket server instead of stdio
+  --host HOST          host for web server (default 127.0.0.1)
+  --port PORT          port for web server (default 2087)
+  --log-file LOG_FILE  redirect logs to file specified
   -v, --verbose        increase verbosity of log output
 
 Examples:
 
-    Run from stdio: jedi-language-server
+    Run over stdio     : jedi-language-server
+    Run over tcp       : jedi-language-server --tcp
+    Run over websockets:
+        # only need to pip install once per env
+        pip install pygls[ws]
+        jedi-language-server --ws
+
+Notes:
+
+    For use with web sockets, user must first run
+    'pip install pygls[ws]' to install the correct
+    version of the websockets library.
 ```
 
 If testing sending requests over stdio manually from the command line, you must include Windows-style line endings: `\r\n` . For an example, from within this project, run the following:
