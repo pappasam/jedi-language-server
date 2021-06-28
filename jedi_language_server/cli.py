@@ -50,18 +50,23 @@ Examples:
     )
     parser.add_argument(
         "--tcp",
-        help="use TCP server instead of stdio",
+        help="use TCP web server instead of stdio",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--ws",
+        help="use web socket server instead of stdio",
         action="store_true",
     )
     parser.add_argument(
         "--host",
-        help="host for TCP server (default 127.0.0.1)",
+        help="host for web server (default 127.0.0.1)",
         type=str,
         default="127.0.0.1",
     )
     parser.add_argument(
         "--port",
-        help="port for TCP server (default 2087)",
+        help="port for web server (default 2087)",
         type=int,
         default=2087,
     )
@@ -81,10 +86,17 @@ Examples:
     if args.version:
         print(get_version())
         sys.exit(0)
+    if args.tcp and args.ws:
+        print(
+            "Error: --tcp and --ws cannot both be specified",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     log_level = {0: logging.INFO, 1: logging.DEBUG}.get(
         args.verbose,
         logging.DEBUG,
     )
+
     if args.log_file:
         logging.basicConfig(
             filename=args.log_file,
@@ -93,7 +105,10 @@ Examples:
         )
     else:
         logging.basicConfig(stream=sys.stderr, level=log_level)
+
     if args.tcp:
         SERVER.start_tcp(host=args.host, port=args.port)
+    elif args.ws:
+        SERVER.start_ws(host=args.host, port=args.port)
     else:
         SERVER.start_io()
