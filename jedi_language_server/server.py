@@ -25,6 +25,7 @@ from pygls.lsp.methods import (
     RENAME,
     SIGNATURE_HELP,
     TEXT_DOCUMENT_DID_CHANGE,
+    TEXT_DOCUMENT_DID_CLOSE,
     TEXT_DOCUMENT_DID_OPEN,
     TEXT_DOCUMENT_DID_SAVE,
     WORKSPACE_DID_CHANGE_CONFIGURATION,
@@ -41,6 +42,7 @@ from pygls.lsp.types import (
     CompletionParams,
     DidChangeConfigurationParams,
     DidChangeTextDocumentParams,
+    DidCloseTextDocumentParams,
     DidOpenTextDocumentParams,
     DidSaveTextDocumentParams,
     DocumentHighlight,
@@ -114,9 +116,15 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
             if diagnostics.enable and diagnostics.did_save
             else did_save_default
         )
+        did_close = (
+            did_close_diagnostics
+            if diagnostics.enable and diagnostics.did_close
+            else did_close_default
+        )
         server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
         server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
         server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
+        server.feature(TEXT_DOCUMENT_DID_CLOSE)(did_close)
 
         if server.initialization_options.hover.enable:
             server.feature(HOVER)(hover)
@@ -613,6 +621,21 @@ def did_open_default(
     params: DidOpenTextDocumentParams,  # pylint: disable=unused-argument
 ) -> None:
     """Actions run on textDocument/didOpen: default."""
+
+
+# TEXT_DOCUMENT_DID_CLOSE
+def did_close_diagnostics(
+    server: JediLanguageServer, params: DidCloseTextDocumentParams
+) -> None:
+    """Actions run on textDocument/didClose: diagnostics."""
+    server.publish_diagnostics(params.text_document.uri, [])
+
+
+def did_close_default(
+    server: JediLanguageServer,  # pylint: disable=unused-argument
+    params: DidCloseTextDocumentParams,  # pylint: disable=unused-argument
+) -> None:
+    """Actions run on textDocument/didClose: default."""
 
 
 def _choose_markup(server: JediLanguageServer) -> MarkupKind:
