@@ -117,9 +117,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
             else did_save_default
         )
         did_close = (
-            did_close_diagnostics
-            if diagnostics.enable and diagnostics.did_close
-            else did_close_default
+            did_close_diagnostics if diagnostics.enable else did_close_default
         )
         server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
         server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
