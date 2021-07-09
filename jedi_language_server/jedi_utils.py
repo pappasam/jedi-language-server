@@ -213,9 +213,10 @@ def line_column(jedi_script: Script, position: Position) -> Dict[str, int]:
     """
     lines = jedi_script._code_lines  # pylint: disable=protected-access
     line_length = len(lines[position.line])
+    character = 1 if position.character == 0 else position.character
     return dict(
         line=position.line + 1,
-        column=min(position.character, line_length - 1 if line_length else 0),
+        column=min(character, line_length - 1 if line_length else 0),
     )
 
 
