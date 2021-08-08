@@ -284,7 +284,11 @@ def definition(
         follow_builtin_imports=True,
         **jedi_lines,
     )
-    definitions = [jedi_utils.lsp_location(name) for name in names]
+    definitions = [
+        jedi_utils.lsp_location(name)
+        for name in names
+        if name.module_path is not None
+    ]
     return definitions if definitions else None
 
 
@@ -344,7 +348,11 @@ def references(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     names = jedi_script.get_references(**jedi_lines)
-    locations = [jedi_utils.lsp_location(name) for name in names]
+    locations = [
+        jedi_utils.lsp_location(name)
+        for name in names
+        if name.module_path is not None
+    ]
     return locations if locations else None
 
 
@@ -382,7 +390,7 @@ def document_symbol(
     symbol_information = [
         jedi_utils.lsp_symbol_information(name)
         for name in names
-        if name.type != "param"
+        if name.module_path is not None and name.type != "param"
     ]
     return symbol_information if symbol_information else None
 
@@ -421,7 +429,7 @@ def workspace_symbol(
     _symbols = (
         jedi_utils.lsp_symbol_information(name)
         for name in names
-        if name.module_path
+        if name.module_path is not None
         and str(name.module_path).startswith(workspace_root)
         and not _ignore_folder(str(name.module_path), ignore_folders)
     )

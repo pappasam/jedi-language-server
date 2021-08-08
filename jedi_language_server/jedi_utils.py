@@ -72,6 +72,7 @@ def lsp_range(name: Name) -> Range:
 
 def lsp_location(name: Name) -> Location:
     """Get LSP location from Jedi definition."""
+    assert name.module_path is not None
     return Location(uri=name.module_path.as_uri(), range=lsp_range(name))
 
 
