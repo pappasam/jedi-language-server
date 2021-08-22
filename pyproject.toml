@@ -82,9 +82,9 @@ skip_install = true
 commands =
   poetry install
 
-  !cov: poetry run black --check --diff jedi_language_server tests
-  !cov: poetry run docformatter --check --recursive jedi_language_server tests
-  !cov: poetry run isort --check jedi_language_server tests
+  !cov: poetry run black --extend-exclude test_data --check --diff jedi_language_server tests
+  !cov: poetry run docformatter --exclude test_data --check --recursive jedi_language_server tests
+  !cov: poetry run isort --check jedi_language_server tests/lsp_tests tests/lsp_test_client
 
   !cov: poetry run mypy jedi_language_server
   !cov: poetry run pylint jedi_language_server tests

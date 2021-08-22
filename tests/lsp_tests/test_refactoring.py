@@ -255,6 +255,60 @@ def test_rename_package() -> None:
         assert_that(actual, is_(expected))
 
 
+def test_rename_module() -> None:
+    """Tests example from the following example.
+
+    https://github.com/pappasam/jedi-language-server/issues/159
+    """
+    test_root = REFACTOR_TEST_ROOT
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        uri = as_uri(test_root / "rename_module.py")
+        actual = ls_session.text_document_rename(
+            {
+                "textDocument": {"uri": uri},
+                "position": {"line": 0, "character": 24},
+                "newName": "new_somemodule",
+            }
+        )
+        old_name_uri = as_uri(test_root / "somepackage" / "somemodule.py")
+        new_name_uri = as_uri(test_root / "somepackage" / "new_somemodule.py")
+
+        expected = {
+            "documentChanges": [
+                {
+                    "textDocument": {
+                        "uri": uri,
+                        "version": 0,
+                    },
+                    "edits": [
+                        {
+                            "range": {
+                                "start": {"line": 0, "character": 24},
+                                "end": {"line": 0, "character": 24},
+                            },
+                            "newText": "new_",
+                        },
+                        {
+                            "range": {
+                                "start": {"line": 3, "character": 4},
+                                "end": {"line": 3, "character": 4},
+                            },
+                            "newText": "new_",
+                        },
+                    ],
+                },
+                {
+                    "kind": "rename",
+                    "oldUri": old_name_uri,
+                    "newUri": new_name_uri,
+                    "options": {"overwrite": True, "ignoreIfExists": True},
+                },
+            ]
+        }
+        assert_that(actual, is_(expected))
+
+
 def test_lsp_code_action() -> None:
     """Tests code actions like extract variable and extract function."""
 
