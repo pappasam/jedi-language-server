@@ -27,13 +27,13 @@ jobs:
           poetry install
 
       - name: Run black formatter check
-        run: poetry run black --check --diff jedi_language_server tests
+        run: poetry run black --extend-exclude test_data --check --diff jedi_language_server tests
 
       - name: Run docformatter check
-        run: poetry run docformatter --check --recursive jedi_language_server tests
+        run: poetry run docformatter --exclude test_data --check --recursive jedi_language_server tests
 
       - name: Run isort check
-        run: poetry run isort --check jedi_language_server tests
+        run: poetry run isort --check jedi_language_server tests/lsp_tests tests/lsp_test_client
 
       - name: Run mypy check
         run: poetry run mypy jedi_language_server
