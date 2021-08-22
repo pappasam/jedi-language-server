@@ -284,7 +284,11 @@ def definition(
         follow_builtin_imports=True,
         **jedi_lines,
     )
-    definitions = [jedi_utils.lsp_location(name) for name in names]
+    definitions = [
+        definition
+        for definition in (jedi_utils.lsp_location(name) for name in names)
+        if definition is not None
+    ]
     return definitions if definitions else None
 
 
@@ -344,7 +348,11 @@ def references(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(jedi_script, params.position)
     names = jedi_script.get_references(**jedi_lines)
-    locations = [jedi_utils.lsp_location(name) for name in names]
+    locations = [
+        location
+        for location in (jedi_utils.lsp_location(name) for name in names)
+        if location is not None
+    ]
     return locations if locations else None
 
 
@@ -379,10 +387,15 @@ def document_symbol(
     ):
         document_symbols = jedi_utils.lsp_document_symbols(names)
         return document_symbols if document_symbols else None
+
     symbol_information = [
-        jedi_utils.lsp_symbol_information(name)
-        for name in names
-        if name.type != "param"
+        symbol_info
+        for symbol_info in (
+            jedi_utils.lsp_symbol_information(name)
+            for name in names
+            if name.type != "param"
+        )
+        if symbol_info is not None
     ]
     return symbol_information if symbol_information else None
 
@@ -418,12 +431,19 @@ def workspace_symbol(
     ignore_folders = (
         server.initialization_options.workspace.symbols.ignore_folders
     )
-    _symbols = (
-        jedi_utils.lsp_symbol_information(name)
+    unignored_names = (
+        name
         for name in names
-        if name.module_path
+        if name.module_path is not None
         and str(name.module_path).startswith(workspace_root)
         and not _ignore_folder(str(name.module_path), ignore_folders)
+    )
+    _symbols = (
+        symbol
+        for symbol in (
+            jedi_utils.lsp_symbol_information(name) for name in unignored_names
+        )
+        if symbol is not None
     )
     max_symbols = server.initialization_options.workspace.symbols.max_symbols
     symbols = (

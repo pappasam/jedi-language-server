@@ -70,17 +70,25 @@ def lsp_range(name: Name) -> Range:
     )
 
 
-def lsp_location(name: Name) -> Location:
+def lsp_location(name: Name) -> Optional[Location]:
     """Get LSP location from Jedi definition."""
-    return Location(uri=name.module_path.as_uri(), range=lsp_range(name))
+    module_path = name.module_path
+    if module_path is None:
+        return None
+
+    return Location(uri=module_path.as_uri(), range=lsp_range(name))
 
 
-def lsp_symbol_information(name: Name) -> SymbolInformation:
+def lsp_symbol_information(name: Name) -> Optional[SymbolInformation]:
     """Get LSP SymbolInformation from Jedi definition."""
+    location = lsp_location(name)
+    if location is None:
+        return None
+
     return SymbolInformation(
         name=name.name,
         kind=get_lsp_symbol_type(name.type),
-        location=lsp_location(name),
+        location=location,
         container_name=(
             "None" if name is None else (name.full_name or name.name or "None")
         ),
