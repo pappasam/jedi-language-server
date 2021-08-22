@@ -436,14 +436,17 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
     handling in case docstring_to_markdown.convert produces unexpected
     behavior.
     """
+    docstring_stripped = docstring.strip()
+    if docstring_stripped == "":
+        return docstring_stripped
     if markup_kind == MarkupKind.Markdown:
         try:
-            return docstring_to_markdown.convert(docstring).strip()
+            return docstring_to_markdown.convert(docstring_stripped).strip()
         except docstring_to_markdown.UnknownFormatError:
-            return _md_text(docstring.strip(), markup_kind)
+            return _md_text(docstring_stripped, markup_kind)
         except Exception as error:  # pylint: disable=broad-except
             result = (
-                docstring.strip()
+                docstring_stripped
                 + "\n"
                 + "jedi-language-server error: "
                 + "Uncaught exception while converting docstring to markdown. "
@@ -452,7 +455,7 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
                 + f"Traceback:\n{error}"
             ).strip()
             return _md_text(result, markup_kind)
-    return docstring.strip()
+    return docstring_stripped
 
 
 _HOVER_SIGNATURE_TYPES = {"class", "instance", "function"}
