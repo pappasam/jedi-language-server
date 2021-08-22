@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.34.2
+
+### Fixed
+
+- Empty docstrings no longer result in unnecessary newlines for signatureHelp (and potentially other requests). Resolves <https://github.com/pappasam/jedi-language-server/issues/158>.
+
 ## 0.34.1
 
 ### Fixed
