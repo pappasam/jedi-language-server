@@ -56,7 +56,7 @@ class PythonFile:
 
     def __enter__(self):
         """Creates a python file for  testing."""
-        with open(self.fullpath, "w") as py_file:
+        with open(self.fullpath, "w", encoding="utf8") as py_file:
             py_file.write(self.contents)
         return self
 
