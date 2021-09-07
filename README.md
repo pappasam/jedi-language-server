@@ -258,4 +258,4 @@ Unlike python-language-server, jedi-language-server:
 
 ## Written by
 
-Samuel Roeca _samuel.roeca@gmail.com_
+[Samuel Roeca](https://samroeca.com/)
