@@ -47,6 +47,8 @@ def set_jedi_settings(  # pylint: disable=invalid-name
     jedi.settings.case_insensitive_completion = (
         initialization_options.jedi_settings.case_insensitive_completion
     )
+    if initialization_options.jedi_settings.debug:
+        jedi.set_debug_function()
 
 
 def script(project: Optional[Project], document: Document) -> Script:
