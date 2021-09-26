@@ -182,7 +182,8 @@ If you are configuring manually, jedi-language-server supports the following [in
     },
     "jediSettings": {
       "autoImportModules": [],
-      "caseInsensitiveCompletion": true
+      "caseInsensitiveCompletion": true,
+      "debug": false
     },
     "markupKindPreferred": "markdown",
     "workspace": {

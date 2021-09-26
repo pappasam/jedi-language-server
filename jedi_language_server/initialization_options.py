@@ -94,6 +94,7 @@ class Hover(Model):
 class JediSettings(Model):
     auto_import_modules: List[str] = []
     case_insensitive_completion: bool = True
+    debug: bool = False
 
 
 class Symbols(Model):
