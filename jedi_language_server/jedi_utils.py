@@ -3,6 +3,7 @@
 Translates pygls types back and forth with Jedi
 """
 
+import sys
 from inspect import Parameter
 from typing import Dict, List, Optional
 
@@ -33,6 +34,17 @@ from .initialization_options import HoverDisableOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
 
+def _jedi_debug_function(
+    color: str,  # pylint: disable=unused-argument
+    str_out: str,
+) -> None:
+    """Jedi debugging function that prints to stderr.
+
+    Simple for now, just want it to work.
+    """
+    print(str_out, file=sys.stderr)
+
+
 def set_jedi_settings(  # pylint: disable=invalid-name
     initialization_options: InitializationOptions,
 ) -> None:
@@ -48,7 +60,7 @@ def set_jedi_settings(  # pylint: disable=invalid-name
         initialization_options.jedi_settings.case_insensitive_completion
     )
     if initialization_options.jedi_settings.debug:
-        jedi.set_debug_function()
+        jedi.set_debug_function(func_cb=_jedi_debug_function)
 
 
 def script(project: Optional[Project], document: Document) -> Script:
