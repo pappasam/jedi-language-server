@@ -234,12 +234,13 @@ def line_column(jedi_script: Script, position: Position) -> Dict[str, int]:
     https://github.com/palantir/python-language-server/pull/201/files
     """
     lines = jedi_script._code_lines  # pylint: disable=protected-access
-    line_length = len(lines[position.line])
-    character = 1 if position.character == 0 else position.character
-    return dict(
-        line=position.line + 1,
-        column=min(character, line_length - 1 if line_length else 0),
+    # Choose position 1 for empty line
+    character = (
+        1
+        if position.character == 0 and lines[position.line].strip() != ""
+        else position.character
     )
+    return dict(line=position.line + 1, column=character)
 
 
 def line_column_range(pygls_range: Range) -> Dict[str, int]:
