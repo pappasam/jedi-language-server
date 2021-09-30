@@ -326,8 +326,14 @@ def hover(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     markup_kind = _choose_markup(server)
+    # jedi's help function is buggy when the column is 0. For this reason, as a
+    # rote fix, we simply set the column to 1 if params.position returns column
+    # 0.
     hover_text = jedi_utils.hover_text(
-        jedi_script.help(*jedi_lines),
+        jedi_script.help(
+            line=jedi_lines[0],
+            column=1 if jedi_lines[1] == 0 else jedi_lines[1],
+        ),
         markup_kind,
         server.initialization_options,
     )
