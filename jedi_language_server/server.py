@@ -186,8 +186,8 @@ def completion(
     """Returns completion items."""
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
-    completions_jedi = jedi_script.complete(**jedi_lines)
+    jedi_lines = jedi_utils.line_column(params.position)
+    completions_jedi = jedi_script.complete(*jedi_lines)
     snippet_support = server.client_capabilities.get_capability(
         "text_document.completion.completion_item.snippet_support", False
     )
@@ -196,8 +196,8 @@ def completion(
     markup_kind = _choose_markup(server)
     is_import_context = jedi_utils.is_import(
         script_=jedi_script,
-        line=jedi_lines["line"],
-        column=jedi_lines["column"],
+        line=jedi_lines[0],
+        column=jedi_lines[1],
     )
     enable_snippets = (
         snippet_support and not snippet_disable and not is_import_context
@@ -238,8 +238,8 @@ def signature_help(
     """
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
-    signatures_jedi = jedi_script.get_signatures(**jedi_lines)
+    jedi_lines = jedi_utils.line_column(params.position)
+    signatures_jedi = jedi_script.get_signatures(*jedi_lines)
     markup_kind = _choose_markup(server)
     signatures = [
         SignatureInformation(
@@ -278,11 +278,11 @@ def definition(
     """Support Goto Definition."""
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
+    jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.goto(
+        *jedi_lines,
         follow_imports=True,
         follow_builtin_imports=True,
-        **jedi_lines,
     )
     definitions = [
         definition
@@ -309,8 +309,8 @@ def highlight(
     """
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
-    names = jedi_script.get_references(**jedi_lines, scope="file")
+    jedi_lines = jedi_utils.line_column(params.position)
+    names = jedi_script.get_references(*jedi_lines, scope="file")
     highlight_names = [
         DocumentHighlight(range=jedi_utils.lsp_range(name)) for name in names
     ]
@@ -324,10 +324,10 @@ def hover(
     """Support Hover."""
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
+    jedi_lines = jedi_utils.line_column(params.position)
     markup_kind = _choose_markup(server)
     hover_text = jedi_utils.hover_text(
-        jedi_script.help(**jedi_lines),
+        jedi_script.help(*jedi_lines),
         markup_kind,
         server.initialization_options,
     )
@@ -346,8 +346,8 @@ def references(
     """Obtain all references to text."""
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
-    names = jedi_script.get_references(**jedi_lines)
+    jedi_lines = jedi_utils.line_column(params.position)
+    names = jedi_script.get_references(*jedi_lines)
     locations = [
         location
         for location in (jedi_utils.lsp_location(name) for name in names)
@@ -461,10 +461,10 @@ def rename(
     """Rename a symbol across a workspace."""
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(jedi_script, params.position)
+    jedi_lines = jedi_utils.line_column(params.position)
     try:
         refactoring = jedi_script.rename(
-            new_name=params.new_name, **jedi_lines
+            *jedi_lines, new_name=params.new_name
         )
     except RefactoringError:
         return None
@@ -496,14 +496,14 @@ def code_action(
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     code_actions = []
-    jedi_lines = jedi_utils.line_column(jedi_script, params.range.start)
+    jedi_lines = jedi_utils.line_column(params.range.start)
     jedi_lines_extract = jedi_utils.line_column_range(params.range)
 
     try:
         if params.range.start.line != params.range.end.line:
             # refactor this at some point; control flow with exception == bad
             raise RefactoringError("inline only viable for single-line range")
-        inline_refactoring = jedi_script.inline(**jedi_lines)
+        inline_refactoring = jedi_script.inline(*jedi_lines)
     except (RefactoringError, AttributeError, IndexError):
         inline_changes = []
     else:

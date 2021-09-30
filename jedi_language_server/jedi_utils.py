@@ -5,7 +5,7 @@ Translates pygls types back and forth with Jedi
 
 import sys
 from inspect import Parameter
-from typing import Dict, List, Optional
+from typing import Tuple, Dict, List, Optional
 
 import docstring_to_markdown
 import jedi.api.errors
@@ -209,7 +209,7 @@ def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
     )
 
 
-def line_column(jedi_script: Script, position: Position) -> Dict[str, int]:
+def line_column(position: Position) -> Tuple[str, int]:
     """Translate pygls Position to Jedi's line/column.
 
     Returns a dictionary because this return result should be unpacked as a
@@ -226,20 +226,11 @@ def line_column(jedi_script: Script, position: Position) -> Dict[str, int]:
         the line is represented as a string, the `character` value represents
         the gap between the `character` and `character + 1`.
 
-        If the character value is greater than the line length it defaults back
-        to the line length.
-
     Sources:
     https://microsoft.github.io/language-server-protocol/specification#position
     https://github.com/palantir/python-language-server/pull/201/files
     """
-    lines = jedi_script._code_lines  # pylint: disable=protected-access
-    line_length = len(lines[position.line])
-    character = 1 if position.character == 0 else position.character
-    return dict(
-        line=position.line + 1,
-        column=min(character, line_length - 1 if line_length else 0),
-    )
+    return (position.line + 1, position.character)
 
 
 def line_column_range(pygls_range: Range) -> Dict[str, int]:
