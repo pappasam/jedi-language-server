@@ -5,7 +5,7 @@ Translates pygls types back and forth with Jedi
 
 import sys
 from inspect import Parameter
-from typing import Tuple, Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import docstring_to_markdown
 import jedi.api.errors
@@ -209,7 +209,7 @@ def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
     )
 
 
-def line_column(position: Position) -> Tuple[str, int]:
+def line_column(position: Position) -> Tuple[int, int]:
     """Translate pygls Position to Jedi's line/column.
 
     Returns a dictionary because this return result should be unpacked as a

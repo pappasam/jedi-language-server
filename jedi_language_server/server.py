@@ -463,9 +463,7 @@ def rename(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     try:
-        refactoring = jedi_script.rename(
-            *jedi_lines, new_name=params.new_name
-        )
+        refactoring = jedi_script.rename(*jedi_lines, new_name=params.new_name)
     except RefactoringError:
         return None
     changes = text_edit_utils.lsp_document_changes(
