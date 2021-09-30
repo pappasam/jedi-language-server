@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.34.6
+
+### Fixed
+
+- Completion at beginning of line now works.
+- Per comment [here](https://github.com/pappasam/jedi-language-server/issues/162#issue-1004770374), may resolve issues associated with Windows line endings.
+- `jedi_line_column` now returns a tuple instead of a dict. Since this function is often used, it makes sense to choose a more-performant data type.
+
 ## 0.34.5
 
 ### Fixed
