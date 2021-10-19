@@ -4,7 +4,7 @@ Provides a fully defaulted pydantic model for this language server's
 initialization options.
 """
 
-from typing import List, Optional, Set
+from typing import List, Optional, Pattern, Set
 
 from pydantic import BaseModel, Field
 from pygls.lsp.types import MarkupKind
@@ -34,6 +34,7 @@ class CodeAction(Model):
 class Completion(Model):
     disable_snippets: bool = False
     resolve_eagerly: bool = False
+    ignore_patterns: List[Pattern] = []
 
 
 class Diagnostics(Model):

@@ -184,15 +184,23 @@ def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> Optional[CompletionList]:
     """Returns completion items."""
+    snippet_disable = server.initialization_options.completion.disable_snippets
+    resolve_eagerly = server.initialization_options.completion.resolve_eagerly
+    ignore_patterns = server.initialization_options.completion.ignore_patterns
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
-    completions_jedi = jedi_script.complete(*jedi_lines)
+    if not ignore_patterns:
+        completions_jedi = (comp for comp in jedi_script.complete(*jedi_lines))
+    else:
+        completions_jedi = (
+            comp
+            for comp in jedi_script.complete(*jedi_lines)
+            if not any(i.match(comp.name) for i in ignore_patterns)
+        )
     snippet_support = server.client_capabilities.get_capability(
         "text_document.completion.completion_item.snippet_support", False
     )
-    snippet_disable = server.initialization_options.completion.disable_snippets
-    resolve_eagerly = server.initialization_options.completion.resolve_eagerly
     markup_kind = _choose_markup(server)
     is_import_context = jedi_utils.is_import(
         script_=jedi_script,
