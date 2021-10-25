@@ -158,7 +158,8 @@ If you are configuring manually, jedi-language-server supports the following [in
     },
     "completion": {
       "disableSnippets": false,
-      "resolveEagerly": false
+      "resolveEagerly": false,
+      "ignorePatterns": []
     },
     "diagnostics": {
       "enable": true,
