@@ -191,6 +191,8 @@ def completion(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     if not ignore_patterns:
+        # A performance optimization. ignore_patterns should usually be empty;
+        # this special case avoid repeated filter checks for the usual case.
         completions_jedi = (comp for comp in jedi_script.complete(*jedi_lines))
     else:
         completions_jedi = (
