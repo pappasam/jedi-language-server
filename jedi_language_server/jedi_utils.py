@@ -154,10 +154,12 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
         if parent.type == "module":
             # add module-level variables to list
             results.append(symbol)
-            if name.type == "class":
-                # if they're a class, they can also be a namespace
-                _name_lookup[name] = symbol
-        elif (
+
+        if name.type in ["class", "function"]:
+            # if they're a class, they can also be a namespace
+            _name_lookup[name] = symbol
+
+        if (
             parent.type == "class"
             and name.type == "function"
             and name.name in {"__init__"}
@@ -186,11 +188,18 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
                 # far as code is concerned, @property-decorated items should be
                 # considered "methods" since do more than just assign a value.
                 symbol.kind = SymbolKind.Method
-            else:
+            elif name.type != "class":
                 symbol.kind = SymbolKind.Property
             parent_symbol = _name_lookup[parent]
             assert parent_symbol.children is not None
             parent_symbol.children.append(symbol)
+        elif parent.type == "function":
+            # only show nested classes and functions to avoid excessive info
+            # could be controlled by an initialization option
+            if name.type in ["class", "function"]:
+                parent_symbol = _name_lookup[parent]
+                assert parent_symbol.children is not None
+                parent_symbol.children.append(symbol)
     return results
 
 
