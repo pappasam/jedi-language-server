@@ -76,7 +76,7 @@ envlist = py{36,37,38,39}{,-cov}
 isolated_build = true
 skipsdist = true
 [testenv]
-platform = linux
+platform = linux|darwin
 whitelist_externals = poetry
 skip_install = true
 commands =
