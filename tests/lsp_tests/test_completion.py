@@ -59,7 +59,7 @@ def test_lsp_completion() -> None:
         expected = {
             "label": "my_function",
             "kind": 3,
-            "detail": "def my_function",
+            "detail": "def my_function()",
             "documentation": {
                 "kind": "markdown",
                 "value": "```text\nmy_function()\n\nSimple test function.\n```",
@@ -102,7 +102,7 @@ def test_eager_lsp_completion() -> None:
                 {
                     "label": "my_function",
                     "kind": 3,
-                    "detail": "def my_function",
+                    "detail": "def my_function()",
                     "documentation": {
                         "kind": "markdown",
                         "value": "```text\nmy_function()\n\nSimple test function.\n```",
@@ -148,7 +148,7 @@ def test_lsp_completion_class_method() -> None:
                 {
                     "label": "some_method",
                     "kind": 3,
-                    "detail": "def some_method",
+                    "detail": "def some_method(x)",
                     "documentation": {
                         "kind": "markdown",
                         "value": "```text\nsome_method(x)\n\nGreat method.\n```",

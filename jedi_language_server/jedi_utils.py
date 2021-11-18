@@ -573,13 +573,35 @@ def hover_text(
     return "\n".join(result).strip()
 
 
+def get_full_signature(completion: Completion) -> str:
+    """Return the full function signature with parameters."""
+    signature = completion.description
+    try:
+        parameters = completion.get_signatures()[0].params
+        # Remove "param " from description.
+        signature += (
+            "("
+            + ", ".join(
+                [
+                    param.description[len(param.type) + 1 :]
+                    for param in parameters
+                ]
+            )
+            + ")"
+        )
+    except IndexError:
+        pass
+
+    return signature
+
+
 def lsp_completion_item_resolve(
     item: CompletionItem,
     markup_kind: MarkupKind,
 ) -> CompletionItem:
     """Resolve completion item using cached jedi completion data."""
     completion = _MOST_RECENT_COMPLETIONS[item.label]
-    item.detail = completion.description
+    item.detail = get_full_signature(completion)
     docstring = convert_docstring(completion.docstring(), markup_kind)
     item.documentation = MarkupContent(kind=markup_kind, value=docstring)
     return item
