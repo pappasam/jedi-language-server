@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## 0.34.9
 
-### Added
+### Changed
 
 - Completion detail now has full signature.
 - Descriptive text is now more standardized across Completion, Hover, and Signature Items. Main difference comes down to inclusion of full name (Hover) and inclusion of multiple signatures (Signature).
