@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.34.10
+
+### Fixed
+
+- `CompletionItem.detail` no longer provides redundant information that is already provided in `CompletionItem.kind`.
+- Explicit calls to `get_type_hint` are removed for performance reasons.
+- classes and functions with no arguments sometimes return no jedi signatures. In these cases, we manually provide `()` at the end of said classes and functions to ensure a consisten detail experience for end users.
+
 ## 0.34.9
 
 ### Changed
