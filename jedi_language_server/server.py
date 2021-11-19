@@ -253,7 +253,7 @@ def signature_help(
     markup_kind = _choose_markup(server)
     signatures = [
         SignatureInformation(
-            label=signature.to_string(),
+            label=jedi_utils.signature_string(signature),
             documentation=MarkupContent(
                 kind=markup_kind,
                 value=jedi_utils.convert_docstring(

@@ -516,6 +516,12 @@ def get_full_signatures(name: BaseName) -> Iterator[str]:
         yield f"{name_type_trans} {signature.to_string()}"
 
 
+def signature_string(signature: Signature) -> str:
+    """Convert a single signature to a string."""
+    name_type_trans = _SIGNATURE_TYPE_TRANSLATION[signature.type]
+    return f"{name_type_trans} {signature.to_string()}"
+
+
 def _hover_ignore(name: Name, init: InitializationOptions) -> bool:
     """True if hover should be ignored, false otherwise.
 
