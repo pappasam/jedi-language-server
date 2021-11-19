@@ -36,7 +36,9 @@ def test_signature_help(trigger_char, column, active_param):
         expected = {
             "signatures": [
                 {
-                    "label": "some_function(arg1: str, arg2: int, arg3: list)",
+                    "label": (
+                        "def some_function(arg1: str, arg2: int, arg3: list)"
+                    ),
                     "documentation": {
                         "kind": "markdown",
                         "value": "```text\nThis is a test function.\n```",
