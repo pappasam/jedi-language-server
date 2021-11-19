@@ -5,14 +5,14 @@ Translates pygls types back and forth with Jedi
 
 import sys
 from inspect import Parameter
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 
 import docstring_to_markdown
 import jedi.api.errors
 import jedi.inference.references
 import jedi.settings
 from jedi import Project, Script
-from jedi.api.classes import Completion, Name, ParamName, Signature
+from jedi.api.classes import BaseName, Completion, Name, ParamName, Signature
 from pygls.lsp.types import (
     CompletionItem,
     CompletionItemKind,
@@ -472,9 +472,9 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
     return docstring_stripped
 
 
-_HOVER_SIGNATURE_TYPES = {"class", "instance", "function"}
+_SIGNATURE_ALLOWED_TYPES = {"class", "instance", "function"}
 
-_HOVER_TYPE_TRANSLATION = {
+_SIGNATURE_TYPE_TRANSLATION = {
     "module": "module",
     "class": "class",
     "instance": "instance",
@@ -485,6 +485,41 @@ _HOVER_TYPE_TRANSLATION = {
     "property": "property",
     "statement": "statement",
 }
+
+
+def get_full_signatures(name: BaseName) -> Iterator[str]:
+    """Return the full function signature with parameters."""
+    signatures = name.get_signatures()
+    name_type = name.type
+    if not signatures and name_type != "class":
+        try:
+            type_hint = name.get_type_hint()
+        except Exception:  # pylint: disable=broad-except
+            # jedi randomly raises NotImplemented, TypeError, and possibly more
+            # errors here. One example from jls -
+            # test_hover.test_hover_on_method
+            type_hint = ""
+    else:
+        type_hint = ""
+    if not signatures:
+        if name_type == "class":
+            yield f"class {name.name}"
+        elif name_type == "module":
+            yield f"{name.full_name} ## module"
+        elif type_hint:
+            yield f"{name.name}: {type_hint}"
+        else:
+            yield f"{name.name} ## {name_type}"
+        return
+    name_type_trans = _SIGNATURE_TYPE_TRANSLATION[name_type]
+    for signature in signatures:
+        yield f"{name_type_trans} {signature.to_string()}"
+
+
+def signature_string(signature: Signature) -> str:
+    """Convert a single signature to a string."""
+    name_type_trans = _SIGNATURE_TYPE_TRANSLATION[signature.type]
+    return f"{name_type_trans} {signature.to_string()}"
 
 
 def _hover_ignore(name: Name, init: InitializationOptions) -> bool:
@@ -519,38 +554,11 @@ def hover_text(
     name = names[0]
     if _hover_ignore(name, initialization_options):
         return None
-    name_str = name.name
-    name_type = name.type
     full_name = name.full_name
-    hover_type = _HOVER_TYPE_TRANSLATION[name_type]
-    signatures = (
-        [f"{hover_type} {s.to_string()}" for s in name.get_signatures()]
-        if name_type in _HOVER_SIGNATURE_TYPES
-        else []
-    )
     description = name.description
     docstring = name.docstring(raw=True)
-    if not signatures and name_type != "class":
-        try:
-            type_hint = name.get_type_hint()
-        except Exception:  # pylint: disable=broad-except
-            # jedi randomly raises NotImplemented, TypeError, and possibly more
-            # errors here. One example from jls -
-            # test_hover.test_hover_on_method
-            type_hint = ""
-    else:
-        type_hint = ""
-
-    if signatures:
-        header_plain = "\n".join(signatures)
-    elif name_type == "class":
-        header_plain = f"{hover_type} {name_str}"
-    elif type_hint:
-        header_plain = f"{name_str}: {type_hint}"
-    else:
-        header_plain = f"{hover_type} {name_str}"
+    header_plain = "\n".join(get_full_signatures(name))
     header = _md_python(header_plain, markup_kind)
-
     result: List[str] = []
     result.append(header)
     if docstring:
@@ -562,7 +570,7 @@ def hover_text(
         result.append("---")
         result.append(_md_python(description, markup_kind))
 
-    if full_name:
+    if full_name and name.type != "module":
         if len(result) == 1:
             result.append("---")
         result.append(
@@ -573,35 +581,13 @@ def hover_text(
     return "\n".join(result).strip()
 
 
-def get_full_signature(completion: Completion) -> str:
-    """Return the full function signature with parameters."""
-    signature = completion.description
-    try:
-        parameters = completion.get_signatures()[0].params
-        # Remove "param " from description.
-        signature += (
-            "("
-            + ", ".join(
-                [
-                    param.description[len(param.type) + 1 :]
-                    for param in parameters
-                ]
-            )
-            + ")"
-        )
-    except IndexError:
-        pass
-
-    return signature
-
-
 def lsp_completion_item_resolve(
     item: CompletionItem,
     markup_kind: MarkupKind,
 ) -> CompletionItem:
     """Resolve completion item using cached jedi completion data."""
     completion = _MOST_RECENT_COMPLETIONS[item.label]
-    item.detail = get_full_signature(completion)
-    docstring = convert_docstring(completion.docstring(), markup_kind)
+    item.detail = next(get_full_signatures(completion), completion.name)
+    docstring = convert_docstring(completion.docstring(raw=True), markup_kind)
     item.documentation = MarkupContent(kind=markup_kind, value=docstring)
     return item
