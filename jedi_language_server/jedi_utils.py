@@ -503,13 +503,15 @@ def get_full_signatures(name: BaseName) -> Iterator[str]:
         type_hint = ""
     if not signatures:
         if name_type == "class":
-            yield f"class {name.name}"
+            yield f"class {name.name}()"
+        elif name_type == "function":
+            yield f"def {name.name}()"
         elif name_type == "module":
-            yield f"{name.full_name} ## module"
+            yield f"{name.full_name}"
         elif type_hint:
             yield f"{name.name}: {type_hint}"
         else:
-            yield f"{name.name} ## {name_type}"
+            yield f"{name.name}"
         return
     name_type_trans = _SIGNATURE_TYPE_TRANSLATION[name_type]
     for signature in signatures:
@@ -554,30 +556,28 @@ def hover_text(
     name = names[0]
     if _hover_ignore(name, initialization_options):
         return None
+    name_type = name.type
     full_name = name.full_name
-    description = name.description
     docstring = name.docstring(raw=True)
     header_plain = "\n".join(get_full_signatures(name))
     header = _md_python(header_plain, markup_kind)
     result: List[str] = []
     result.append(header)
-    if docstring:
-        result.append("---")
-        result.append(convert_docstring(docstring, markup_kind))
-    elif header_plain.startswith(description):
-        pass
-    else:
-        result.append("---")
-        result.append(_md_python(description, markup_kind))
-
-    if full_name and name.type != "module":
-        if len(result) == 1:
-            result.append("---")
+    result.append("---")
+    result.append(
+        _md_italic("jedi type:", markup_kind)
+        + " "
+        + _md_text_sl(name_type, markup_kind)
+    )
+    if full_name and name_type != "module":
         result.append(
-            _md_bold("Full name:", markup_kind)
+            _md_italic("full name:", markup_kind)
             + " "
             + _md_text_sl(full_name, markup_kind)
         )
+    if docstring:
+        result.append(convert_docstring(docstring, markup_kind))
+
     return "\n".join(result).strip()
 
 
