@@ -291,8 +291,8 @@ def test_rename_module() -> None:
                         },
                         {
                             "range": {
-                                "start": {"line": 3, "character": 4},
-                                "end": {"line": 3, "character": 4},
+                                "start": {"line": 4, "character": 4},
+                                "end": {"line": 4, "character": 4},
                             },
                             "newText": "new_",
                         },
