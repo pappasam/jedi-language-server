@@ -29,7 +29,7 @@ def test_hover_on_module():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "```python\nsomemodule ## module\n```\n---\n```text\nModule doc string for testing.\n```",
+                "value": "```python\nmodule somemodule\n```\n---\n```text\nModule doc string for testing.\n```",
             },
             "range": {
                 "start": {"line": 2, "character": 7},
