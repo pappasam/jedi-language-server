@@ -490,28 +490,11 @@ _SIGNATURE_TYPE_TRANSLATION = {
 def get_full_signatures(name: BaseName) -> Iterator[str]:
     """Return the full function signature with parameters."""
     signatures = name.get_signatures()
-    name_type = name.type
-    if not signatures and name_type != "class":
-        try:
-            type_hint = name.get_type_hint()
-        except Exception:  # pylint: disable=broad-except
-            # jedi randomly raises NotImplemented, TypeError, and possibly more
-            # errors here. One example from jls -
-            # test_hover.test_hover_on_method
-            type_hint = ""
-    else:
-        type_hint = ""
     if not signatures:
-        if name_type == "class":
-            yield f"class {name.name}"
-        elif name_type == "module":
-            yield f"{name.full_name} ## module"
-        elif type_hint:
-            yield f"{name.name}: {type_hint}"
-        else:
-            yield f"{name.name} ## {name_type}"
+        yield name.description
         return
-    name_type_trans = _SIGNATURE_TYPE_TRANSLATION[name_type]
+
+    name_type_trans = _SIGNATURE_TYPE_TRANSLATION[name.type]
     for signature in signatures:
         yield f"{name_type_trans} {signature.to_string()}"
 
