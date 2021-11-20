@@ -167,6 +167,54 @@ HIGHLIGHTING_TEST_ROOT = TEST_DATA / "highlighting"
                 },
             ],
         ),
+        # __file__
+        (
+            {"line": 34, "character": 8},
+            [
+                {
+                    "range": {
+                        "start": {"line": 34, "character": 6},
+                        "end": {"line": 34, "character": 14},
+                    }
+                },
+            ],
+        ),
+        # __package__
+        (
+            {"line": 35, "character": 8},
+            [
+                {
+                    "range": {
+                        "start": {"line": 35, "character": 6},
+                        "end": {"line": 35, "character": 17},
+                    }
+                },
+            ],
+        ),
+        # __doc__
+        (
+            {"line": 36, "character": 8},
+            [
+                {
+                    "range": {
+                        "start": {"line": 36, "character": 6},
+                        "end": {"line": 36, "character": 13},
+                    }
+                },
+            ],
+        ),
+        # __name__
+        (
+            {"line": 37, "character": 8},
+            [
+                {
+                    "range": {
+                        "start": {"line": 37, "character": 6},
+                        "end": {"line": 37, "character": 14},
+                    }
+                },
+            ],
+        ),
     ],
 )
 def test_highlighting(position, expected):
