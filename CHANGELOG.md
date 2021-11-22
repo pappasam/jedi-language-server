@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.34.11
+
+### Fixed
+
+- Fix edge case where LSP methods that relied on `jedi_utils.lsp_range` (like Highlight) would break if `jedi.api.classes.Name` returned an empty line/column. Now, module builtins like `__name__` and `__file__` will Highlight / Hover correctly.
+
 ## 0.34.10
 
 ### Fixed
