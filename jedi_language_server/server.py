@@ -321,8 +321,11 @@ def highlight(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.get_references(*jedi_lines, scope="file")
+    lsp_ranges = [jedi_utils.lsp_range(name) for name in names]
     highlight_names = [
-        DocumentHighlight(range=jedi_utils.lsp_range(name)) for name in names
+        DocumentHighlight(range=lsp_range)
+        for lsp_range in lsp_ranges
+        if lsp_range
     ]
     return highlight_names if highlight_names else None
 

@@ -68,13 +68,20 @@ def script(project: Optional[Project], document: Document) -> Script:
     return Script(code=document.source, path=document.path, project=project)
 
 
-def lsp_range(name: Name) -> Range:
+def lsp_range(name: Name) -> Optional[Range]:
     """Get LSP range from Jedi definition.
 
     - jedi is 1-indexed for lines and 0-indexed for columns
     - LSP is 0-indexed for lines and 0-indexed for columns
     - Therefore, subtract 1 from Jedi's definition line
+
+    Not all jedi Names have their location defined.  Module attributes
+    (e.g. __name__ or __file__) have a Name that represents their
+    implicit definition, and that Name does not have a location.
     """
+    if name.line is None or name.column is None:
+        return None
+
     return Range(
         start=Position(line=name.line - 1, character=name.column),
         end=Position(
@@ -90,7 +97,11 @@ def lsp_location(name: Name) -> Optional[Location]:
     if module_path is None:
         return None
 
-    return Location(uri=module_path.as_uri(), range=lsp_range(name))
+    lsp = lsp_range(name)
+    if lsp is None:
+        return None
+
+    return Location(uri=module_path.as_uri(), range=lsp)
 
 
 def lsp_symbol_information(name: Name) -> Optional[SymbolInformation]:
@@ -109,7 +120,7 @@ def lsp_symbol_information(name: Name) -> Optional[SymbolInformation]:
     )
 
 
-def _document_symbol_range(name: Name) -> Range:
+def _document_symbol_range(name: Name) -> Optional[Range]:
     """Get accurate full range of function.
 
     Thanks <https://github.com/CXuesong> from

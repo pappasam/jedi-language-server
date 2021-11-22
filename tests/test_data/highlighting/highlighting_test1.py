@@ -28,3 +28,11 @@ class SomeClass(Enum):
 instance = SomeClass()
 instance.some_method1()
 instance.some_method2()
+
+# Jedi returns an implicit definition for these special variables,
+# which has no line number.  Highlighting of usages with line numbers
+# should still function.
+print(__file__)
+print(__package__)
+print(__doc__)
+print(__name__)
