@@ -161,3 +161,43 @@ def test_lsp_completion_class_method() -> None:
             ],
         }
         assert_that(actual, is_(expected))
+
+
+def test_lsp_completion_class_noargs() -> None:
+    """Checks if classes without arguments include parenthesis in signature."""
+    with session.LspSession() as ls_session:
+        # Initialize, asking for eager resolution.
+        initialize_params = copy.deepcopy(VSCODE_DEFAULT_INITIALIZE)
+        initialize_params["initializationOptions"] = {
+            "completion": {"resolveEagerly": True}
+        }
+        ls_session.initialize(initialize_params)
+
+        uri = as_uri(COMPLETION_TEST_ROOT / "completion_test2.py")
+        actual = ls_session.text_document_completion(
+            {
+                "textDocument": {"uri": uri},
+                "position": {"line": 7, "character": 3},
+                "context": {"triggerKind": 1},
+            }
+        )
+
+        expected = {
+            "isIncomplete": False,
+            "items": [
+                {
+                    "label": "MyClass",
+                    "kind": 7,
+                    "detail": "class MyClass()",
+                    "documentation": {
+                        "kind": "markdown",
+                        "value": "```text\nSimple class.\n```",
+                    },
+                    "sortText": "z",
+                    "filterText": "MyClass",
+                    "insertText": "MyClass()$0",
+                    "insertTextFormat": 2,
+                }
+            ],
+        }
+        assert_that(actual, is_(expected))
