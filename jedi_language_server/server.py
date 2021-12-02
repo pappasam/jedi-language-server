@@ -184,20 +184,22 @@ def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> Optional[CompletionList]:
     """Returns completion items."""
+    # pylint: disable=too-many-locals
     snippet_disable = server.initialization_options.completion.disable_snippets
     resolve_eagerly = server.initialization_options.completion.resolve_eagerly
     ignore_patterns = server.initialization_options.completion.ignore_patterns
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
+    completions_jedi_raw = jedi_script.complete(*jedi_lines)
     if not ignore_patterns:
         # A performance optimization. ignore_patterns should usually be empty;
         # this special case avoid repeated filter checks for the usual case.
-        completions_jedi = (comp for comp in jedi_script.complete(*jedi_lines))
+        completions_jedi = (comp for comp in completions_jedi_raw)
     else:
         completions_jedi = (
             comp
-            for comp in jedi_script.complete(*jedi_lines)
+            for comp in completions_jedi_raw
             if not any(i.match(comp.name) for i in ignore_patterns)
         )
     snippet_support = server.client_capabilities.get_capability(
@@ -217,6 +219,9 @@ def completion(
         position=params.position,
     )
     jedi_utils.clear_completions_cache()
+    # number of characters in the string representation of the total number of
+    # completions returned by jedi.
+    total_completion_chars = len(str(len(completions_jedi_raw)))
     completion_items = [
         jedi_utils.lsp_completion_item(
             completion=completion,
@@ -224,8 +229,9 @@ def completion(
             enable_snippets=enable_snippets,
             resolve_eagerly=resolve_eagerly,
             markup_kind=markup_kind,
+            sort_append_text=str(count).zfill(total_completion_chars),
         )
-        for completion in completions_jedi
+        for count, completion in enumerate(completions_jedi)
     ]
     return (
         CompletionList(is_incomplete=False, items=completion_items)

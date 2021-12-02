@@ -282,7 +282,7 @@ def compare_names(name1: Name, name2: Name) -> bool:
     return equal
 
 
-def complete_sort_name(name: Completion) -> str:
+def complete_sort_name(name: Completion, append_text: str) -> str:
     """Return sort name for a jedi completion.
 
     Should be passed to the sortText field in CompletionItem. Strings sort a-z,
@@ -292,9 +292,18 @@ def complete_sort_name(name: Completion) -> str:
     For this reason, we make sure the sort-text is just a letter and not the
     name itself.
     """
-    if name.type == "param" and name.name.endswith("="):
-        return "a"
-    return "z"
+    name_str = name.name
+    if name_str is None:
+        return "z" + append_text
+    if name.type == "param" and name_str.endswith("="):
+        return "a" + append_text
+    if name_str.startswith("_"):
+        if name_str.startswith("__"):
+            if name_str.endswith("__"):
+                return "y" + append_text
+            return "x" + append_text
+        return "w" + append_text
+    return "v" + append_text
 
 
 def clean_completion_name(name: str, char_before_cursor: str) -> str:
@@ -373,12 +382,13 @@ def clear_completions_cache() -> None:
     _MOST_RECENT_COMPLETIONS.clear()
 
 
-def lsp_completion_item(
+def lsp_completion_item(  # pylint: disable=too-many-arguments
     completion: Completion,
     char_before_cursor: str,
     enable_snippets: bool,
     resolve_eagerly: bool,
     markup_kind: MarkupKind,
+    sort_append_text: str = "",
 ) -> CompletionItem:
     """Using a Jedi completion, obtain a jedi completion item."""
     completion_name = completion.name
@@ -388,7 +398,7 @@ def lsp_completion_item(
         label=completion_name,
         filter_text=completion_name,
         kind=lsp_type,
-        sort_text=complete_sort_name(completion),
+        sort_text=complete_sort_name(completion, sort_append_text),
         insert_text=name_clean,
         insert_text_format=InsertTextFormat.PlainText,
     )
