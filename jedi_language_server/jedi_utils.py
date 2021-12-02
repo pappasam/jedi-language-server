@@ -292,9 +292,18 @@ def complete_sort_name(name: Completion) -> str:
     For this reason, we make sure the sort-text is just a letter and not the
     name itself.
     """
-    if name.type == "param" and name.name.endswith("="):
+    name_str = name.name
+    if name_str is None:
+        return "z"
+    if name.type == "param" and name_str.endswith("="):
         return "a"
-    return "z"
+    if name_str.startswith("__") and name_str.endswith("__"):
+        return "y"
+    if name_str.startswith("__"):
+        return "x"
+    if name_str.startswith("_"):
+        return "w"
+    return "v"
 
 
 def clean_completion_name(name: str, char_before_cursor: str) -> str:
