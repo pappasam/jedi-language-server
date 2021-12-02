@@ -27,14 +27,14 @@ class StringPattern:
     def __init__(self, pattern):
         self.pattern = pattern
 
-    def __eq__(self, o):
+    def __eq__(self, compare):
         """Compares against pattern when possible."""
-        if isinstance(o, str):
-            match = re.match(self.pattern, o)
+        if isinstance(compare, str):
+            match = re.match(self.pattern, compare)
             return match is not None
 
-        if isinstance(o, StringPattern):
-            return self.pattern == o.pattern
+        if isinstance(compare, StringPattern):
+            return self.pattern == compare.pattern
 
         return False
 
