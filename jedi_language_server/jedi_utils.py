@@ -297,11 +297,11 @@ def complete_sort_name(name: Completion) -> str:
         return "z"
     if name.type == "param" and name_str.endswith("="):
         return "a"
-    if name_str.startswith("__") and name_str.endswith("__"):
-        return "y"
-    if name_str.startswith("__"):
-        return "x"
     if name_str.startswith("_"):
+        if name_str.startswith("__"):
+            if name_str.endswith("__"):
+                return "y"
+            return "x"
         return "w"
     return "v"
 
