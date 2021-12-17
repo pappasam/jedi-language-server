@@ -103,7 +103,7 @@ Notes:
             file=sys.stderr,
         )
         sys.exit(1)
-    log_level = {0: logging.INFO, 1: logging.DEBUG}.get(
+    log_level = {0: logging.WARN, 1: logging.INFO, 2:logging.DEBUG}.get(
         args.verbose,
         logging.DEBUG,
     )
