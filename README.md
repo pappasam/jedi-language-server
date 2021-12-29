@@ -55,7 +55,7 @@ Users may choose 1 of the following options:
 
 - [coc.nvim](https://github.com/neoclide/coc.nvim) with [coc-jedi](https://github.com/pappasam/coc-jedi).
 - [ALE](https://github.com/dense-analysis/ale).
-- [Neovim's native LSP client](https://neovim.io/doc/user/lsp.html). See [here](https://github.com/neovim/nvim-lspconfig#jedi_language_server) for an example configuration.
+- [Neovim's native LSP client](https://neovim.io/doc/user/lsp.html). See [here](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#jedi_language_server) for an example configuration.
 - [vim-lsp](https://github.com/prabirshrestha/vim-lsp).
 
 Note: this list is non-exhaustive. If you know of a great choice not included in this list, please submit a PR!
