@@ -180,6 +180,13 @@ class LspSession(MethodDispatcher):
         )
         return fut.result()
 
+    def text_document_semantic_tokens_full(self, semantic_tokens_params):
+        fut = self._send_request(
+            "textDocument/semanticTokens/full",
+            params=semantic_tokens_params
+        )
+        return fut.result()
+
     def workspace_symbol(self, workspace_symbol_params):
         """Sends workspace symbol request to LSP server."""
         fut = self._send_request(

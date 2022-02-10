@@ -11,6 +11,7 @@ from typing import Any, List, Optional, Union
 
 from jedi import Project
 from jedi.api.refactoring import RefactoringError
+from parso.tree import BaseNode
 from pydantic import ValidationError
 from pygls.lsp.methods import (
     CODE_ACTION,
@@ -28,6 +29,7 @@ from pygls.lsp.methods import (
     TEXT_DOCUMENT_DID_CLOSE,
     TEXT_DOCUMENT_DID_OPEN,
     TEXT_DOCUMENT_DID_SAVE,
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
     WORKSPACE_DID_CHANGE_CONFIGURATION,
     WORKSPACE_SYMBOL,
 )
@@ -57,6 +59,9 @@ from pygls.lsp.types import (
     MessageType,
     ParameterInformation,
     RenameParams,
+    SemanticTokens,
+    SemanticTokensLegend,
+    SemanticTokensParams,
     SignatureHelp,
     SignatureHelpOptions,
     SignatureInformation,
@@ -68,6 +73,7 @@ from pygls.lsp.types import (
 from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
+from .constants import TOKEN_TYPES
 from . import jedi_utils, pygls_utils, text_edit_utils
 from .initialization_options import InitializationOptions
 
@@ -605,6 +611,62 @@ def did_change_configuration(
     Currently does nothing, but necessary for pygls. See::
         <https://github.com/pappasam/jedi-language-server/issues/58>
     """
+
+
+@SERVER.feature(
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
+    SemanticTokensLegend(
+        token_types = TOKEN_TYPES,
+        token_modifiers = []
+    )
+)
+def semantic_tokens_full(
+    server: JediLanguageServer, params: SemanticTokensParams
+) -> SemanticTokens:
+    """Get semantic tokens for full document."""
+
+    document = server.workspace.get_document(params.text_document.uri)
+    jedi_script = jedi_utils.script(server.project, document)
+
+    root_node = jedi_script._module_node
+
+    data = []
+    prev_line = 0
+    prev_column = 0
+
+    def add_token(node: BaseNode):
+        nonlocal prev_line, prev_column
+        token_id = jedi_utils.get_semantic_token_id(
+            jedi_script._get_module_context().create_name(node),
+        )
+        if token_id is not None:
+            line, column = node.start_pos
+            line -= 1
+            if line == prev_line:
+                pos = column - prev_column
+            else:
+                pos = column
+            data.extend([
+                line - prev_line,
+                pos,
+                len(node.get_code(include_prefix=False)),
+                token_id,
+                0
+            ])
+            prev_line = line
+            prev_column = column
+
+    def recurse(node: BaseNode):
+        if node.type == 'name':
+            add_token(node)
+        else:
+            if hasattr(node, 'children'):
+                children = node.children
+                for child in children:
+                    recurse(child)
+
+    recurse(root_node)
+    return SemanticTokens(data=data)
 
 
 # Static capability or initializeOptions functions that rely on a specific

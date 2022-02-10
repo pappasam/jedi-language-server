@@ -4,6 +4,7 @@ Translates pygls types back and forth with Jedi
 """
 
 import sys
+from collections import deque
 from inspect import Parameter
 from typing import Dict, Iterator, List, Optional, Tuple
 
@@ -13,6 +14,9 @@ import jedi.inference.references
 import jedi.settings
 from jedi import Project, Script
 from jedi.api.classes import BaseName, Completion, Name, ParamName, Signature
+from jedi.inference.base_value import Value
+from jedi.inference.names import AbstractTreeName
+from parso.tree import BaseNode
 from pygls.lsp.types import (
     CompletionItem,
     CompletionItemKind,
@@ -599,3 +603,18 @@ def lsp_completion_item_resolve(
     docstring = convert_docstring(completion.docstring(raw=True), markup_kind)
     item.documentation = MarkupContent(kind=markup_kind, value=docstring)
     return item
+
+
+def get_semantic_token_id(name: AbstractTreeName) -> Optional[int]:
+    inferrred = list(name.infer())
+    if inferrred:
+        inferrred_value: Value = inferrred[0]
+        if inferrred_value.is_module():
+            return 0  # return constant for speed
+        elif inferrred_value.is_function():
+            return 1
+        elif inferrred_value.is_class():
+            return 2
+        elif inferrred_value.is_instance():
+            return 3
+    return None
