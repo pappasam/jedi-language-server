@@ -4,7 +4,6 @@ Translates pygls types back and forth with Jedi
 """
 
 import sys
-from collections import deque
 from inspect import Parameter
 from typing import Dict, Iterator, List, Optional, Tuple
 
@@ -16,7 +15,6 @@ from jedi import Project, Script
 from jedi.api.classes import BaseName, Completion, Name, ParamName, Signature
 from jedi.inference.base_value import Value
 from jedi.inference.names import AbstractTreeName
-from parso.tree import BaseNode
 from pygls.lsp.types import (
     CompletionItem,
     CompletionItemKind,
