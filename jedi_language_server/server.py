@@ -615,10 +615,7 @@ def did_change_configuration(
 
 @SERVER.feature(
     TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
-    SemanticTokensLegend(
-        token_types = TOKEN_TYPES,
-        token_modifiers = []
-    )
+    SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=[]),
 )
 def semantic_tokens_full(
     server: JediLanguageServer, params: SemanticTokensParams
@@ -646,21 +643,23 @@ def semantic_tokens_full(
                 pos = column - prev_column
             else:
                 pos = column
-            data.extend([
-                line - prev_line,
-                pos,
-                len(node.get_code(include_prefix=False)),
-                token_id,
-                0
-            ])
+            data.extend(
+                [
+                    line - prev_line,
+                    pos,
+                    len(node.get_code(include_prefix=False)),
+                    token_id,
+                    0,
+                ]
+            )
             prev_line = line
             prev_column = column
 
     def recurse(node: BaseNode):
-        if node.type == 'name':
+        if node.type == "name":
             add_token(node)
         else:
-            if hasattr(node, 'children'):
+            if hasattr(node, "children"):
                 children = node.children
                 for child in children:
                     recurse(child)

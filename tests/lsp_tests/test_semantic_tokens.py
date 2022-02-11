@@ -24,14 +24,18 @@ def test_semantic_tokens_import():
                 "textDocument": {"uri": uri},
             }
         )
+        # fmt: off
         # [line, column, length, id, mod_id]
-        expected = {'data': [
-            0, 7, 2, 0, 0,  # "import re"
-            1, 7, 3, 0, 0,  # "import sys, "
-            0, 5, 2, 0, 0,  # "os."
-            0, 3, 4, 0, 0,  # "path as "
-            0, 8, 4, 0, 0,  # "path"
-        ]}
+        expected = {
+            "data": [
+                0, 7, 2, 0, 0,  # "import re"
+                1, 7, 3, 0, 0,  # "import sys, "
+                0, 5, 2, 0, 0,  # "os."
+                0, 3, 4, 0, 0,  # "path as "
+                0, 8, 4, 0, 0,  # "path"
+            ]
+        }
+        # fmt: on
         assert_that(actual, is_(expected))
 
 
@@ -48,13 +52,17 @@ def test_semantic_tokens_import_from():
                 "textDocument": {"uri": uri},
             }
         )
+        # fmt: off
         # [line, column, length, id, mod_id]
-        expected = {'data': [
-            0, 5, 2, 0, 0,  # "from os."
-            0, 3, 4, 0, 0,  # "path import "
-            0, 12, 6, 1, 0,  # "exists"
-            1, 5, 3, 0, 0,  # "from sys import"
-            0, 11, 4, 3, 0,  # "argv as "
-            0, 8, 9, 3, 0  # "arguments"
-        ]}
+        expected = {
+            "data": [
+                0, 5, 2, 0, 0,  # "from os."
+                0, 3, 4, 0, 0,  # "path import "
+                0, 12, 6, 1, 0,  # "exists"
+                1, 5, 3, 0, 0,  # "from sys import"
+                0, 11, 4, 3, 0,  # "argv as "
+                0, 8, 9, 3, 0,  # "arguments"
+            ]
+        }
+        # fmt: on
         assert_that(actual, is_(expected))

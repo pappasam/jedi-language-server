@@ -182,8 +182,7 @@ class LspSession(MethodDispatcher):
 
     def text_document_semantic_tokens_full(self, semantic_tokens_params):
         fut = self._send_request(
-            "textDocument/semanticTokens/full",
-            params=semantic_tokens_params
+            "textDocument/semanticTokens/full", params=semantic_tokens_params
         )
         return fut.result()
 
