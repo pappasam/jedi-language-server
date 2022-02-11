@@ -604,15 +604,17 @@ def lsp_completion_item_resolve(
 
 
 def get_semantic_token_id(name: AbstractTreeName) -> Optional[int]:
+    """Return token id for given name."""
     inferrred = list(name.infer())
+    token_id = None
     if inferrred:
         inferrred_value: Value = inferrred[0]
         if inferrred_value.is_module():
-            return 0  # return constant for speed
+            token_id = 0  # return constant for speed
         elif inferrred_value.is_function():
-            return 1
+            token_id = 1
         elif inferrred_value.is_class():
-            return 2
+            token_id = 2
         elif inferrred_value.is_instance():
-            return 3
-    return None
+            token_id = 3
+    return token_id

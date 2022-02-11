@@ -28,7 +28,7 @@ def test_semantic_tokens_full_import():
         # [line, column, length, id, mod_id]
         expected = {
             "data": [
-                0, 7, 2, 0, 0,  # "import re"
+                4, 7, 2, 0, 0,  # "import re"
                 1, 7, 3, 0, 0,  # "import sys, "
                 0, 5, 2, 0, 0,  # "os."
                 0, 3, 4, 0, 0,  # "path as "
@@ -80,15 +80,9 @@ def test_semantic_tokens_range_import_from():
             {
                 "textDocument": {"uri": uri},
                 "range": {
-                    "start": {
-                        "line": 1,
-                        "character": 1
-                    },
-                    "end": {
-                        "line": 2,
-                        "character": 0
-                    },
-                }
+                    "start": {"line": 1, "character": 1},
+                    "end": {"line": 2, "character": 0},
+                },
             }
         )
         # fmt: off

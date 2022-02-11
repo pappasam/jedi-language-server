@@ -19,7 +19,7 @@ PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
 WINDOW_LOG_MESSAGE = "window/logMessage"
 WINDOW_SHOW_MESSAGE = "window/showMessage"
 
-
+# pylint: disable=too-many-public-methods
 class LspSession(MethodDispatcher):
     """Send and Receive messages over LSP as a test LS Client."""
 
@@ -180,15 +180,22 @@ class LspSession(MethodDispatcher):
         )
         return fut.result()
 
+    # pylint: disable=invalid-name
     def text_document_semantic_tokens_full(self, semantic_tokens_params):
+        """Sends text document semantic tokens full request to LSP server."""
         fut = self._send_request(
             "textDocument/semanticTokens/full", params=semantic_tokens_params
         )
         return fut.result()
 
-    def text_document_semantic_tokens_range(self, semantic_tokens_range_params):
+    # pylint: disable=invalid-name
+    def text_document_semantic_tokens_range(
+        self, semantic_tokens_range_params
+    ):
+        """Sends text document semantic tokens range request to LSP server."""
         fut = self._send_request(
-            "textDocument/semanticTokens/range", params=semantic_tokens_range_params
+            "textDocument/semanticTokens/range",
+            params=semantic_tokens_range_params,
         )
         return fut.result()
 
