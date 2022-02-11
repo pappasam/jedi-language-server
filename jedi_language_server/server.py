@@ -10,6 +10,7 @@ import itertools
 from typing import Any, List, Optional, Union
 
 from jedi import Project
+from jedi.api.classes import Name
 from jedi.api.refactoring import RefactoringError
 from parso.tree import BaseNode
 from pydantic import ValidationError
@@ -30,6 +31,7 @@ from pygls.lsp.methods import (
     TEXT_DOCUMENT_DID_OPEN,
     TEXT_DOCUMENT_DID_SAVE,
     TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE,
     WORKSPACE_DID_CHANGE_CONFIGURATION,
     WORKSPACE_SYMBOL,
 )
@@ -62,6 +64,7 @@ from pygls.lsp.types import (
     SemanticTokens,
     SemanticTokensLegend,
     SemanticTokensParams,
+    SemanticTokensRangeParams,
     SignatureHelp,
     SignatureHelpOptions,
     SignatureInformation,
@@ -621,7 +624,7 @@ def semantic_tokens_full(
     server: JediLanguageServer, params: SemanticTokensParams
 ) -> SemanticTokens:
     """Get semantic tokens for full document."""
-
+    server.show_message_log(f'semantic_tokens_full {params.text_document.uri}', MessageType.Log)
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
 
@@ -658,13 +661,74 @@ def semantic_tokens_full(
     def recurse(node: BaseNode):
         if node.type == "name":
             add_token(node)
-        else:
-            if hasattr(node, "children"):
-                children = node.children
-                for child in children:
-                    recurse(child)
+        if hasattr(node, "children"):
+            children = node.children
+            for child in children:
+                recurse(child)
 
     recurse(root_node)
+    return SemanticTokens(data=data)
+
+
+@SERVER.feature(
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE,
+    SemanticTokensLegend(token_types=TOKEN_TYPES, token_modifiers=[]),
+)
+def semantic_tokens_range(
+    server: JediLanguageServer, params: SemanticTokensRangeParams
+) -> SemanticTokens:
+    """Get semantic tokens for document range."""
+    end_line, end_column = jedi_utils.line_column(params.range.end)
+    prev_line, prev_column = jedi_utils.line_column(params.range.start)
+    server.show_message_log(f'semantic_tokens_range {params.text_document.uri} {prev_line}:{prev_column}-{end_line}:{end_column}', MessageType.Log)
+    document = server.workspace.get_document(params.text_document.uri)
+    jedi_script = jedi_utils.script(server.project, document)
+    data = []
+
+    def add_token(tnode: BaseNode):
+        nonlocal prev_line, prev_column
+        token_id = jedi_utils.get_semantic_token_id(
+            jedi_script._get_module_context().create_name(tnode),
+        )
+        if token_id is not None:
+            line, column = tnode.start_pos
+            line -= 1
+            if line == prev_line:
+                pos = column - prev_column
+            else:
+                pos = column
+            data.extend(
+                [
+                    line - prev_line,
+                    pos,
+                    len(tnode.get_code(include_prefix=False)),
+                    token_id,
+                    0,
+                ]
+            )
+            prev_line = line
+            prev_column = column
+
+    def recurse(rnode: Optional[BaseNode]):
+        if not rnode:
+            return
+        node_line, node_column = rnode.start_pos
+        if node_line > end_line:
+            return
+        elif node_line == end_line and node_column > end_column:
+            return
+        if rnode.type == "name":
+            add_token(rnode)
+        if hasattr(rnode, "children"):
+            children = rnode.children
+            for child in children:
+                recurse(child)
+
+    start_node: Name  = jedi_script._module_node.get_leaf_for_position((prev_line, prev_column))
+    prev_line -= 1
+    while start_node:
+        recurse(start_node)
+        start_node = start_node.get_next_sibling()
     return SemanticTokens(data=data)
 
 

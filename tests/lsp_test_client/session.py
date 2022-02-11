@@ -186,6 +186,12 @@ class LspSession(MethodDispatcher):
         )
         return fut.result()
 
+    def text_document_semantic_tokens_range(self, semantic_tokens_range_params):
+        fut = self._send_request(
+            "textDocument/semanticTokens/range", params=semantic_tokens_range_params
+        )
+        return fut.result()
+
     def workspace_symbol(self, workspace_symbol_params):
         """Sends workspace symbol request to LSP server."""
         fut = self._send_request(
