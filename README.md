@@ -70,9 +70,9 @@ Note: this list is non-exhaustive. If you know of a great choice not included in
 
 ### Visual Studio Code (vscode)
 
-With [this release](https://github.com/microsoft/vscode-python/releases/tag/2021.2.576481509) there is a new setting for `python.languageServer` to use jedi-language-server: set `python.languageServer` to `JediLSP`.
+Starting from the [October 2021 release](https://github.com/microsoft/vscode-python/releases/tag/2021.10.1317843341), set the `python.languageServer` setting to `Jedi` to use jedi-language-server.
 
-Note: this is experimental and uses an older version (for now) to support python 2.7.
+Note: This does not support Python 2.7.
 
 See: <https://github.com/pappasam/jedi-language-server/issues/50#issuecomment-781101169>
 
