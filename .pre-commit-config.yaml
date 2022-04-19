@@ -30,6 +30,7 @@ repos:
         entry: poetry run toml-sort --check
         language: system
         types: [toml]
+        exclude: ^poetry.lock
   - repo: local
     hooks:
       - id: pylint
