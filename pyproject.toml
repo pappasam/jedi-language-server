@@ -40,15 +40,15 @@ include = ["README.md"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
 jedi = "^0.18.0"
 pygls = "^0.11.1"
 pydantic = "^1.7"
 docstring-to-markdown = "0.*"
-importlib-metadata = { version = "^3.10.0", python = "~3.6 || ~3.7" }
+importlib-metadata = { version = "^3.10.0", python = "~3.7" }
 
 [tool.poetry.dev-dependencies]
-pre-commit = { version = "^2.11", python = ">=3.6.1" }
+pre-commit = "^2.11"
 tox = "^3.13"
 pytest = "^6.2"
 tox-asdf = "^0.1.0"
@@ -56,7 +56,7 @@ toml-sort = "^0.19.0"
 isort = "^5.7.0"
 pylint = "^2.6.0"
 mypy = "^0.902"
-black = { version = "^21.6b0", python = ">=3.6.2" }
+black = "^22.3.0"
 PyHamcrest = "^2.0.2"
 python-jsonrpc-server = "^0.4.0"
 pytest-cov = "^2.11.1"
@@ -72,7 +72,7 @@ Issues = "https://github.com/pappasam/jedi-language-server/issues"
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{36,37,38,39}{,-cov}
+envlist = py{37,38,39,310}{,-cov}
 isolated_build = true
 skipsdist = true
 [testenv]
