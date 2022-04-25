@@ -513,10 +513,11 @@ def get_full_signatures(name: BaseName) -> Iterator[str]:
     signatures = name.get_signatures()
     name_type = name.type
     if not signatures:
-        if name_type not in _SIGNATURE_TYPES:
+        if name_type == "property":
+            yield f"{_SIGNATURE_TYPE_TRANSLATION[name_type]} {name.name}"
+        elif name_type not in _SIGNATURE_TYPES:
             yield name.description
         else:
-            name_type_trans = _SIGNATURE_TYPE_TRANSLATION[name_type]
             yield f"{_SIGNATURE_TYPE_TRANSLATION[name_type]} {name.name}()"
         return
     name_type_trans = _SIGNATURE_TYPE_TRANSLATION[name_type]
