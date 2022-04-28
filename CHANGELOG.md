@@ -6,9 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
-### Changed
+### Removed
 
 - Drop support for Python 3.6
+
+### Fixed
+
+- Class properties now hover as simple properties. Resolves <https://github.com/pappasam/jedi-language-server/issues/200>
 
 ## 0.35.1
 
