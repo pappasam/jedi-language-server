@@ -67,11 +67,6 @@ Users may choose one of the following options:
 - [lsp-jedi](https://github.com/fredcamps/lsp-jedi).
 - [eglot](https://github.com/joaotavora/eglot)
 
-For `eglot` add the following to your emacs config:
-```
-(add-to-list 'eglot-server-programs '(python-mode . ("jedi-language-server")))
-```
-
 Note: this list is non-exhaustive. If you know of a great choice not included in this list, please submit a PR!
 
 ### Visual Studio Code (vscode)
