@@ -17,7 +17,7 @@ wrapt = ">=1.11,<2"
 name = "attrs"
 version = "22.1.0"
 description = "Classes Without Boilerplate"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -49,6 +49,19 @@ colorama = ["colorama (>=0.4.3)"]
 d = ["aiohttp (>=3.7.4)"]
 jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
+
+[[package]]
+name = "cattrs"
+version = "22.2.0"
+description = "Composable complex class support for attrs and dataclasses."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+attrs = ">=20"
+exceptiongroup = {version = "*", markers = "python_version < \"3.11\""}
+typing_extensions = {version = "*", markers = "python_version < \"3.8\""}
 
 [[package]]
 name = "cfgv"
@@ -138,7 +151,7 @@ python-versions = ">=3.6"
 name = "exceptiongroup"
 version = "1.0.0rc9"
 description = "Backport of PEP 654 (exception groups)"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -228,6 +241,18 @@ description = "A fast and thorough lazy object proxy."
 category = "dev"
 optional = false
 python-versions = ">=3.6"
+
+[[package]]
+name = "lsprotocol"
+version = "2022.0.0a6"
+description = "Python implementation of the Language Server Protocol."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+attrs = "*"
+cattrs = "*"
 
 [[package]]
 name = "mccabe"
@@ -375,17 +400,14 @@ email = ["email-validator (>=1.0.3)"]
 
 [[package]]
 name = "pygls"
-version = "0.12.4"
+version = "1.0.0a0"
 description = "a pythonic generic language server (pronounced like \"pie glass\")."
 category = "main"
 optional = false
-python-versions = "<3.12,>=3.7"
+python-versions = "<4,>=3.7"
 
 [package.dependencies]
-pydantic = [
-    {version = ">=1.9.1", markers = "python_version < \"3.11\""},
-    {version = ">=1.10.2", markers = "python_version >= \"3.11\""},
-]
+lsprotocol = "*"
 typeguard = ">=2.10.0,<3"
 
 [package.extras]
@@ -676,7 +698,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7,<3.12"
-content-hash = "26919e399ba6cf8713269bfcc577f508d4ca43ba448b7eed9edb5e3f0a50b442"
+content-hash = "1955b8e1640abadfb599c73552430b4d4031835487bbff09c6a86f3140905dd0"
 
 [metadata.files]
 astroid = [
@@ -709,6 +731,10 @@ black = [
     {file = "black-22.10.0-cp39-cp39-win_amd64.whl", hash = "sha256:432247333090c8c5366e69627ccb363bc58514ae3e63f7fc75c54b1ea80fa7de"},
     {file = "black-22.10.0-py3-none-any.whl", hash = "sha256:c957b2b4ea88587b46cf49d1dc17681c1e672864fd7af32fc1e9664d572b3458"},
     {file = "black-22.10.0.tar.gz", hash = "sha256:f513588da599943e0cde4e32cc9879e825d58720d6557062d1098c5ad80080e1"},
+]
+cattrs = [
+    {file = "cattrs-22.2.0-py3-none-any.whl", hash = "sha256:bc12b1f0d000b9f9bee83335887d532a1d3e99a833d1bf0882151c97d3e68c21"},
+    {file = "cattrs-22.2.0.tar.gz", hash = "sha256:f0eed5642399423cf656e7b66ce92cdc5b963ecafd041d1b24d136fdde7acf6d"},
 ]
 cfgv = [
     {file = "cfgv-3.3.1-py2.py3-none-any.whl", hash = "sha256:c6a0883f3917a037485059700b9e75da2464e6c27051014ad85ba6aaa5884426"},
@@ -857,6 +883,10 @@ lazy-object-proxy = [
     {file = "lazy_object_proxy-1.7.1-cp39-cp39-win_amd64.whl", hash = "sha256:677ea950bef409b47e51e733283544ac3d660b709cfce7b187f5ace137960d61"},
     {file = "lazy_object_proxy-1.7.1-pp37.pp38-none-any.whl", hash = "sha256:d66906d5785da8e0be7360912e99c9188b70f52c422f9fc18223347235691a84"},
 ]
+lsprotocol = [
+    {file = "lsprotocol-2022.0.0a6-py3-none-any.whl", hash = "sha256:23b54c3dded374db421ccc496b5172481d057dab66657812897b17f046e13c9f"},
+    {file = "lsprotocol-2022.0.0a6.tar.gz", hash = "sha256:00dce9538cca7858e02d97aac08cdd023f2d2a87b7252d80f21f2e863a523a37"},
+]
 mccabe = [
     {file = "mccabe-0.7.0-py2.py3-none-any.whl", hash = "sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e"},
     {file = "mccabe-0.7.0.tar.gz", hash = "sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325"},
@@ -962,8 +992,8 @@ pydantic = [
     {file = "pydantic-1.10.2.tar.gz", hash = "sha256:91b8e218852ef6007c2b98cd861601c6a09f1aa32bbbb74fab5b1c33d4a1e410"},
 ]
 pygls = [
-    {file = "pygls-0.12.4-py3-none-any.whl", hash = "sha256:1b96378452217a02f19d89d9e647a4256d8d445ab3c641a589b4f73bf11898b6"},
-    {file = "pygls-0.12.4.tar.gz", hash = "sha256:63b859411307ed6f99fb9dd0e71be507a17ae9b3de5c5d07c497f5bddadcc46a"},
+    {file = "pygls-1.0.0a0-py3-none-any.whl", hash = "sha256:04f06039c94024aaf282b25d4add2ec6077278d08ff8d0bab0cc2be7c6167d53"},
+    {file = "pygls-1.0.0a0.tar.gz", hash = "sha256:652cc981f0f68f717b294a91ff38142b8035c9cefe954df05121ce1dc0f69712"},
 ]
 pyhamcrest = [
     {file = "pyhamcrest-2.0.4-py3-none-any.whl", hash = "sha256:60a41d4783b9d56c9ec8586635d2301db5072b3ea8a51c32dd03c408ae2b0f79"},

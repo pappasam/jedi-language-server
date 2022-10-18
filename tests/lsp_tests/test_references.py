@@ -182,7 +182,7 @@ def test_references(position, expected):
                 "textDocument": {"uri": uri},
                 "position": position,
                 "context": {
-                    "include_declaration": True,
+                    "includeDeclaration": True,
                 },
             }
         )

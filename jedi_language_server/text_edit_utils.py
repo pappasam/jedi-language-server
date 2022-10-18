@@ -11,12 +11,11 @@ from bisect import bisect_right
 from typing import Iterator, List, NamedTuple, Union
 
 from jedi.api.refactoring import ChangedFile, Refactoring
-from pygls.lsp.types import (
+from lsprotocol.types import (
     Position,
     Range,
     RenameFile,
     RenameFileOptions,
-    ResourceOperationKind,
     TextDocumentEdit,
     TextEdit,
     VersionedTextDocumentIdentifier,
@@ -59,7 +58,7 @@ class RefactoringConverter:
         """Get all File rename operations."""
         for old_name, new_name in self.refactoring.get_renames():
             yield RenameFile(
-                kind=ResourceOperationKind.Rename,
+                kind="rename",
                 old_uri=old_name.as_uri(),
                 new_uri=new_name.as_uri(),
                 options=RenameFileOptions(

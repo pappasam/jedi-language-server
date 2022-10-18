@@ -6,7 +6,7 @@ Helper functions that simplify working with pygls
 
 from typing import Optional
 
-from pygls.lsp.types import Position, Range
+from lsprotocol.types import Position, Range
 from pygls.workspace import Document
 
 

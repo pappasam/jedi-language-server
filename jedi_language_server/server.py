@@ -11,28 +11,25 @@ from typing import Any, List, Optional, Union
 
 from jedi import Project
 from jedi.api.refactoring import RefactoringError
-from pydantic import ValidationError
-from pygls.lsp.methods import (
-    CODE_ACTION,
-    COMPLETION,
+from lsprotocol.types import (
     COMPLETION_ITEM_RESOLVE,
-    DEFINITION,
-    DOCUMENT_HIGHLIGHT,
-    DOCUMENT_SYMBOL,
-    HOVER,
     INITIALIZE,
-    REFERENCES,
-    RENAME,
-    SIGNATURE_HELP,
+    TEXT_DOCUMENT_CODE_ACTION,
+    TEXT_DOCUMENT_COMPLETION,
+    TEXT_DOCUMENT_DEFINITION,
     TEXT_DOCUMENT_DID_CHANGE,
     TEXT_DOCUMENT_DID_CLOSE,
     TEXT_DOCUMENT_DID_OPEN,
     TEXT_DOCUMENT_DID_SAVE,
-    TYPE_DEFINITION,
+    TEXT_DOCUMENT_DOCUMENT_HIGHLIGHT,
+    TEXT_DOCUMENT_DOCUMENT_SYMBOL,
+    TEXT_DOCUMENT_HOVER,
+    TEXT_DOCUMENT_REFERENCES,
+    TEXT_DOCUMENT_RENAME,
+    TEXT_DOCUMENT_SIGNATURE_HELP,
+    TEXT_DOCUMENT_TYPE_DEFINITION,
     WORKSPACE_DID_CHANGE_CONFIGURATION,
     WORKSPACE_SYMBOL,
-)
-from pygls.lsp.types import (
     CodeAction,
     CodeActionKind,
     CodeActionOptions,
@@ -66,6 +63,8 @@ from pygls.lsp.types import (
     WorkspaceEdit,
     WorkspaceSymbolParams,
 )
+from pydantic import ValidationError
+from pygls.capabilities import get_capability
 from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
@@ -126,7 +125,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         server.feature(TEXT_DOCUMENT_DID_CLOSE)(did_close)
 
         if server.initialization_options.hover.enable:
-            server.feature(HOVER)(hover)
+            server.feature(TEXT_DOCUMENT_HOVER)(hover)
 
         initialize_result: InitializeResult = super().lsp_initialize(params)
         workspace_options = initialization_options.workspace
@@ -178,7 +177,7 @@ def completion_item_resolve(
 
 
 @SERVER.feature(
-    COMPLETION,
+    TEXT_DOCUMENT_COMPLETION,
     CompletionOptions(
         trigger_characters=[".", "'", '"'], resolve_provider=True
     ),
@@ -205,8 +204,10 @@ def completion(
             for comp in completions_jedi_raw
             if not any(i.match(comp.name) for i in ignore_patterns)
         )
-    snippet_support = server.client_capabilities.get_capability(
-        "text_document.completion.completion_item.snippet_support", False
+    snippet_support = get_capability(
+        server.client_capabilities,
+        "text_document.completion.completion_item.snippet_support",
+        False,
     )
     markup_kind = _choose_markup(server)
     is_import_context = jedi_utils.is_import(
@@ -244,7 +245,8 @@ def completion(
 
 
 @SERVER.feature(
-    SIGNATURE_HELP, SignatureHelpOptions(trigger_characters=["(", ","])
+    TEXT_DOCUMENT_SIGNATURE_HELP,
+    SignatureHelpOptions(trigger_characters=["(", ","]),
 )
 def signature_help(
     server: JediLanguageServer, params: TextDocumentPositionParams
@@ -290,7 +292,7 @@ def signature_help(
     )
 
 
-@SERVER.feature(DEFINITION)
+@SERVER.feature(TEXT_DOCUMENT_DEFINITION)
 def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
@@ -311,7 +313,7 @@ def definition(
     return definitions if definitions else None
 
 
-@SERVER.feature(TYPE_DEFINITION)
+@SERVER.feature(TEXT_DOCUMENT_TYPE_DEFINITION)
 def type_definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
@@ -328,7 +330,7 @@ def type_definition(
     return definitions if definitions else None
 
 
-@SERVER.feature(DOCUMENT_HIGHLIGHT)
+@SERVER.feature(TEXT_DOCUMENT_DOCUMENT_HIGHLIGHT)
 def highlight(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[DocumentHighlight]]:
@@ -384,7 +386,7 @@ def hover(
     return Hover(contents=contents, range=_range)
 
 
-@SERVER.feature(REFERENCES)
+@SERVER.feature(TEXT_DOCUMENT_REFERENCES)
 def references(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
@@ -401,7 +403,7 @@ def references(
     return locations if locations else None
 
 
-@SERVER.feature(DOCUMENT_SYMBOL)
+@SERVER.feature(TEXT_DOCUMENT_DOCUMENT_SYMBOL)
 def document_symbol(
     server: JediLanguageServer, params: DocumentSymbolParams
 ) -> Optional[Union[List[DocumentSymbol], List[SymbolInformation]]]:
@@ -426,7 +428,8 @@ def document_symbol(
     document = server.workspace.get_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     names = jedi_script.get_names(all_scopes=True, definitions=True)
-    if server.client_capabilities.get_capability(
+    if get_capability(
+        server.client_capabilities,
         "text_document.document_symbol.hierarchical_document_symbol_support",
         False,
     ):
@@ -499,7 +502,7 @@ def workspace_symbol(
     return symbols if symbols else None
 
 
-@SERVER.feature(RENAME)
+@SERVER.feature(TEXT_DOCUMENT_RENAME)
 def rename(
     server: JediLanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
@@ -518,7 +521,7 @@ def rename(
 
 
 @SERVER.feature(
-    CODE_ACTION,
+    TEXT_DOCUMENT_CODE_ACTION,
     CodeActionOptions(
         code_action_kinds=[
             CodeActionKind.RefactorInline,
@@ -702,7 +705,8 @@ def did_close_default(
 def _choose_markup(server: JediLanguageServer) -> MarkupKind:
     """Returns the preferred or first of supported markup kinds."""
     markup_preferred = server.initialization_options.markup_kind_preferred
-    markup_supported = server.client_capabilities.get_capability(
+    markup_supported = get_capability(
+        server.client_capabilities,
         "text_document.completion.completion_item.documentation_format",
         [MarkupKind.PlainText],
     )

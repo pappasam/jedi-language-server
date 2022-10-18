@@ -1,6 +1,6 @@
 """Jedi types mapped to LSP types."""
 
-from pygls.lsp.types import CompletionItemKind, SymbolKind
+from lsprotocol.types import CompletionItemKind, SymbolKind
 
 # See docs:
 # https://jedi.readthedocs.io/en/latest/docs/api-classes.html?highlight=type#jedi.api.classes.BaseName.type

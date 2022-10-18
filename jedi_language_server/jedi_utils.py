@@ -13,7 +13,7 @@ import jedi.inference.references
 import jedi.settings
 from jedi import Project, Script
 from jedi.api.classes import BaseName, Completion, Name, ParamName, Signature
-from pygls.lsp.types import (
+from lsprotocol.types import (
     CompletionItem,
     CompletionItemKind,
     Diagnostic,
