@@ -46,7 +46,7 @@ pygls = "^1.0.0a0"
 pydantic = "^1.9.1"
 docstring-to-markdown = "0.*"
 importlib-metadata = { version = "^3.10.1", python = "~3.7" }
-lsprotocol = "^2022.0.0a5"
+lsprotocol = "^2022.0.0a6"
 
 [tool.poetry.dev-dependencies]
 pre-commit = ">=2.19.0"
