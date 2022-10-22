@@ -12,13 +12,16 @@ from typing import Iterator, List, NamedTuple, Union
 
 from jedi.api.refactoring import ChangedFile, Refactoring
 from lsprotocol.types import (
+    AnnotatedTextEdit,
+    CreateFile,
+    DeleteFile,
+    OptionalVersionedTextDocumentIdentifier,
     Position,
     Range,
     RenameFile,
     RenameFileOptions,
     TextDocumentEdit,
     TextEdit,
-    VersionedTextDocumentIdentifier,
 )
 from pygls.workspace import Document, Workspace
 
@@ -35,7 +38,7 @@ def is_valid_python(code: str) -> bool:
 def lsp_document_changes(
     workspace: Workspace,
     refactoring: Refactoring,
-) -> List[Union[TextDocumentEdit, RenameFile]]:
+) -> List[Union[TextDocumentEdit, RenameFile, CreateFile, DeleteFile]]:
     """Get lsp text document edits from Jedi refactoring.
 
     This is the main public function that you probably want
@@ -76,7 +79,7 @@ class RefactoringConverter:
             text_edits = lsp_text_edits(document, changed_file)
             if text_edits:
                 yield TextDocumentEdit(
-                    text_document=VersionedTextDocumentIdentifier(
+                    text_document=OptionalVersionedTextDocumentIdentifier(
                         uri=uri,
                         version=version,
                     ),
@@ -89,7 +92,7 @@ _OPCODES_CHANGE = {"replace", "delete", "insert"}
 
 def lsp_text_edits(
     document: Document, changed_file: ChangedFile
-) -> List[TextEdit]:
+) -> List[Union[TextEdit, AnnotatedTextEdit]]:
     """Take a jedi `ChangedFile` and convert to list of text edits.
 
     Handles inserts, replaces, and deletions within a text file.
@@ -102,7 +105,7 @@ def lsp_text_edits(
 
     old_code = document.source
     position_lookup = PositionLookup(old_code)
-    text_edits = []
+    text_edits: List[Union[TextEdit, AnnotatedTextEdit]] = []
     for opcode in get_opcodes(old_code, new_code):
         if opcode.op in _OPCODES_CHANGE:
             start = position_lookup.get(opcode.old_start)
