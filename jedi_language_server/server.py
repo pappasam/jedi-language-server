@@ -132,7 +132,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         server.project = (
             Project(
                 path=server.workspace.root_path,
-                environment_path=initialization_options.environment_path,
+                environment_path=initialization_options.workspace.environment_path,
                 added_sys_path=initialization_options.workspace.extra_paths,
                 smart_sys_path=True,
                 load_unsafe_extensions=False,
