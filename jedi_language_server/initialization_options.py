@@ -104,6 +104,7 @@ class Symbols(Model):
 
 
 class Workspace(Model):
+    environment_path: str | None = None
     extra_paths: List[str] = []
     symbols: Symbols = Symbols()
 
