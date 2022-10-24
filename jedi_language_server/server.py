@@ -7,10 +7,13 @@ Official language server spec:
 """
 
 import itertools
+import sys
+from dataclasses import dataclass
 from typing import Any, List, Optional, Union
 
-from jedi import Project, __version__
+from jedi import Project, Script, __version__
 from jedi.api.refactoring import RefactoringError
+from parso.tree import NodeOrLeaf
 from lsprotocol.types import (
     COMPLETION_ITEM_RESOLVE,
     INITIALIZE,
@@ -28,6 +31,8 @@ from lsprotocol.types import (
     TEXT_DOCUMENT_RENAME,
     TEXT_DOCUMENT_SIGNATURE_HELP,
     TEXT_DOCUMENT_TYPE_DEFINITION,
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE,
     WORKSPACE_DID_CHANGE_CONFIGURATION,
     WORKSPACE_SYMBOL,
     CodeAction,
@@ -54,7 +59,13 @@ from lsprotocol.types import (
     MarkupKind,
     MessageType,
     ParameterInformation,
+    Position,
+    Range,
     RenameParams,
+    SemanticTokens,
+    SemanticTokensLegend,
+    SemanticTokensParams,
+    SemanticTokensRangeParams,
     SignatureHelp,
     SignatureHelpOptions,
     SignatureInformation,
@@ -69,6 +80,7 @@ from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
 from . import jedi_utils, pygls_utils, text_edit_utils
+from .constants import SEMANTIC_TOKENS
 from .initialization_options import InitializationOptions
 
 
@@ -632,6 +644,128 @@ def did_change_configuration(
     Currently does nothing, but necessary for pygls. See::
         <https://github.com/pappasam/jedi-language-server/issues/58>
     """
+
+
+@dataclass
+class _SemanticTokensCommonParameters:
+    """Parameters for doing either range or full Semantic Tokens."""
+
+    server: JediLanguageServer
+    jedi_script: Script
+    node_selection: List[NodeOrLeaf]
+    prev_line: int
+    prev_column: int
+    end_line: int
+    end_column: int
+
+
+# pylint: disable=protected-access
+@SERVER.thread()
+@SERVER.feature(
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
+    SemanticTokensLegend(token_types=SEMANTIC_TOKENS, token_modifiers=[]),
+)
+def semantic_tokens_full(
+    server: JediLanguageServer, params: SemanticTokensParams
+) -> SemanticTokens:
+    """Thin wrap around  _semantic_tokens_range()"""
+    document = server.workspace.get_document(params.text_document.uri)
+    jedi_script = jedi_utils.script(server.project, document)
+    server.show_message_log(
+        f"semantic_tokens_full {params.text_document.uri} ",
+        MessageType.Log,
+    )
+    return _semantic_tokens_range(
+        _SemanticTokensCommonParameters(
+            server,
+            jedi_script,
+            [jedi_script._module_node],
+            -1,
+            -1,
+            sys.maxsize,
+            sys.maxsize,
+        )
+    )
+
+
+@SERVER.thread()
+@SERVER.feature(
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE,
+    SemanticTokensLegend(token_types=SEMANTIC_TOKENS, token_modifiers=[]),
+)
+def semantic_tokens_range(
+    server: JediLanguageServer, params: SemanticTokensRangeParams
+) -> SemanticTokens:
+    """Thin wrap around  _semantic_tokens_range()"""
+    document = server.workspace.get_document(params.text_document.uri)
+    jedi_script = jedi_utils.script(server.project, document)
+
+    prev_line, prev_column = jedi_utils.line_column(params.range.start)
+    end_line, end_column = jedi_utils.line_column(params.range.end)
+    server.show_message_log(
+        f"semantic_tokens_range {params.text_document.uri} "
+        f"{prev_line}:{prev_column}-{end_line}:{end_column}",
+        MessageType.Log,
+    )
+    node_selection = []
+    next_node = jedi_script._module_node.get_leaf_for_position(
+        (prev_line, prev_column)
+    )
+    while next_node:
+        node_selection.append(next_node)
+        next_node = next_node.get_next_sibling()
+
+    return _semantic_tokens_range(
+        _SemanticTokensCommonParameters(
+            server,
+            jedi_script,
+            node_selection,
+            prev_line,
+            prev_column,
+            end_line,
+            end_column,
+        )
+    )
+
+
+# pylint: disable=protected-access
+def _semantic_tokens_range(
+    params: _SemanticTokensCommonParameters,
+) -> SemanticTokens:
+    """General purpose function to do full / range semantic tokens."""
+
+    data = []
+
+    prev_line, prev_column = params.prev_line, params.prev_column
+    this_range = Range(
+        start=Position(line=prev_line, character=prev_column),
+        end=Position(line=params.end_line, character=params.end_column),
+    )
+    for selected in params.node_selection:
+        for node in jedi_utils.each_node_within_range(selected, this_range):
+            token_id = jedi_utils.token_id_per_value(
+                params.jedi_script._get_module_context().create_name(node),
+            )
+            if token_id is not None:
+                line, column = node.start_pos
+                line -= 1
+                if line == prev_line:
+                    pos = column - prev_column
+                else:
+                    pos = column
+                data.extend(
+                    [
+                        line - prev_line,
+                        pos,
+                        len(node.get_code(include_prefix=False)),
+                        token_id,
+                        0,
+                    ]
+                )
+                prev_line = line
+                prev_column = column
+
+    return SemanticTokens(data=data)
 
 
 # Static capability or initializeOptions functions that rely on a specific

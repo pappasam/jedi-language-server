@@ -686,3 +686,32 @@ def lsp_completion_item_resolve(
     docstring = convert_docstring(completion.docstring(raw=True), markup_kind)
     item.documentation = MarkupContent(kind=markup_kind, value=docstring)
     return item
+
+
+def each_node_within_range(node, allowed_range: Range):
+    """Recursively traverse node and its children, filtering by range."""
+    try:
+        children = node.children
+    except AttributeError:
+        if allowed_range.start < node.start_pos < allowed_range.end:
+            yield node
+    else:
+        for child in children:
+            for child_node in each_node_within_range(child, allowed_range):
+                yield child_node
+
+
+def token_id_per_value(inferred_name: Name) -> Optional[int]:
+    """Return token id for given name.
+
+    Tries to match attributes from name into a token. May return None
+    when couldn't match attributes (it is not a function, or a class …)
+    """
+
+    if not inferred_name.name:
+        return None
+    type_to_token_id = {"module": 0, "function": 1, "class": 2, "instance": 3}
+    try:
+        return type_to_token_id[inferred_name.type]
+    except KeyError:
+        return None
