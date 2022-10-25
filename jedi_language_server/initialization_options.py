@@ -4,7 +4,7 @@ Provides a fully defaulted pydantic model for this language server's
 initialization options.
 """
 
-from typing import List, Optional, Pattern, Set
+from typing import List, Optional, Pattern, Set, Union
 
 from pydantic import BaseModel, Field
 from pygls.lsp.types import MarkupKind
@@ -104,7 +104,7 @@ class Symbols(Model):
 
 
 class Workspace(Model):
-    environment_path: str | None = None
+    environment_path: Union[str, None] = None
     extra_paths: List[str] = []
     symbols: Symbols = Symbols()
 
