@@ -8,6 +8,8 @@ from random import choice
 
 import py
 
+# pylint: disable=no-member
+
 
 def normalizecase(path: str) -> str:
     """Fixes 'file' uri or path case for easier testing in windows."""
