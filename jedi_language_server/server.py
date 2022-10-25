@@ -129,10 +129,12 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
             server.feature(HOVER)(hover)
 
         initialize_result: InitializeResult = super().lsp_initialize(params)
+        workspace_options = initialization_options.workspace
         server.project = (
             Project(
                 path=server.workspace.root_path,
-                added_sys_path=initialization_options.workspace.extra_paths,
+                environment_path=workspace_options.environment_path,
+                added_sys_path=workspace_options.extra_paths,
                 smart_sys_path=True,
                 load_unsafe_extensions=False,
             )
