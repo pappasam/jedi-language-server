@@ -9,8 +9,6 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         python-version: ['3.11']
-        poetry-version: ['1.2.2']
-        pip-version: ['20.3']
     steps:
       - uses: actions/checkout@v2
       - name: Setup, Python ${{ matrix.python-version }}
@@ -23,14 +21,8 @@ jobs:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          # Set up Python
-          python -m pip install --upgrade pip==${{ matrix.pip-version }}
-          # Set up Poetry
-          curl -sSL https://install.python-poetry.org > get-poetry.py
-          python get-poetry.py
-          rm get-poetry.py
-          source "$HOME/.poetry/env"
-          poetry self update ${{ matrix.poetry-version }}
-          # Release with Poetry
+          python -m pip install -U pip
+          python -m pip install wheel
+          python -m pip install poetry
           poetry build
           poetry publish --username="$PYPI_USERNAME" --password="$PYPI_PASSWORD"
