@@ -19,6 +19,8 @@ PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
 WINDOW_LOG_MESSAGE = "window/logMessage"
 WINDOW_SHOW_MESSAGE = "window/showMessage"
 
+# pylint: disable=no-member
+
 
 class LspSession(MethodDispatcher):
     """Send and Receive messages over LSP as a test LS Client."""
