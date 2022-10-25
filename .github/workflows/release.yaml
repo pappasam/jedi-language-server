@@ -8,9 +8,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        python-version: ['3.9']
-        poetry-version: ['1.1.5']
-        pip-version: ['20.2.4']
+        python-version: ['3.11']
+        poetry-version: ['1.2.2']
+        pip-version: ['20.3']
     steps:
       - uses: actions/checkout@v2
       - name: Setup, Python ${{ matrix.python-version }}
@@ -26,7 +26,7 @@ jobs:
           # Set up Python
           python -m pip install --upgrade pip==${{ matrix.pip-version }}
           # Set up Poetry
-          curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py > get-poetry.py
+          curl -sSL https://install.python-poetry.org > get-poetry.py
           python get-poetry.py
           rm get-poetry.py
           source "$HOME/.poetry/env"
