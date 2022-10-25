@@ -191,6 +191,7 @@ If you are configuring manually, jedi-language-server supports the following [in
     "markupKindPreferred": "markdown",
     "workspace": {
       "extraPaths": [],
+      "environmentPath": "/path/to/venv/bin/python",
       "symbols": {
         "ignoreFolders": [".nox", ".tox", ".venv", "__pycache__", "venv"],
         "maxSymbols": 20
