@@ -690,15 +690,16 @@ def lsp_completion_item_resolve(
 
 def each_node_within_range(node, allowed_range: Range):
     """Recursively traverse node and its children, filtering by range."""
-    try:
-        children = node.children
-    except AttributeError:
-        if allowed_range.start < node.start_pos < allowed_range.end:
-            yield node
-    else:
-        for child in children:
+    if hasattr(node, "children"):
+        for child in node.children:
             for child_node in each_node_within_range(child, allowed_range):
                 yield child_node
+    else:
+        node_position = Position(
+            line=node.start_pos[0], character=node.start_pos[1]
+        )
+        if allowed_range.start < node_position < allowed_range.end:
+            yield node
 
 
 def token_id_per_value(inferred_name: Name) -> Optional[int]:
