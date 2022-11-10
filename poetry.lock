@@ -244,7 +244,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "lsprotocol"
-version = "2022.0.0a7"
+version = "2022.0.0a9"
 description = "Python implementation of the Language Server Protocol."
 category = "main"
 optional = false
@@ -400,7 +400,7 @@ email = ["email-validator (>=1.0.3)"]
 
 [[package]]
 name = "pygls"
-version = "1.0.0a2"
+version = "1.0.0a3"
 description = "a pythonic generic language server (pronounced like \"pie glass\")."
 category = "main"
 optional = false
@@ -698,7 +698,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7,<3.12"
-content-hash = "ff7b819c2b8ed659a53460e2b5fb2533651a64a82472306cc1a6d6375162103a"
+content-hash = "91b8fab325933c92dcdfd0a76347759b8d4c22a7a5d0fe441ddfc9767c501743"
 
 [metadata.files]
 astroid = [
@@ -884,8 +884,8 @@ lazy-object-proxy = [
     {file = "lazy_object_proxy-1.7.1-pp37.pp38-none-any.whl", hash = "sha256:d66906d5785da8e0be7360912e99c9188b70f52c422f9fc18223347235691a84"},
 ]
 lsprotocol = [
-    {file = "lsprotocol-2022.0.0a7-py3-none-any.whl", hash = "sha256:3a4fef9869faffda4b6485383d72e4fa79554f6bcb55862fcd9b8584f0a64b40"},
-    {file = "lsprotocol-2022.0.0a7.tar.gz", hash = "sha256:01b92d612a1fd792f62f0f8e7c226cf4fa7528a933ed70b3d7b00bf887c863b9"},
+    {file = "lsprotocol-2022.0.0a9-py3-none-any.whl", hash = "sha256:e4bc3d2ed71045f64cbe4d053bd6d45300a77b122b372a383914ce4ddb9c62d4"},
+    {file = "lsprotocol-2022.0.0a9.tar.gz", hash = "sha256:db81eafc80485a6052f6771aaf6fb9cef58cb6409d510c60132f12c6e91d9182"},
 ]
 mccabe = [
     {file = "mccabe-0.7.0-py2.py3-none-any.whl", hash = "sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e"},
@@ -992,8 +992,8 @@ pydantic = [
     {file = "pydantic-1.10.2.tar.gz", hash = "sha256:91b8e218852ef6007c2b98cd861601c6a09f1aa32bbbb74fab5b1c33d4a1e410"},
 ]
 pygls = [
-    {file = "pygls-1.0.0a2-py3-none-any.whl", hash = "sha256:d1066ed41806d7d72675692679e47ef481f3dd84e748530997fe5352163b88be"},
-    {file = "pygls-1.0.0a2.tar.gz", hash = "sha256:935419f88e2733475f6f3ccb0c2f458b06b771813181b3601e26182ad21b5df2"},
+    {file = "pygls-1.0.0a3-py3-none-any.whl", hash = "sha256:91e6c9607e8ffadbe4541ef8763459385557a0b092c8a505206698fff632a59e"},
+    {file = "pygls-1.0.0a3.tar.gz", hash = "sha256:ecc931ab68b07809c22b400c3f2caa61a427094c0f2559b0e06c7008b90ddbb3"},
 ]
 pyhamcrest = [
     {file = "pyhamcrest-2.0.4-py3-none-any.whl", hash = "sha256:60a41d4783b9d56c9ec8586635d2301db5072b3ea8a51c32dd03c408ae2b0f79"},
