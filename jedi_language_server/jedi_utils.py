@@ -11,6 +11,7 @@ import docstring_to_markdown
 import jedi.api.errors
 import jedi.inference.references
 import jedi.settings
+import jedi.api.environment
 from jedi import Project, Script
 from jedi.api.classes import BaseName, Completion, Name, ParamName, Signature
 from pygls.lsp.types import (
@@ -65,7 +66,8 @@ def set_jedi_settings(  # pylint: disable=invalid-name
 
 def script(project: Optional[Project], document: Document) -> Script:
     """Simplifies getting jedi Script."""
-    return Script(code=document.source, path=document.path, project=project)
+    return Script(code=document.source, path=document.path, project=project,
+           environment=jedi.api.environment.InterpreterEnvironment())
 
 
 def lsp_range(name: Name) -> Optional[Range]:
