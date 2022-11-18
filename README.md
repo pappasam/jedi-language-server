@@ -42,6 +42,8 @@ jedi-language-server aims to support Jedi's capabilities and expose them through
 
 ### Text Synchronization (for diagnostics)
 
+**Note:** diagnostics are disabled by default because Jedi's syntax checking is not supported for new syntax in Python 3.10+. For a detailed discussion on this topic, please refer to [this issue](https://github.com/pappasam/jedi-language-server/issues/187).
+
 - [textDocument/didChange](https://microsoft.github.io/language-server-protocol/specification#textDocument_didChange)
 - [textDocument/didOpen](https://microsoft.github.io/language-server-protocol/specification#textDocument_didOpen)
 - [textDocument/didSave](https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave)
@@ -164,7 +166,7 @@ If you are configuring manually, jedi-language-server supports the following [in
       "ignorePatterns": []
     },
     "diagnostics": {
-      "enable": true,
+      "enable": false,
       "didOpen": true,
       "didChange": true,
       "didSave": true
@@ -203,9 +205,11 @@ If you are configuring manually, jedi-language-server supports the following [in
 
 See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi#configuration) for an explanation of the above configurations.
 
-## Additional Diagnostics
+## Diagnostics
 
-jedi-langugage-server provides diagnostics about syntax errors, powered by Jedi. If you would like additional diagnostics, we suggest using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
+Jedi-powered diagnostics are disabled by default because Jedi's syntax checking is not supported for new syntax in Python 3.10+. For a detailed discussion on this topic, please refer to [this issue](https://github.com/pappasam/jedi-language-server/issues/187).
+
+If you would like diagnostics (from [pylint](https://github.com/PyCQA/pylint), [mypy](https://github.com/python/mypy), etc.), we recommend using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
 
 ## Code Formatting
 
