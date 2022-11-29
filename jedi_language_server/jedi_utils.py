@@ -688,18 +688,69 @@ def lsp_completion_item_resolve(
     return item
 
 
-def each_node_within_range(node, allowed_range: Range):
-    """Recursively traverse node and its children, filtering by range."""
-    if hasattr(node, "children"):
-        for child in node.children:
-            for child_node in each_node_within_range(child, allowed_range):
-                yield child_node
+def _try_children(node, allowed_range, last_added):
+    """Try yielding from node.children."""
+    try:
+        children = node.children
+    except AttributeError:
+        pass
     else:
-        node_position = Position(
-            line=node.start_pos[0], character=node.start_pos[1]
-        )
-        if allowed_range.start < node_position < allowed_range.end:
+        if not last_added and _node_within_range(node, allowed_range):
             yield node
+
+        for child in children:
+            for from_child in each_node_within_range(
+                child, allowed_range, last_added
+            ):
+                if _node_within_range(from_child, allowed_range):
+                    yield from_child
+
+
+def _node_within_range(node, allowed_range: Range):
+    """Return True if node is between allowed_range's start & end."""
+    node_position = Position(
+        line=node.start_pos[0], character=node.start_pos[1]
+    )
+    return allowed_range.start < node_position < allowed_range.end
+
+
+def each_node_within_range(node, allowed_range: Range, last_added=False):
+    """Recursively traverse node and its children, filtering by range."""
+    typ = node.type
+    if typ == "name":
+        next_leaf = node.get_next_leaf()
+        if (
+            last_added is False
+            and node.parent.type != "param"
+            and next_leaf != "="
+            and _node_within_range(node, allowed_range)
+        ):
+            yield node
+        return
+    if typ == "expr_stmt":
+        # I think inferring the statement (and possibly returned arrays),
+        # should be enough for static analysis.
+        if _node_within_range(node, allowed_range):
+            yield node
+        for child in node.children:
+            for each_in_child in each_node_within_range(
+                child, allowed_range, last_added=True
+            ):
+                if _node_within_range(each_in_child, allowed_range):
+                    yield each_in_child
+        return
+    if typ == "decorator":
+        # decorator
+        if node.children[-2] == ")":
+            node = node.children[-3]
+            if node != "(":
+                these_nodes = each_node_within_range(node, allowed_range)
+                for this_node in these_nodes:
+                    if _node_within_range(this_node, allowed_range):
+                        yield this_node
+        return
+
+    yield from _try_children(node, allowed_range, last_added)
 
 
 def token_id_per_value(inferred_name: Name) -> Optional[int]:
