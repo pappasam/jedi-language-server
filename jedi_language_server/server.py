@@ -743,9 +743,7 @@ def _semantic_tokens_range(
     )
     for selected in params.node_selection:
         for node in jedi_utils.each_node_within_range(selected, this_range):
-            token_id = jedi_utils.token_id_per_value(
-                params.jedi_script._get_module_context().create_name(node),
-            )
+            token_id = jedi_utils.token_id_per_value(node)
             if token_id is not None:
                 line, column = node.start_pos
                 line -= 1
@@ -764,7 +762,6 @@ def _semantic_tokens_range(
                 )
                 prev_line = line
                 prev_column = column
-
     return SemanticTokens(data=data)
 
 
