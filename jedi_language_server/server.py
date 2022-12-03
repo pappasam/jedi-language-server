@@ -9,7 +9,7 @@ Official language server spec:
 import itertools
 from typing import Any, List, Optional, Union
 
-from jedi import Project
+from jedi import Project, __version__
 from jedi.api.refactoring import RefactoringError
 from lsprotocol.types import (
     COMPLETION_ITEM_RESOLVE,
@@ -159,7 +159,11 @@ class JediLanguageServer(LanguageServer):
         super().__init__(*args, **kwargs)
 
 
-SERVER = JediLanguageServer(protocol_cls=JediLanguageServerProtocol)
+SERVER = JediLanguageServer(
+    name="jedi-language-server",
+    version=__version__,
+    protocol_cls=JediLanguageServerProtocol,
+)
 
 
 # Server capabilities

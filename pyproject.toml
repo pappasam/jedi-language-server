@@ -42,7 +42,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.7,<3.12"
 jedi = "^0.18.1"
-pygls = "^1.0.0a3"
+pygls = "^1.0.0"
 pydantic = "^1.9.1"
 docstring-to-markdown = "0.*"
 importlib-metadata = { version = "^3.10.1", python = "~3.7" }

@@ -400,7 +400,7 @@ email = ["email-validator (>=1.0.3)"]
 
 [[package]]
 name = "pygls"
-version = "1.0.0a3"
+version = "1.0.0"
 description = "a pythonic generic language server (pronounced like \"pie glass\")."
 category = "main"
 optional = false
@@ -698,7 +698,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7,<3.12"
-content-hash = "91b8fab325933c92dcdfd0a76347759b8d4c22a7a5d0fe441ddfc9767c501743"
+content-hash = "4a1f233b12b4af826751f4329abb8c9a7b7e75e80f58227ec6e3cd5420ef30a6"
 
 [metadata.files]
 astroid = [
@@ -992,8 +992,8 @@ pydantic = [
     {file = "pydantic-1.10.2.tar.gz", hash = "sha256:91b8e218852ef6007c2b98cd861601c6a09f1aa32bbbb74fab5b1c33d4a1e410"},
 ]
 pygls = [
-    {file = "pygls-1.0.0a3-py3-none-any.whl", hash = "sha256:91e6c9607e8ffadbe4541ef8763459385557a0b092c8a505206698fff632a59e"},
-    {file = "pygls-1.0.0a3.tar.gz", hash = "sha256:ecc931ab68b07809c22b400c3f2caa61a427094c0f2559b0e06c7008b90ddbb3"},
+    {file = "pygls-1.0.0-py3-none-any.whl", hash = "sha256:3414594ac29ff3ab990f004c675d1077e4e2659eae5cc3ae67cc6fa4d861e342"},
+    {file = "pygls-1.0.0.tar.gz", hash = "sha256:c2a1c22e30028f7ca9d3f0a04da8eef29f0f1701bdbd97d8614d8e1e6711f336"},
 ]
 pyhamcrest = [
     {file = "pyhamcrest-2.0.4-py3-none-any.whl", hash = "sha256:60a41d4783b9d56c9ec8586635d2301db5072b3ea8a51c32dd03c408ae2b0f79"},
