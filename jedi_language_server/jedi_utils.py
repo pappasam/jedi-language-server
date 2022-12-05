@@ -13,7 +13,7 @@ import jedi.inference.references
 import jedi.settings
 from jedi import Project, Script
 from jedi.api.classes import BaseName, Completion, Name, ParamName, Signature
-from pygls.lsp.types import (
+from lsprotocol.types import (
     CompletionItem,
     CompletionItemKind,
     Diagnostic,
@@ -150,14 +150,23 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
     accessible with dot notation are removed from display. See comments
     inline for cleaning steps.
     """
+    # pylint: disable=too-many-branches
     _name_lookup: Dict[Name, DocumentSymbol] = {}
     results: List[DocumentSymbol] = []
     for name in names:
+        symbol_range = _document_symbol_range(name)
+        if symbol_range is None:
+            continue
+
+        selection_range = lsp_range(name)
+        if selection_range is None:
+            continue
+
         symbol = DocumentSymbol(
             name=name.name,
             kind=get_lsp_symbol_type(name.type),
-            range=_document_symbol_range(name),
-            selection_range=lsp_range(name),
+            range=symbol_range,
+            selection_range=selection_range,
             detail=name.description,
             children=[],
         )
