@@ -3,7 +3,11 @@
 Translates pygls types back and forth with Jedi
 """
 
+import functools
+import inspect
 import sys
+import threading
+from ast import PyCF_ONLY_AST
 from inspect import Parameter
 from typing import Dict, Iterator, List, Optional, Tuple
 
@@ -33,17 +37,14 @@ from pygls.workspace import Document
 from .initialization_options import HoverDisableOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
-import functools
-import threading
-import inspect
-
-from ast import PyCF_ONLY_AST
 
 def debounce(interval_s, keyed_by=None):
+    """Debounce calls to this function until interval_s seconds have passed.
+
+    Decorator copied from https://github.com/python-lsp/python-lsp-
+    server
     """
-        Debounce calls to this function until interval_s seconds have passed.
-        Decorator copied from https://github.com/python-lsp/python-lsp-server
-    """
+
     def wrapper(func):
         timers = {}
         lock = threading.Lock()
@@ -67,7 +68,9 @@ def debounce(interval_s, keyed_by=None):
                 timer = threading.Timer(interval_s, run)
                 timers[key] = timer
                 timer.start()
+
         return debounced
+
     return wrapper
 
 
@@ -275,15 +278,22 @@ def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
     )
 
 
-def lsp_python_diagnostic(uri: str, source: str) -> Diagnostic:
+def lsp_python_diagnostic(uri: str, source: str) -> Optional[Diagnostic]:
     """Get LSP Diagnostic using the compile builtin."""
     try:
         compile(source, uri, "exec", PyCF_ONLY_AST)
         return None
     except SyntaxError as err:
-        column, line = err.offset - 1, err.lineno - 1
-        until_column = getattr(err, "end_offset", 0) - 1
-        until_line = getattr(err, "end_lineno", 0) - 1
+        column = err.offset - 1 if err.offset is not None else 0
+        line = err.lineno - 1 if err.lineno is not None else 0
+
+        _until_column = getattr(err, "end_offset", None)
+        _until_line = getattr(err, "end_lineno", None)
+
+        until_column = (
+            _until_column - 1 if _until_column is not None else column + 1
+        )
+        until_line = _until_line - 1 if _until_line is not None else line + 1
 
         if (line, column) >= (until_line, until_column):
             until_column, until_line = column, line
@@ -294,7 +304,7 @@ def lsp_python_diagnostic(uri: str, source: str) -> Diagnostic:
                 start=Position(line=line, character=column),
                 end=Position(line=until_line, character=until_column),
             ),
-            message=err.__class__.__name__ + ': ' + str(err),
+            message=err.__class__.__name__ + ": " + str(err),
             severity=DiagnosticSeverity.Error,
             source="compile",
         )

@@ -637,14 +637,14 @@ def did_change_configuration(
 # Static capability or initializeOptions functions that rely on a specific
 # client capability or user configuration. These are associated with
 # JediLanguageServer within JediLanguageServerProtocol.lsp_initialize
-@jedi_utils.debounce(1, keyed_by='uri')
+@jedi_utils.debounce(1, keyed_by="uri")
 def _publish_diagnostics(server: JediLanguageServer, uri: str) -> None:
     """Helper function to publish diagnostics for a file."""
     # The debounce decorator delays the execution by 1 second
     # canceling notifications that happen in that interval.
     # Since this function is executed after a delay, we need to check
     # whether the document still exists
-    if not (uri in server.workspace.documents):
+    if uri not in server.workspace.documents:
         return
 
     doc = server.workspace.get_document(uri)
@@ -652,6 +652,7 @@ def _publish_diagnostics(server: JediLanguageServer, uri: str) -> None:
     diagnostics = [diagnostic] if diagnostic else []
 
     server.publish_diagnostics(uri, diagnostics)
+
 
 # TEXT_DOCUMENT_DID_SAVE
 def did_save_diagnostics(
