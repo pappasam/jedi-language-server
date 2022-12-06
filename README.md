@@ -42,8 +42,6 @@ jedi-language-server aims to support Jedi's capabilities and expose them through
 
 ### Text Synchronization (for diagnostics)
 
-**Note:** diagnostics are disabled by default because Jedi's syntax checking is not supported for new syntax in Python 3.10+. For a detailed discussion on this topic, please refer to [this issue](https://github.com/pappasam/jedi-language-server/issues/187).
-
 - [textDocument/didChange](https://microsoft.github.io/language-server-protocol/specification#textDocument_didChange)
 - [textDocument/didOpen](https://microsoft.github.io/language-server-protocol/specification#textDocument_didOpen)
 - [textDocument/didSave](https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave)
@@ -207,7 +205,7 @@ See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi
 
 ## Diagnostics
 
-Jedi-powered diagnostics are disabled by default because Jedi's syntax checking is not supported for new syntax in Python 3.10+. For a detailed discussion on this topic, please refer to [this issue](https://github.com/pappasam/jedi-language-server/issues/187).
+Diagnostics are provided by Python's built-in `compile` function.
 
 If you would like diagnostics (from [pylint](https://github.com/PyCQA/pylint), [mypy](https://github.com/python/mypy), etc.), we recommend using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
 
