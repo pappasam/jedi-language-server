@@ -38,7 +38,7 @@ class Completion(Model):
 
 
 class Diagnostics(Model):
-    enable: bool = False
+    enable: bool = True
     did_open: bool = True
     did_save: bool = True
     did_change: bool = True
