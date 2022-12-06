@@ -33,6 +33,43 @@ from pygls.workspace import Document
 from .initialization_options import HoverDisableOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
+import functools
+import threading
+import inspect
+
+from ast import PyCF_ONLY_AST
+
+def debounce(interval_s, keyed_by=None):
+    """
+        Debounce calls to this function until interval_s seconds have passed.
+        Decorator copied from https://github.com/python-lsp/python-lsp-server
+    """
+    def wrapper(func):
+        timers = {}
+        lock = threading.Lock()
+
+        @functools.wraps(func)
+        def debounced(*args, **kwargs):
+            sig = inspect.signature(func)
+            call_args = sig.bind(*args, **kwargs)
+            key = call_args.arguments[keyed_by] if keyed_by else None
+
+            def run():
+                with lock:
+                    del timers[key]
+                return func(*args, **kwargs)
+
+            with lock:
+                old_timer = timers.get(key)
+                if old_timer:
+                    old_timer.cancel()
+
+                timer = threading.Timer(interval_s, run)
+                timers[key] = timer
+                timer.start()
+        return debounced
+    return wrapper
+
 
 def _jedi_debug_function(
     color: str,  # pylint: disable=unused-argument
@@ -236,6 +273,31 @@ def lsp_diagnostic(error: jedi.api.errors.SyntaxError) -> Diagnostic:
         severity=DiagnosticSeverity.Error,
         source="jedi",
     )
+
+
+def lsp_python_diagnostic(uri: str, source: str) -> Diagnostic:
+    """Get LSP Diagnostic using the compile builtin."""
+    try:
+        compile(source, uri, "exec", PyCF_ONLY_AST)
+        return None
+    except SyntaxError as err:
+        column, line = err.offset - 1, err.lineno - 1
+        until_column = getattr(err, "end_offset", 0) - 1
+        until_line = getattr(err, "end_lineno", 0) - 1
+
+        if (line, column) >= (until_line, until_column):
+            until_column, until_line = column, line
+            column = 0
+
+        return Diagnostic(
+            range=Range(
+                start=Position(line=line, character=column),
+                end=Position(line=until_line, character=until_column),
+            ),
+            message=err.__class__.__name__ + ': ' + str(err),
+            severity=DiagnosticSeverity.Error,
+            source="compile",
+        )
 
 
 def line_column(position: Position) -> Tuple[int, int]:
