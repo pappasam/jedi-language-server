@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `pygls` 1.0!
 - Diagnostics (for syntax errors) are once-again enabled by default.
+- Properties are now children of classes, not the methods where they are defined. Resolves <https://github.com/pappasam/jedi-language-server/issues/240>
 
 ## 0.39.0
 
