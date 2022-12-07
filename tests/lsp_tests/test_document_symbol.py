@@ -11,6 +11,8 @@ from tests.lsp_test_client.utils import as_uri
 
 SYMBOL_TEST_ROOT = TEST_DATA / "symbol"
 
+# pylint: disable=line-too-long
+
 
 def test_document_symbol() -> None:
     """Test document symbol request.
@@ -121,22 +123,21 @@ def test_document_symbol() -> None:
                             "end": {"line": 18, "character": 16},
                         },
                         "detail": "def __init__",
-                        "children": [
-                            {
-                                "name": "somedata",
-                                "kind": 7,
-                                "range": {
-                                    "start": {"line": 19, "character": 8},
-                                    "end": {"line": 19, "character": 28},
-                                },
-                                "selectionRange": {
-                                    "start": {"line": 19, "character": 13},
-                                    "end": {"line": 19, "character": 21},
-                                },
-                                "detail": "self.somedata = arg1",
-                                "children": [],
-                            }
-                        ],
+                        "children": [],
+                    },
+                    {
+                        "name": "somedata",
+                        "kind": 7,
+                        "range": {
+                            "start": {"line": 19, "character": 8},
+                            "end": {"line": 19, "character": 28},
+                        },
+                        "selectionRange": {
+                            "start": {"line": 19, "character": 13},
+                            "end": {"line": 19, "character": 21},
+                        },
+                        "detail": "self.somedata = arg1",
+                        "children": [],
                     },
                     {
                         "name": "do_something",

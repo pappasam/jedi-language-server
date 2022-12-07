@@ -233,14 +233,19 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
         elif parent not in _name_lookup:
             # unqualified names are not included in the tree
             continue
-        elif name.is_side_effect() and name.get_line_code().strip().startswith(
-            "self."
+        elif (
+            name.is_side_effect()
+            and parent.name == "__init__"
+            and name.get_line_code().strip().startswith("self.")
         ):
             # handle attribute creation on __init__ method
             symbol.kind = SymbolKind.Property
-            parent_symbol = _name_lookup[parent]
-            assert parent_symbol.children is not None
-            parent_symbol.children.append(symbol)
+            grandparent_symbol = _name_lookup.get(parent.parent())
+            if grandparent_symbol is not None and (
+                grandparent_symbol.kind == SymbolKind.Class
+            ):
+                assert grandparent_symbol.children is not None
+                grandparent_symbol.children.append(symbol)
         elif parent.type == "class":
             # children are added for class scopes
             if name.type == "function":
