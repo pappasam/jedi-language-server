@@ -207,7 +207,7 @@ See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi
 
 Diagnostics are provided by Python's built-in `compile` function.
 
-If you would like diagnostics (from [pylint](https://github.com/PyCQA/pylint), [mypy](https://github.com/python/mypy), etc.), we recommend using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
+If you would like additional diagnostics (from [pylint](https://github.com/PyCQA/pylint), [mypy](https://github.com/python/mypy), etc.), we recommend using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
 
 ## Code Formatting
 
