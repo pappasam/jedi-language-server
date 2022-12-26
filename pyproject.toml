@@ -59,7 +59,7 @@ pylint = ">=2.13.9"
 mypy = ">=0.961"
 black = ">=22.6.0"
 PyHamcrest = ">=2.0.3"
-python-jsonrpc-server = ">=0.4.0"
+python-lsp-jsonrpc = "^1.0.0"
 pytest-cov = ">=3.0.0"
 docformatter = ">=1.4"
 
