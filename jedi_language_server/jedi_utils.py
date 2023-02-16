@@ -32,6 +32,7 @@ from lsprotocol.types import (
     SymbolInformation,
     SymbolKind,
 )
+from parso.python.tree import ImportName
 from pygls.workspace import Document
 
 from .initialization_options import HoverDisableOptions, InitializationOptions
@@ -753,17 +754,22 @@ def each_node_within_range(node, allowed_range: Range, last_added=False):
     yield from _try_children(node, allowed_range, last_added)
 
 
-def token_id_per_value(inferred_name: Name) -> Optional[int]:
+def token_id_per_value(node) -> Optional[int]:
     """Return token id for given name.
 
     Tries to match attributes from name into a token. May return None
     when couldn't match attributes (it is not a function, or a class …)
     """
+    # TODO felipel I was correcting this function rather than rely on
+    if isinstance(node, ImportName):
+        return 0
+    return None
 
-    if not inferred_name.name:
+    if isinstance(node, PythonNode):
         return None
+
     type_to_token_id = {"module": 0, "function": 1, "class": 2, "instance": 3}
     try:
-        return type_to_token_id[inferred_name.type]
+        return type_to_token_id[node.type]
     except KeyError:
         return None
