@@ -34,7 +34,8 @@ class CodeAction(Model):
 class Completion(Model):
     disable_snippets: bool = False
     resolve_eagerly: bool = False
-    ignore_patterns: List[Pattern] = []
+    # <https://github.com/pydantic/pydantic/issues/2636>
+    ignore_patterns: List[Pattern] = []  # type: ignore[type-arg]
 
 
 class Diagnostics(Model):
