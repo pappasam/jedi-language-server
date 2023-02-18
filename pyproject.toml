@@ -39,13 +39,14 @@ classifiers = [
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.7,<3.12"
+python = "^3.7,<4"
 jedi = "^0.18.1"
-pygls = "^1.0.0"
+pygls = "^1.0.1"
 pydantic = "^1.9.1"
 docstring-to-markdown = "0.*"
 importlib-metadata = { version = "^3.10.1", python = "~3.7" }
 lsprotocol = ">=2022.0.0a9"
+typing-extensions = { version = "^4.5.0", markers = 'python_version < "3.10"' }
 
 [tool.poetry.dev-dependencies]
 pre-commit = ">=2.19.0"

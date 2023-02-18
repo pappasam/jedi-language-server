@@ -9,7 +9,7 @@ import sys
 import threading
 from ast import PyCF_ONLY_AST
 from inspect import Parameter
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import docstring_to_markdown
 import jedi.api.errors
@@ -37,25 +37,35 @@ from pygls.workspace import Document
 from .initialization_options import HoverDisableOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
 
-def debounce(interval_s, keyed_by=None):
+
+P = ParamSpec("P")
+
+
+def debounce(
+    interval_s: int, keyed_by: Optional[str] = None
+) -> Callable[[Callable[P, None]], Callable[P, None]]:
     """Debounce calls to this function until interval_s seconds have passed.
 
     Decorator copied from https://github.com/python-lsp/python-lsp-
     server
     """
 
-    def wrapper(func):
-        timers = {}
+    def wrapper(func: Callable[P, None]) -> Callable[P, None]:
+        timers: Dict[Any, threading.Timer] = {}
         lock = threading.Lock()
 
         @functools.wraps(func)
-        def debounced(*args, **kwargs):
+        def debounced(*args: P.args, **kwargs: P.kwargs) -> None:
             sig = inspect.signature(func)
             call_args = sig.bind(*args, **kwargs)
             key = call_args.arguments[keyed_by] if keyed_by else None
 
-            def run():
+            def run() -> None:
                 with lock:
                     del timers[key]
                 return func(*args, **kwargs)
