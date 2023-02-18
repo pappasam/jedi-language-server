@@ -61,7 +61,7 @@ black = ">=22.6.0"
 PyHamcrest = ">=2.0.3"
 python-lsp-jsonrpc = "^1.0.0"
 pytest-cov = ">=3.0.0"
-docformatter = ">=1.4"
+docformatter = ">=1.4,!=1.5.1"
 
 [tool.poetry.scripts]
 jedi-language-server = 'jedi_language_server.cli:cli'
