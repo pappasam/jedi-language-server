@@ -3,6 +3,7 @@
 Translates pygls types back and forth with Jedi
 """
 
+import asyncio
 import functools
 import inspect
 import sys
@@ -65,7 +66,7 @@ def debounce(
             call_args = sig.bind(*args, **kwargs)
             key = call_args.arguments[keyed_by] if keyed_by else None
 
-            def run() -> None:
+            async def run() -> None:
                 with lock:
                     del timers[key]
                 return func(*args, **kwargs)
@@ -75,7 +76,11 @@ def debounce(
                 if old_timer:
                     old_timer.cancel()
 
-                timer = threading.Timer(interval_s, run)
+                timer = threading.Timer(
+                    interval_s,
+                    asyncio.run_coroutine_threadsafe,
+                    args=(run(), asyncio.get_running_loop()),
+                )
                 timers[key] = timer
                 timer.start()
 
