@@ -13,7 +13,6 @@ from typing import Any, List, Optional, Union
 
 from jedi import Project, Script, __version__
 from jedi.api.refactoring import RefactoringError
-from parso.tree import NodeOrLeaf
 from lsprotocol.types import (
     COMPLETION_ITEM_RESOLVE,
     INITIALIZE,
@@ -29,10 +28,10 @@ from lsprotocol.types import (
     TEXT_DOCUMENT_HOVER,
     TEXT_DOCUMENT_REFERENCES,
     TEXT_DOCUMENT_RENAME,
-    TEXT_DOCUMENT_SIGNATURE_HELP,
-    TEXT_DOCUMENT_TYPE_DEFINITION,
     TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
     TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE,
+    TEXT_DOCUMENT_SIGNATURE_HELP,
+    TEXT_DOCUMENT_TYPE_DEFINITION,
     WORKSPACE_DID_CHANGE_CONFIGURATION,
     WORKSPACE_SYMBOL,
     CodeAction,
@@ -74,6 +73,7 @@ from lsprotocol.types import (
     WorkspaceEdit,
     WorkspaceSymbolParams,
 )
+from parso.tree import NodeOrLeaf
 from pydantic import ValidationError
 from pygls.capabilities import get_capability
 from pygls.protocol import LanguageServerProtocol, lsp_method
