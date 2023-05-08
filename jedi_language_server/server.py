@@ -7,7 +7,6 @@ Official language server spec:
 """
 
 import itertools
-import sys
 from dataclasses import dataclass
 from typing import Any, List, Optional, Union
 
@@ -73,6 +72,7 @@ from lsprotocol.types import (
     WorkspaceEdit,
     WorkspaceSymbolParams,
 )
+from lsprotocol.validators import INTEGER_MAX_VALUE
 from parso.tree import NodeOrLeaf
 from pydantic import ValidationError
 from pygls.capabilities import get_capability
@@ -680,10 +680,10 @@ def semantic_tokens_full(
             server,
             jedi_script,
             [jedi_script._module_node],
-            -1,
-            -1,
-            sys.maxsize,
-            sys.maxsize,
+            0,
+            0,
+            INTEGER_MAX_VALUE,
+            INTEGER_MAX_VALUE,
         )
     )
 
