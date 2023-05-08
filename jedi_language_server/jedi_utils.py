@@ -32,7 +32,7 @@ from lsprotocol.types import (
     SymbolInformation,
     SymbolKind,
 )
-from parso.python.tree import ImportName
+from parso.python.tree import ImportName, PythonNode
 from pygls.workspace import Document
 
 from .initialization_options import HoverDisableOptions, InitializationOptions
@@ -760,13 +760,14 @@ def token_id_per_value(node) -> Optional[int]:
     Tries to match attributes from name into a token. May return None
     when couldn't match attributes (it is not a function, or a class …)
     """
-    # TODO felipel I was correcting this function rather than rely on
     if isinstance(node, ImportName):
         return 0
-    return None
 
     if isinstance(node, PythonNode):
         return None
+
+    if isinstance(node.parent, ImportName) and isinstance(node, Name):
+        return 0
 
     type_to_token_id = {"module": 0, "function": 1, "class": 2, "instance": 3}
     try:
