@@ -39,15 +39,15 @@ def test_invalid_initialization_options() -> None:
 
         window_show_message_done.wait(5)
         window_log_message_done.wait(5)
-        expected = [
-            {
-                "type": 1,
-                "message": "Invalid InitializationOptions, using defaults: 1 validation error for InitializationOptions\ndiagnostics\n  value is not a valid dict (type=type_error.dict)",
-            },
-            {
-                "type": 1,
-                "message": "Invalid InitializationOptions, using defaults: 1 validation error for InitializationOptions\ndiagnostics\n  value is not a valid dict (type=type_error.dict)",
-            },
-        ]
 
-        assert_that(actual, is_(expected))
+        # The exact error messages from pydantic include the pydantic version number. So
+        # as not to depend on that we check only that the message starts well.
+        assert_that(len(actual) == 2)
+        for params in actual:
+            assert_that(params["type"] == 1)
+            assert_that(
+                params["message"].startswith(
+                    "Invalid InitializationOptions, using defaults: 1 validation "
+                    "error for InitializationOptions\ndiagnostics\n"
+                )
+            )

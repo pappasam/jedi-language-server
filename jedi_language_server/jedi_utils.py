@@ -352,19 +352,19 @@ def line_column(position: Position) -> Tuple[int, int]:
 def line_column_range(pygls_range: Range) -> Dict[str, int]:
     """Translate pygls range to Jedi's line/column/until_line/until_column.
 
-    Returns a dictionary because this return result should be unpacked as a
-    function argument to Jedi's functions.
+    Returns a dictionary because this return result should be unpacked
+    as a function argument to Jedi's functions.
 
-    Jedi is 1-indexed for lines and 0-indexed for columns. LSP is 0-indexed for
-    lines and 0-indexed for columns. Therefore, add 1 to LSP's request for the
-    line.
+    Jedi is 1-indexed for lines and 0-indexed for columns. LSP is
+    0-indexed for lines and 0-indexed for columns. Therefore, add 1 to
+    LSP's request for the line.
     """
-    return dict(
-        line=pygls_range.start.line + 1,
-        column=pygls_range.start.character,
-        until_line=pygls_range.end.line + 1,
-        until_column=pygls_range.end.character,
-    )
+    return {
+        "line": pygls_range.start.line + 1,
+        "column": pygls_range.start.character,
+        "until_line": pygls_range.end.line + 1,
+        "until_column": pygls_range.end.character,
+    }
 
 
 def compare_names(name1: Name, name2: Name) -> bool:
@@ -381,12 +381,12 @@ def compare_names(name1: Name, name2: Name) -> bool:
 def complete_sort_name(name: Completion, append_text: str) -> str:
     """Return sort name for a jedi completion.
 
-    Should be passed to the sortText field in CompletionItem. Strings sort a-z,
-    a comes first and z comes last.
+    Should be passed to the sortText field in CompletionItem. Strings
+    sort a-z, a comes first and z comes last.
 
-    Additionally, we'd like to keep the sort order to what Jedi has provided.
-    For this reason, we make sure the sort-text is just a letter and not the
-    name itself.
+    Additionally, we'd like to keep the sort order to what Jedi has
+    provided. For this reason, we make sure the sort-text is just a
+    letter and not the name itself.
     """
     name_str = name.name
     if name_str is None:
