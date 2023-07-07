@@ -308,7 +308,7 @@ def lsp_python_diagnostic(uri: str, source: str) -> Optional[Diagnostic]:
         until_column = (
             _until_column - 1 if _until_column is not None else column + 1
         )
-        until_line = _until_line - 1 if _until_line is not None else line + 1
+        until_line = _until_line - 1 if _until_line is not None else line
 
         if (line, column) >= (until_line, until_column):
             until_column, until_line = column, line

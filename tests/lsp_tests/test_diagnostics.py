@@ -2,6 +2,7 @@
 
 import copy
 import json
+import platform
 import tempfile
 from threading import Event
 
@@ -23,7 +24,6 @@ def get_changes(changes_file):
         return json.load(ch_file)
 
 
-@pytest.mark.skip(reason="Test broke with new compile-based diagnostics")
 def test_publish_diagnostics_on_open():
     """Tests publish diagnostics on open."""
     content_path = DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt"
@@ -72,7 +72,14 @@ def test_publish_diagnostics_on_open():
             assert len(symbols) > 0
 
             # wait for a second to receive all notifications
-            done.wait(1)
+            done.wait(1.1)
+
+        # Diagnostics look a little different on Windows.
+        filename = (
+            as_uri(py_file.fullpath)
+            if platform.system() == "Windows"
+            else py_file.basename
+        )
 
         expected = [
             {
@@ -83,9 +90,9 @@ def test_publish_diagnostics_on_open():
                             "start": {"line": 5, "character": 15},
                             "end": {"line": 5, "character": 16},
                         },
-                        "message": "SyntaxError: invalid syntax",
+                        "message": f"SyntaxError: invalid syntax ({filename}, line 6)",
                         "severity": 1,
-                        "source": "jedi",
+                        "source": "compile",
                     }
                 ],
             }
@@ -93,7 +100,6 @@ def test_publish_diagnostics_on_open():
     assert_that(actual, is_(expected))
 
 
-@pytest.mark.skip(reason="Test broke with new compile-based diagnostics")
 def test_publish_diagnostics_on_change():
     """Tests publish diagnostics on change."""
 
@@ -175,7 +181,14 @@ def test_publish_diagnostics_on_change():
             assert len(symbols) > 0
 
             # wait for a second to receive all notifications
-            done.wait(1)
+            done.wait(1.1)
+
+        # Diagnostics look a little different on Windows.
+        filename = (
+            as_uri(py_file.fullpath)
+            if platform.system() == "Windows"
+            else py_file.basename
+        )
 
         expected = [
             {
@@ -186,9 +199,9 @@ def test_publish_diagnostics_on_change():
                             "start": {"line": 5, "character": 15},
                             "end": {"line": 5, "character": 16},
                         },
-                        "message": "SyntaxError: invalid syntax",
+                        "message": f"SyntaxError: invalid syntax ({filename}, line 6)",
                         "severity": 1,
-                        "source": "jedi",
+                        "source": "compile",
                     }
                 ],
             }
@@ -196,7 +209,6 @@ def test_publish_diagnostics_on_change():
     assert_that(actual, is_(expected))
 
 
-@pytest.mark.skip(reason="Test broke with new compile-based diagnostics")
 def test_publish_diagnostics_on_save():
     """Tests publish diagnostics on save."""
 
@@ -293,7 +305,14 @@ def test_publish_diagnostics_on_save():
             )
 
             # wait for a second to receive all notifications
-            done.wait(1)
+            done.wait(1.1)
+
+        # Diagnostics look a little different on Windows.
+        filename = (
+            as_uri(py_file.fullpath)
+            if platform.system() == "Windows"
+            else py_file.basename
+        )
 
         expected = [
             {
@@ -304,9 +323,9 @@ def test_publish_diagnostics_on_save():
                             "start": {"line": 5, "character": 15},
                             "end": {"line": 5, "character": 16},
                         },
-                        "message": "SyntaxError: invalid syntax",
+                        "message": f"SyntaxError: invalid syntax ({filename}, line 6)",
                         "severity": 1,
-                        "source": "jedi",
+                        "source": "compile",
                     }
                 ],
             }
