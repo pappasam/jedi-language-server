@@ -7,7 +7,7 @@ initialization options.
 from typing import List, Optional, Pattern, Set
 
 from lsprotocol.types import MarkupKind
-from pydantic import ConfigDict, BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=too-few-public-methods
