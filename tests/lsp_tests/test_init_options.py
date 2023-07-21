@@ -42,11 +42,11 @@ def test_invalid_initialization_options() -> None:
         expected = [
             {
                 "type": 1,
-                "message": "Invalid InitializationOptions, using defaults: 1 validation error for InitializationOptions\ndiagnostics\n  value is not a valid dict (type=type_error.dict)",
+                "message": "Invalid InitializationOptions, using defaults: 1 validation error for InitializationOptions\ndiagnostics\n  Input should be a valid dictionary or instance of Diagnostics [type=model_type, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.0.3/v/model_type",
             },
             {
                 "type": 1,
-                "message": "Invalid InitializationOptions, using defaults: 1 validation error for InitializationOptions\ndiagnostics\n  value is not a valid dict (type=type_error.dict)",
+                "message": "Invalid InitializationOptions, using defaults: 1 validation error for InitializationOptions\ndiagnostics\n  Input should be a valid dictionary or instance of Diagnostics [type=model_type, input_value=1, input_type=int]\n    For further information visit https://errors.pydantic.dev/2.0.3/v/model_type",
             },
         ]
 

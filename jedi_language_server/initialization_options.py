@@ -7,7 +7,7 @@ initialization options.
 from typing import List, Optional, Pattern, Set
 
 from lsprotocol.types import MarkupKind
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=too-few-public-methods
@@ -22,8 +22,7 @@ def snake_to_camel(string: str) -> str:
 
 
 class Model(BaseModel):
-    class Config:
-        alias_generator = snake_to_camel
+    model_config = ConfigDict(alias_generator=snake_to_camel)
 
 
 class CodeAction(Model):
@@ -116,5 +115,5 @@ class InitializationOptions(Model):
     diagnostics: Diagnostics = Diagnostics()
     hover: Hover = Hover()
     jedi_settings: JediSettings = JediSettings()
-    markup_kind_preferred: Optional[MarkupKind]
+    markup_kind_preferred: Optional[MarkupKind] = None
     workspace: Workspace = Workspace()
