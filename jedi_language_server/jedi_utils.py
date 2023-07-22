@@ -328,8 +328,8 @@ def lsp_python_diagnostic(uri: str, source: str) -> Optional[Diagnostic]:
 def line_column(position: Position) -> Tuple[int, int]:
     """Translate pygls Position to Jedi's line/column.
 
-    Returns a dictionary because this return result should be unpacked as a
-    function argument to Jedi's functions.
+    Returns a tuple because this return result should be unpacked as a function
+    argument to Jedi's functions.
 
     Jedi is 1-indexed for lines and 0-indexed for columns. LSP is 0-indexed for
     lines and 0-indexed for columns. Therefore, add 1 to LSP's request for the

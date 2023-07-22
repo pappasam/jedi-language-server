@@ -371,21 +371,14 @@ def hover(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     markup_kind = _choose_markup(server)
-    # jedi's help function is buggy when the column is 0. For this reason, as a
-    # rote fix, we simply set the column to 1 if params.position returns column
-    # 0.
     hover_text = jedi_utils.hover_text(
-        jedi_script.help(
-            line=jedi_lines[0],
-            column=1 if jedi_lines[1] == 0 else jedi_lines[1],
-        ),
+        jedi_script.help(*jedi_lines),
         markup_kind,
         server.initialization_options,
     )
     if not hover_text:
         return None
     contents = MarkupContent(kind=markup_kind, value=hover_text)
-    document = server.workspace.get_document(params.text_document.uri)
     _range = pygls_utils.current_word_range(document, params.position)
     return Hover(contents=contents, range=_range)
 
