@@ -97,7 +97,8 @@ def lsp_text_edits(
 
     Handles inserts, replaces, and deletions within a text file.
 
-    Additionally, makes sure returned code is syntactically valid Python.
+    Additionally, makes sure returned code is syntactically valid
+    Python.
     """
     new_code = changed_file.get_new_code()
     if not is_valid_python(new_code):

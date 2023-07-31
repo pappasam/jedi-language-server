@@ -1,7 +1,4 @@
 [MASTER]
-# Profiled execution.
-profile=no
-
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
 ignore=CVS, .svn, .git, venv
@@ -18,7 +15,7 @@ extension-pkg-whitelist=pydantic
 
 [MESSAGES CONTROL]
 # can opt to enable instead if you want
-disable=logging-format-interpolation, bad-continuation
+disable=logging-format-interpolation
 
 [REPORTS]
 
@@ -26,11 +23,6 @@ disable=logging-format-interpolation, bad-continuation
 # (visual studio) and html. You can also give a reporter class, eg
 # mypackage.mymodule.MyReporterClass.
 output-format=colorized
-
-# Put messages in a separate file for each module / package specified on the
-# command line instead of printing them on stdout. Reports (if any) will be
-# written in a file name "pylint_global.[txt|html]".
-files-output=no
 
 # Tells whether to display a full report or only the messages
 reports=no
@@ -41,11 +33,6 @@ reports=no
 # number of statements analyzed. This is used by the global evaluation report
 # (RP0004).
 evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
-
-# Add a comment according to your evaluation note. This is used by the global
-# evaluation report (RP0004).
-comment=no
-
 
 [MISCELLANEOUS]
 
@@ -184,7 +171,7 @@ max-locals=15
 max-returns=6
 
 # Maximum number of branch for function / method body
-max-branchs=12
+max-branches=12
 
 # Maximum number of statements in function / method body
 max-statements=50
@@ -224,4 +211,4 @@ int-import-graph=
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "Exception"
-overgeneral-exceptions=Exception
+overgeneral-exceptions=builtins.Exception
