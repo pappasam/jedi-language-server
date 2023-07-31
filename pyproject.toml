@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core>=1.0.5"]
+requires = ["poetry-core>=1.5.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.black]
@@ -11,7 +11,7 @@ line_length = 79
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.40.0"
+version = "0.41.0"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -24,7 +24,7 @@ keywords = [
   "vim",
   "neovim",
   "lsp",
-  "language-server-protocol",
+  "language-server-protocol"
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -34,7 +34,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Text Editors :: Integrated Development Environments (IDE)",
   "Topic :: Utilities",
-  "Typing :: Typed",
+  "Typing :: Typed"
 ]
 license = "MIT"
 
@@ -45,7 +45,7 @@ pygls = "^1.0.1"
 pydantic = "^2.0.2"
 docstring-to-markdown = "0.*"
 lsprotocol = ">=2022.0.0a9"
-typing-extensions = { version = "^4.5.0", python = "<3.10" }
+typing-extensions = {version = "^4.5.0", python = "<3.10"}
 
 [tool.poetry.dev-dependencies]
 pre-commit = ">=2.19.0"
@@ -72,7 +72,7 @@ Issues = "https://github.com/pappasam/jedi-language-server/issues"
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py{37,38,39,310,311}{,-cov}
+envlist = py{38,39,310,311}{,-cov}
 isolated_build = true
 skipsdist = true
 [testenv]
