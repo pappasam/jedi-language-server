@@ -29,7 +29,12 @@ setup:  require .setup_complete ## Set up the local development environment
 
 .PHONY: test
 test:  setup ## Run the tests, but only for current Python version
-	poetry run tox -e py
+	poetry run black --extend-exclude test_data --check --diff jedi_language_server tests
+	poetry run docformatter --exclude test_data --check --recursive jedi_language_server tests
+	poetry run isort --check jedi_language_server tests/lsp_tests tests/lsp_test_client
+	poetry run mypy jedi_language_server
+	poetry run pylint jedi_language_server tests
+	poetry run pytest tests
 
 .PHONY: test-all
 test-all:  setup ## Run the tests for all relevant Python version
