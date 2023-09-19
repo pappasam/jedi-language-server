@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Removed support for Python 3.7
 
+### Changed
+
+- `jedi` upgraded to `0.19`, adding support for Python 3.11
+- `pydantic` upgraded to `2.x` from `1.x`; Pydantic 2 contains a compiled Rust core making it faster but requiring platform specific builds
+
 ### Fixed
 
 - Fixes <https://github.com/pappasam/jedi-language-server/issues/262>
