@@ -4,13 +4,16 @@ import re
 
 from hamcrest import assert_that, is_
 
-from jedi_language_server.initialization_options import InitializationOptions
+from jedi_language_server.initialization_options import (
+    InitializationOptions,
+    initialization_options_converter,
+)
 
 
 def test_initialization_options() -> None:
     """Test our adjustments to parsing of the initialization options."""
 
-    initialization_options = InitializationOptions.model_validate(
+    initialization_options = initialization_options_converter.structure(
         {
             "completion": {
                 "resolveEagerly": True,
@@ -25,6 +28,7 @@ def test_initialization_options() -> None:
             },
             "extra": "ignored",
         },
+        InitializationOptions,
     )
 
     assert_that(initialization_options.completion.resolve_eagerly, is_(True))
