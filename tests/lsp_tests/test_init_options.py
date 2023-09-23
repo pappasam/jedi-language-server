@@ -3,7 +3,7 @@
 import copy
 from threading import Event
 
-from hamcrest import assert_that, is_
+from hamcrest import assert_that
 
 from tests.lsp_test_client import defaults, session
 
@@ -40,14 +40,14 @@ def test_invalid_initialization_options() -> None:
         window_show_message_done.wait(5)
         window_log_message_done.wait(5)
 
-        # The exact error messages from pydantic include the pydantic version number. So
-        # as not to depend on that we check only that the message starts well.
         assert_that(len(actual) == 2)
         for params in actual:
             assert_that(params["type"] == 1)
             assert_that(
-                params["message"].startswith(
-                    "Invalid InitializationOptions, using defaults: 1 validation "
-                    "error for InitializationOptions\ndiagnostics\n"
+                params["message"]
+                == (
+                    "Invalid InitializationOptions, using defaults: "
+                    "['invalid value for type, expected Diagnostics @ "
+                    "$.diagnostics']"
                 )
             )

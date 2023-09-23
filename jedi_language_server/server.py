@@ -9,6 +9,7 @@ Official language server spec:
 import itertools
 from typing import Any, List, Optional, Union
 
+import cattrs
 from jedi import Project, __version__
 from jedi.api.refactoring import RefactoringError
 from lsprotocol.types import (
@@ -63,13 +64,15 @@ from lsprotocol.types import (
     WorkspaceEdit,
     WorkspaceSymbolParams,
 )
-from pydantic import ValidationError
 from pygls.capabilities import get_capability
 from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
 from . import jedi_utils, pygls_utils, text_edit_utils
-from .initialization_options import InitializationOptions
+from .initialization_options import (
+    InitializationOptions,
+    initialization_options_converter,
+)
 
 
 class JediLanguageServerProtocol(LanguageServerProtocol):
@@ -84,13 +87,19 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         """
         server: "JediLanguageServer" = self._server
         try:
-            server.initialization_options = InitializationOptions.parse_obj(
-                {}
-                if params.initialization_options is None
-                else params.initialization_options
+            server.initialization_options = (
+                initialization_options_converter.structure(
+                    {}
+                    if params.initialization_options is None
+                    else params.initialization_options,
+                    InitializationOptions,
+                )
             )
-        except ValidationError as error:
-            msg = f"Invalid InitializationOptions, using defaults: {error}"
+        except cattrs.BaseValidationError as error:
+            msg = (
+                "Invalid InitializationOptions, using defaults:"
+                f" {cattrs.transform_error(error)}"
+            )
             server.show_message(msg, msg_type=MessageType.Error)
             server.show_message_log(msg, msg_type=MessageType.Error)
             server.initialization_options = InitializationOptions()

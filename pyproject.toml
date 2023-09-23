@@ -42,10 +42,10 @@ license = "MIT"
 python = "^3.8"
 jedi = "^0.19.0"
 pygls = "^1.0.1"
-pydantic = "^2.0.2"
 docstring-to-markdown = "0.*"
 lsprotocol = ">=2022.0.0a9"
 typing-extensions = {version = "^4.5.0", python = "<3.10"}
+cattrs = "^23.1.2"
 
 [tool.poetry.dev-dependencies]
 pre-commit = ">=2.19.0"
