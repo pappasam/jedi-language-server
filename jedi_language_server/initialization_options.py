@@ -5,6 +5,7 @@ initialization options.
 """
 
 import re
+import sys
 from dataclasses import dataclass, field, fields, is_dataclass
 from typing import Any, List, Optional, Pattern, Set
 
@@ -15,7 +16,11 @@ from lsprotocol.types import MarkupKind
 # pylint: disable=missing-class-docstring
 # pylint: disable=too-few-public-methods
 
-light_dataclass = dataclass(kw_only=True, eq=False, match_args=False)
+if sys.version_info >= (3, 10):
+    # pylint: disable-next=unexpected-keyword-arg
+    light_dataclass = dataclass(kw_only=True, eq=False, match_args=False)
+else:
+    light_dataclass = dataclass(eq=False)
 
 
 @light_dataclass
