@@ -4,6 +4,7 @@ Provides a fully defaulted pydantic model for this language server's
 initialization options.
 """
 
+import re
 from dataclasses import dataclass, field, fields, is_dataclass
 from typing import Any, List, Optional, Pattern, Set
 
@@ -148,4 +149,15 @@ def structure(cls: type) -> Any:
 
 initialization_options_converter.register_structure_hook_factory(
     is_dataclass, structure
+)
+
+
+initialization_options_converter.register_structure_hook_factory(
+    lambda x: x == Pattern[str],
+    lambda _: lambda x, _: re.compile(x),
+)
+
+initialization_options_converter.register_unstructure_hook_factory(
+    lambda x: x == Pattern[str],
+    lambda _: lambda x: x.pattern,
 )
