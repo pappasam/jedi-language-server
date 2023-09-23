@@ -4,10 +4,9 @@ Provides a fully defaulted pydantic model for this language server's
 initialization options.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields, is_dataclass
 from typing import Any, List, Optional, Pattern, Set
 
-from attrs import fields, has
 from cattrs import Converter
 from cattrs.gen import make_dict_structure_fn, override
 from lsprotocol.types import MarkupKind
@@ -148,5 +147,5 @@ def structure(cls: type) -> Any:
 
 
 initialization_options_converter.register_structure_hook_factory(
-    has, structure
+    is_dataclass, structure
 )
