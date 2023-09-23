@@ -4,10 +4,11 @@ Provides a fully defaulted pydantic model for this language server's
 initialization options.
 """
 
-from dataclasses import dataclass, field
+import re
+import sys
+from dataclasses import dataclass, field, fields, is_dataclass
 from typing import Any, List, Optional, Pattern, Set
 
-from attrs import fields, has
 from cattrs import Converter
 from cattrs.gen import make_dict_structure_fn, override
 from lsprotocol.types import MarkupKind
@@ -15,7 +16,11 @@ from lsprotocol.types import MarkupKind
 # pylint: disable=missing-class-docstring
 # pylint: disable=too-few-public-methods
 
-light_dataclass = dataclass(kw_only=True, eq=False, match_args=False)
+if sys.version_info >= (3, 10):
+    # pylint: disable-next=unexpected-keyword-arg
+    light_dataclass = dataclass(kw_only=True, eq=False, match_args=False)
+else:
+    light_dataclass = dataclass(eq=False)
 
 
 @light_dataclass
@@ -148,5 +153,16 @@ def structure(cls: type) -> Any:
 
 
 initialization_options_converter.register_structure_hook_factory(
-    has, structure
+    is_dataclass, structure
+)
+
+
+initialization_options_converter.register_structure_hook_factory(
+    lambda x: x == Pattern[str],
+    lambda _: lambda x, _: re.compile(x),
+)
+
+initialization_options_converter.register_unstructure_hook_factory(
+    lambda x: x == Pattern[str],
+    lambda _: lambda x: x.pattern,
 )
