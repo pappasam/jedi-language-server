@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.41.1
+
+### Added
+
+- Direct `cattrs` dependency for parsing InitializationOptions. Note: this doesn't really add a dependency because `cattrs` was already required by the existing `lsprotocol` dependency.
+
+### Removed
+
+- `pydantic` dependency; it made distributing `jedi-language-server` harder than it needed to be.
+
 ## 0.41.0
 
 ### Removed

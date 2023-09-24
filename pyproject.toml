@@ -11,7 +11,7 @@ line_length = 79
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.41.0"
+version = "0.41.1"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -42,23 +42,21 @@ license = "MIT"
 python = "^3.8"
 jedi = "^0.19.0"
 pygls = "^1.0.1"
+cattrs = ">=23.1.2"
 docstring-to-markdown = "0.*"
 lsprotocol = ">=2022.0.0a9"
 typing-extensions = {version = "^4.5.0", python = "<3.10"}
-cattrs = "^23.1.2"
 
 [tool.poetry.dev-dependencies]
 pre-commit = ">=2.19.0"
-tox = ">=3.25.1"
 pytest = ">=7.1.2"
-tox-asdf = ">=0.1.0"
 toml-sort = ">=0.20.0"
 isort = ">=5.10.1"
 pylint = ">=2.13.9"
 mypy = ">=0.961"
 black = ">=22.6.0"
 PyHamcrest = ">=2.0.3"
-python-lsp-jsonrpc = "^1.0.0"
+python-lsp-jsonrpc = ">=1.0.0"
 pytest-cov = ">=3.0.0"
 docformatter = ">=1.4,!=1.5.1"
 
@@ -68,27 +66,3 @@ jedi-language-server = 'jedi_language_server.cli:cli'
 [tool.poetry.urls]
 Changelog = "https://github.com/pappasam/jedi-language-server/blob/main/CHANGELOG.md"
 Issues = "https://github.com/pappasam/jedi-language-server/issues"
-
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py{38,39,310,311}{,-cov}
-isolated_build = true
-skipsdist = true
-[testenv]
-platform = linux|darwin
-whitelist_externals = poetry
-skip_install = true
-commands =
-  poetry install
-
-  !cov: poetry run black --check --diff jedi_language_server tests
-  !cov: poetry run docformatter --check --recursive jedi_language_server tests
-  !cov: poetry run isort --check jedi_language_server tests
-
-  !cov: poetry run mypy jedi_language_server
-  !cov: poetry run pylint jedi_language_server tests
-  !cov: poetry run pytest tests
-
-  cov: poetry run pytest --cov=jedi_language_server --cov-report=term-missing tests
-"""

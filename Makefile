@@ -36,10 +36,6 @@ test:  setup ## Run the tests, but only for current Python version
 	poetry run pylint jedi_language_server tests
 	poetry run pytest tests
 
-.PHONY: test-all
-test-all:  setup ## Run the tests for all relevant Python version
-	poetry run tox
-
 .PHONY: publish
 publish:  setup ## Build & publish the new version
 	poetry build
