@@ -7,9 +7,7 @@
 [![github-action-testing](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml/badge.svg)](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml)
 [![poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 
-A [Language Server](https://microsoft.github.io/language-server-protocol/) for the latest version(s) of [Jedi](https://jedi.readthedocs.io/en/latest/). If using Neovim/Vim, we recommend using with [coc-jedi](https://github.com/pappasam/coc-jedi). Supports Python versions 3.8 and newer.
-
-**Note:** this tool is actively used by its primary author. He's happy to review pull requests / respond to issues you may discover.
+A [Python](https://www.python.org/) [Language Server](https://microsoft.github.io/language-server-protocol/) powered by the latest version of [Jedi](https://jedi.readthedocs.io/en/latest/).
 
 ## Installation
 
@@ -21,32 +19,6 @@ pip install -U jedi-language-server
 
 Alternatively (and preferably), use [pipx](https://github.com/pipxproject/pipx) to keep jedi-language-server and its dependencies isolated from your other Python dependencies. Don't worry, jedi is smart enough to figure out which Virtual environment you're currently using!
 
-## Capabilities
-
-jedi-language-server aims to support Jedi's capabilities and expose them through the Language Server Protocol. It supports the following Language Server capabilities:
-
-### Language Features
-
-- [completionItem/resolve](https://microsoft.github.io/language-server-protocol/specification#completionItem_resolve)
-- [textDocument/codeAction](https://microsoft.github.io/language-server-protocol/specification#textDocument_codeAction) (refactor.inline, refactor.extract)
-- [textDocument/completion](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_completion)
-- [textDocument/definition](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_definition)
-- [textDocument/documentHighlight](https://microsoft.github.io/language-server-protocol/specification#textDocument_documentHighlight)
-- [textDocument/documentSymbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_documentSymbol)
-- [textDocument/typeDefinition](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_typeDefinition)
-- [textDocument/hover](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_hover)
-- [textDocument/publishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)
-- [textDocument/references](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_references)
-- [textDocument/rename](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_rename)
-- [textDocument/signatureHelp](https://microsoft.github.io/language-server-protocol/specification#textDocument_signatureHelp)
-- [workspace/symbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspace_symbol)
-
-### Text Synchronization (for diagnostics)
-
-- [textDocument/didChange](https://microsoft.github.io/language-server-protocol/specification#textDocument_didChange)
-- [textDocument/didOpen](https://microsoft.github.io/language-server-protocol/specification#textDocument_didOpen)
-- [textDocument/didSave](https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave)
-
 ## Editor Setup
 
 The following instructions show how to use jedi-language-server with your development tooling. The instructions assume you have already installed jedi-language-server.
@@ -55,9 +27,9 @@ The following instructions show how to use jedi-language-server with your develo
 
 Users may choose 1 of the following options:
 
+- [Neovim's native LSP client](https://neovim.io/doc/user/lsp.html). See [here](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#jedi_language_server) for an example configuration.
 - [coc.nvim](https://github.com/neoclide/coc.nvim) with [coc-jedi](https://github.com/pappasam/coc-jedi).
 - [ALE](https://github.com/dense-analysis/ale).
-- [Neovim's native LSP client](https://neovim.io/doc/user/lsp.html). See [here](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#jedi_language_server) for an example configuration.
 - [vim-lsp](https://github.com/prabirshrestha/vim-lsp).
 
 Note: this list is non-exhaustive. If you know of a great choice not included in this list, please submit a PR!
@@ -75,82 +47,11 @@ Note: this list is non-exhaustive. If you know of a great choice not included in
 
 Starting from the [October 2021 release](https://github.com/microsoft/vscode-python/releases/tag/2021.10.1317843341), set the `python.languageServer` setting to `Jedi` to use jedi-language-server.
 
-Note: This does not support Python 2.7.
-
 See: <https://github.com/pappasam/jedi-language-server/issues/50#issuecomment-781101169>
-
-## Command line
-
-jedi-language-server can be run directly from the command line.
-
-```console
-$ jedi-language-server --help
-usage: jedi-language-server [-h] [--version] [--tcp] [--ws] [--host HOST] [--port PORT] [--log-file LOG_FILE] [-v]
-
-Jedi language server: an LSP wrapper for jedi.
-
-optional arguments:
-  -h, --help           show this help message and exit
-  --version            display version information and exit
-  --tcp                use TCP web server instead of stdio
-  --ws                 use web socket server instead of stdio
-  --host HOST          host for web server (default 127.0.0.1)
-  --port PORT          port for web server (default 2087)
-  --log-file LOG_FILE  redirect logs to file specified
-  -v, --verbose        increase verbosity of log output
-
-Examples:
-
-    Run over stdio     : jedi-language-server
-    Run over tcp       : jedi-language-server --tcp
-    Run over websockets:
-        # only need to pip install once per env
-        pip install pygls[ws]
-        jedi-language-server --ws
-
-Notes:
-
-    For use with web sockets, user must first run
-    'pip install pygls[ws]' to install the correct
-    version of the websockets library.
-```
-
-If testing sending requests over stdio manually from the command line, you must include Windows-style line endings: `\r\n` . For an example, from within this project, run the following:
-
-```console
-$ jedi-language-server < ./example-initialization-request.txt
-INFO:pygls.server:Starting IO server
-INFO:pygls.feature_manager:Registered "textDocument/didOpen" with options "None"
-INFO:pygls.feature_manager:Registered "textDocument/didChange" with options "None"
-INFO:pygls.feature_manager:Registered "textDocument/didSave" with options "None"
-INFO:pygls.feature_manager:Registered "textDocument/hover" with options "None"
-INFO:pygls.protocol:Language server initialized work_done_token=None process_id=None root_uri='file:///home/ubuntu/artifacts/' capabilities=ClientCapabilities(workspace=WorkspaceClientCapabilities(apply_edit=None, workspace_edit=None, did_change_configuration=DidChangeConfigurationClientCapabilities(dynamic_registration=True), did_change_watched_files=None, symbol=None, execute_command=None, workspace_folders=None, configuration=None, semantic_tokens=None, code_lens=None, file_operations=None), text_document=TextDocumentClientCapabilities(synchronization=TextDocumentSyncClientCapabilities(dynamic_registration=True, will_save=False, will_save_wait_until=False, did_save=False), completion=CompletionClientCapabilities(dynamic_registration=True, completion_item=CompletionItemClientCapabilities(snippet_support=False, commit_characters_support=True, documentation_format=[<MarkupKind.PlainText: 'plaintext'>, <MarkupKind.Markdown: 'markdown'>], deprecated_support=False, preselect_support=False, tag_support=None, insert_replace_support=None, resolve_support=None, insert_text_mode_support=None), completion_item_kind=None, context_support=False), hover=HoverClientCapabilities(dynamic_registration=True, content_format=[<MarkupKind.PlainText: 'plaintext'>, <MarkupKind.Markdown: 'markdown'>]), signature_help=SignatureHelpClientCapabilities(dynamic_registration=True, signature_information=SignatureHelpInformationClientCapabilities(documentation_format=[<MarkupKind.PlainText: 'plaintext'>, <MarkupKind.Markdown: 'markdown'>], parameter_information=None, active_parameter_support=None), context_support=None), declaration=DeclarationClientCapabilities(dynamic_registration=True, link_support=True), definition=DefinitionClientCapabilities(dynamic_registration=True, link_support=True), type_definition=TypeDefinitionClientCapabilities(dynamic_registration=True, link_support=True), implementation=ImplementationClientCapabilities(dynamic_registration=True, link_support=True), references=None, document_highlight=None, document_symbol=None, code_action=None, code_lens=None, document_link=None, color_provider=None, formatting=None, range_formatting=None, on_type_formatting=None, rename=None, publish_diagnostics=None, folding_range=None, selection_range=None, linked_editing_range=None, call_hierarchy=None, semantic_tokens=None, moniker=None), window=None, general=None, experimental=None) client_info=None locale=None root_path=None initialization_options=None trace=None workspace_folders=None
-INFO:pygls.protocol:Sending data: {"jsonrpc": "2.0", "id": 0, "result": {"capabilities": {"textDocumentSync": {"openClose": true, "change": 2, "willSave": false, "willSaveWaitUntil": false, "save": true}, "completionProvider": {"triggerCharacters": [".", "'", "\""], "resolveProvider": true}, "hoverProvider": true, "signatureHelpProvider": {"triggerCharacters": ["(", ","]}, "definitionProvider": true, "referencesProvider": true, "documentHighlightProvider": true, "documentSymbolProvider": true, "codeActionProvider": {"codeActionKinds": ["refactor.inline", "refactor.extract"]}, "renameProvider": true, "executeCommandProvider": {"commands": []}, "workspaceSymbolProvider": true, "workspace": {"workspaceFolders": {"supported": true, "changeNotifications": true}, "fileOperations": {}}}}}
-Content-Length: 758
-Content-Type: application/vscode-jsonrpc; charset=utf-8
-
-{"jsonrpc": "2.0", "id": 0, "result": {"capabilities": {"textDocumentSync": {"openClose": true, "change": 2, "willSave": false, "willSaveWaitUntil": false, "save": true}, "completionProvider": {"triggerCharacters": [".", "'", "\""], "resolveProvider": true}, "hoverProvider": true, "signatureHelpProvider": {"triggerCharacters": ["(", ","]}, "definitionProvider": true, "referencesProvider": true, "documentHighlightProvider": true, "documentSymbolProvider": true, "codeActionProvider": {"codeActionKinds": ["refactor.inline", "refactor.extract"]}, "renameProvider": true, "executeCommandProvider": {"commands": []}, "workspaceSymbolProvider": true, "workspace": {"workspaceFolders": {"supported": true, "changeNotifications": true}, "fileOperations": {}}}}}INFO:pygls.server:Shutting down the server
-INFO:pygls.server:Closing the event loop.
-```
-
-If testing interactively, be sure to manually insert carriage returns. Although this may differ between shell environments, within most bash terminals, you can explicitly insert the required line endings by typing `<C-v><C-m>`, which will insert a `^M`. See:
-
-```console
-$ jedi-language-server 2>logs
-Content-Length: 1062^M
-^M
-{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"capabilities":{"textDocument":{"hover":{"dynamicRegistration":true,"contentFormat":["plaintext","markdown"]},"synchronization":{"dynamicRegistration":true,"willSave":false,"didSave":false,"willSaveWaitUntil":false},"completion":{"dynamicRegistration":true,"completionItem":{"snippetSupport":false,"commitCharactersSupport":true,"documentationFormat":["plaintext","markdown"],"deprecatedSupport":false,"preselectSupport":false},"contextSupport":false},"signatureHelp":{"dynamicRegistration":true,"signatureInformation":{"documentationFormat":["plaintext","markdown"]}},"declaration":{"dynamicRegistration":true,"linkSupport":true},"definition":{"dynamicRegistration":true,"linkSupport":true},"typeDefinition":{"dynamicRegistration":true,"linkSupport":true},"implementation":{"dynamicRegistration":true,"linkSupport":true}},"workspace":{"didChangeConfiguration":{"dynamicRegistration":true}}},"initializationOptions":null,"processId":null,"rootUri":"file:///home/ubuntu/artifacts/","workspaceFolders":null}}^M
-Content-Length: 758
-Content-Type: application/vscode-jsonrpc; charset=utf-8
-
-{"jsonrpc": "2.0", "id": 0, "result": {"capabilities": {"textDocumentSync": {"openClose": true, "change": 2, "willSave": false, "willSaveWaitUntil": false, "save": true}, "completionProvider": {"triggerCharacters": [".", "'", "\""], "resolveProvider": true}, "hoverProvider": true, "signatureHelpProvider": {"triggerCharacters": ["(", ","]}, "definitionProvider": true, "referencesProvider": true, "documentHighlightProvider": true, "documentSymbolProvider": true, "codeActionProvider": {"codeActionKinds": ["refactor.inline", "refactor.extract"]}, "renameProvider": true, "executeCommandProvider": {"commands": []}, "workspaceSymbolProvider": true, "workspace": {"workspaceFolders": {"supported": true, "changeNotifications": true}, "fileOperations": {}}}}}
-```
 
 ## Configuration
 
-We recommend using [coc-jedi](https://github.com/pappasam/coc-jedi) and following its [configuration instructions](https://github.com/pappasam/coc-jedi#configuration).
-
-If you are configuring manually, jedi-language-server supports the following [initializationOptions](https://microsoft.github.io/language-server-protocol/specification#initialize):
+jedi-language-server supports the following [initializationOptions](https://microsoft.github.io/language-server-protocol/specification#initialize):
 
 ```json
 {
@@ -202,17 +103,395 @@ If you are configuring manually, jedi-language-server supports the following [in
 }
 ```
 
-See coc-jedi's [configuration instructions](https://github.com/pappasam/coc-jedi#configuration) for an explanation of the above configurations.
+The different sections of the InitializationOptions are explained below, in detail. Section headers use a `.` to separate nested JSON-object keys.
+
+### markupKindPreferred
+
+The preferred MarkupKind for all jedi-language-server messages that take [MarkupContent](https://microsoft.github.io/language-server-protocol/specification#markupContent).
+
+- type: `string`
+- accepted values: `"markdown"`, `"plaintext"`
+
+If omitted, jedi-language-server defaults to the client-preferred configuration. If there is no client-preferred configuration, jedi language server users `"plaintext"`.
+
+### jediSettings.autoImportModules
+
+Modules that jedi will directly import without analyzing. Improves autocompletion but loses goto definition.
+
+- type: `string[]`
+- default: `[]`
+
+If you're noticing that modules like `numpy` and `pandas` are taking a super long time to load, and you value completions / signatures over goto definition, I recommend using this option like this:
+
+```json
+{
+  "jediSettings": {
+    "autoImportModules": ["numpy", "pandas"]
+  }
+}
+```
+
+### jediSettings.caseInsensitiveCompletion
+
+Completions are by default case-insensitive. Set to `false` to make completions case-sensitive.
+
+- type: `boolean`
+- default: `true`
+
+```json
+{
+  "jediSettings": {
+    "caseInsensitiveCompletion": false
+  }
+}
+```
+
+### jediSettings.debug
+
+Print jedi debugging messages to stderr.
+
+- type: `boolean`
+- default: `false`
+
+```json
+{
+  "jediSettings": {
+    "debug": false
+  }
+}
+```
+
+### executable.command
+
+Specify your jedi-language-server executable. This is the command name / path used to run jedi-language-server on your machine.
+
+- type: `string`
+
+If this argument is not provided, `coc-jedi` will do the following:
+
+- For most platforms, `coc-jedi` will use a `coc-jedi`-managed `jedi-language-server` executable. If no such executable is found, `coc-jedi` will try to automatically install the executable for you in a virtual environment within the `coc-jedi` path.
+- For Windows, `coc-jedi` will try execute the command `jedi-language-server`. TODO: support Windows in the same way we support other platforms.
+
+### executable.args
+
+Specify the args passed to your executable. This a list of arguments passed to the jedi executable command.
+
+- type: `string[]`
+- default: `[]`
+
+This option is only relevant if you also specify `executable.command`. Otherwise it is ignored.
+
+### codeAction.nameExtractFunction
+
+Function name generated by the 'extract_function' codeAction.
+
+- type: `string`
+- default: `"jls_extract_def"`
+
+### codeAction.nameExtractVariable
+
+Variable name generated by the 'extract_variable' codeAction.
+
+- type: `string`
+- default: `"jls_extract_var"`
+
+### completion.disableSnippets
+
+If your language client supports `CompletionItem` snippets but you don't like them, disable them by setting this option to `true`.
+
+- type: `boolean`
+- default: `false`
+
+### completion.resolveEagerly
+
+Return all completion results in initial completion request. Set to `true` if your language client does not support `completionItem/resolve`.
+
+- type: `boolean`
+- default: `false`
+
+### completion.ignorePatterns
+
+A list of regular expressions. If any regular expression in ignorePatterns matches a completion's name, that completion item is not returned to the client.
+
+- type: `string[]`
+- default: `[]`
+
+In general, you should prefer the default value for this option. Jedi is very good at filtering values for end users. That said, there are situations where IDE developers, or some programmers in some code bases, may want to filter some completions by name. This flexible interface is provided to accommodate these advanced use cases. If you have one of these advanced use cases, see below for some example patterns (and their corresponding regular expression).
+
+#### All Private Names
+
+| Matches             | Non-Matches  |
+| ------------------- | ------------ |
+| `_hello`, `__world` | `__dunder__` |
+
+Regular Expression:
+
+```re
+^_{1,3}$|^_[^_].*$|^__.*(?<!__)$
+```
+
+#### Only private mangled names
+
+| Matches   | Non-Matches            |
+| --------- | ---------------------- |
+| `__world` | `_hello`, `__dunder__` |
+
+Regular Expression:
+
+```re
+^_{2,3}$|^__.*(?<!__)$
+```
+
+#### Only dunder names
+
+| Matches      | Non-Matches         |
+| ------------ | ------------------- |
+| `__dunder__` | `_hello`, `__world` |
+
+Regular Expression:
+
+```re
+^__.*?__$
+```
+
+#### All names beginning with underscore
+
+| Matches                           | Non-Matches |
+| --------------------------------- | ----------- |
+| `_hello`, `__world`, `__dunder__` | `regular`   |
+
+Regular Expression:
+
+```re
+^_.*$
+```
+
+### diagnostics.enable
+
+Enables (or disables) diagnostics provided by Jedi.
+
+- type: `boolean`
+- default: `true`
+
+### diagnostics.didOpen
+
+When diagnostics are enabled, run on document open
+
+- type: `boolean`
+- default: `true`
+
+### diagnostics.didChange
+
+When diagnostics are enabled, run on in-memory document change (eg, while you're editing, without needing to save to disk)
+
+- type: `boolean`
+- default: `true`
+
+### diagnostics.didSave
+
+When diagnostics are enabled, run on document save (to disk)
+
+- type: `boolean`
+- default: `true`
+
+### hover.enable
+
+Enable (or disable) all hover text. If set to `false`, will cause the hover method not to be registered to the language server.
+
+- type: `boolean`
+- default: `true`
+
+### hover.disable.\*
+
+The following options are available under this prefix:
+
+- hover.disable.class.all
+- hover.disable.class.names
+- hover.disable.class.fullNames
+- hover.disable.function.all
+- hover.disable.function.names
+- hover.disable.function.fullNames
+- hover.disable.instance.all
+- hover.disable.instance.names
+- hover.disable.instance.fullNames
+- hover.disable.keyword.all
+- hover.disable.keyword.names
+- hover.disable.keyword.fullNames
+- hover.disable.module.all
+- hover.disable.module.names
+- hover.disable.module.fullNames
+- hover.disable.param.all
+- hover.disable.param.names
+- hover.disable.param.fullNames
+- hover.disable.path.all
+- hover.disable.path.names
+- hover.disable.path.fullNames
+- hover.disable.property.all
+- hover.disable.property.names
+- hover.disable.property.fullNames
+- hover.disable.statement.all
+- hover.disable.statement.names
+- hover.disable.statement.fullNames
+
+#### hover.disable.\[jedi-type\].all
+
+Disable all hover text of jedi-type specified.
+
+- type: `bool`
+- default: `false`
+
+#### hover.disable.\[jedi-type\].names
+
+Disable hover text identified by name in list of jedi-type specified.
+
+- type: `string[]`
+- default: `[]`
+
+#### hover.disable.\[jedi-type\].fullNames
+
+Disable hover text identified by the fully qualified name in list of jedi-type specified. If no fully qualified name can be found, jedi-language-server will default to the name to prevent any unexpected behavior for users (relevant for jedi types like keywords that don't have full names).
+
+- type: `string[]`
+- default: `[]`
+
+### workspace.extraPaths
+
+Add additional paths for Jedi's analysis. Useful with vendor directories, packages in a non-standard location, etc. You probably won't need to use this, but you'll be happy it's here when you need it!
+
+- type: `string[]`
+- default: `[]`
+
+Non-absolute paths are relative to your project root. For example, let's say your Python project is structured like this:
+
+```
+├── funky
+│   └── haha.py
+├── poetry.lock
+├── pyproject.toml
+├── test.py
+```
+
+Assume that `funky/haha.py` contains 1 line, `x = 12`, and your build system does some wizardry that makes `haha` importable just like `os` or `pathlib`. In this example, if you want to have this same non-standard behavior with `jedi-language-server`, put the following in your `coc-settings.json`:
+
+```json
+{
+  "workspace": {
+    "extraPaths": ["funky"]
+  }
+}
+```
+
+When editing `test.py`, you'll get completions, goto definition, and all other lsp features for the line `from haha import ...`.
+
+Again, you probably don't need this.
+
+### workspace.environmentPath
+
+The Python executable path, typically the path of a virtual environment.
+
+- type: `string`
+
+If omitted, defaults to the active Python environment.
+
+### workspace.symbols.maxSymbols
+
+Maximum number of symbols returned by a call to `workspace/symbols`.
+
+- type: `number`
+- default: 20
+
+```json
+{
+  "workspace": {
+    "symbols": {
+      "maxSymbols": 20
+    }
+  }
+}
+```
+
+A value less than or equal to zero removes the maximum and allows jedi-language-server to return all workplace symbols found by jedi.
+
+### workspace.symbols.ignoreFolders
+
+Performance optimization that sets names of folders that are ignored for `workspace/symbols`.
+
+- type: `string[]`
+- default: `[".nox", ".tox", ".venv", "__pycache__", "venv"]`
+
+```json
+{
+  "workspace": {
+    "symbols": {
+      "ignoreFolders": ["hello", "world"]
+    }
+  }
+}
+```
+
+If you manually set this option, it overrides the default. Setting it to an empty array will result in no ignored folders.
 
 ## Diagnostics
 
 Diagnostics are provided by Python's built-in `compile` function.
 
-If you would like additional diagnostics (from [pylint](https://github.com/PyCQA/pylint), [mypy](https://github.com/python/mypy), etc.), we recommend using the powerful [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver).
+If you would like additional diagnostics (from [pylint](https://github.com/PyCQA/pylint), [mypy](https://github.com/python/mypy), etc.), we recommend using other tools (like [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver)) to complement `jedi-language-server`.
 
 ## Code Formatting
 
 Again, we recommend that you use [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver). It also supports code formatting.
+
+## Command line usage
+
+jedi-language-server can be run directly from the command line.
+
+```console
+$ jedi-language-server --help
+usage: jedi-language-server [-h] [--version] [--tcp] [--ws] [--host HOST] [--port PORT] [--log-file LOG_FILE] [-v]
+```
+
+If testing sending requests over stdio manually from the command line, you must include Windows-style line endings: `\r\n`. For an example, from within this project, run the following:
+
+```console
+$ jedi-language-server < ./example-initialization-request.txt
+INFO:pygls.server:Starting IO server
+...
+```
+
+If testing interactively, be sure to manually insert carriage returns. Although this may differ between shell environments, within most bash terminals, you can explicitly insert the required line endings by typing `<C-v><C-m>`, which will insert a `^M`. See:
+
+```console
+$ jedi-language-server 2>logs
+Content-Length: 1062^M
+^M
+...
+```
+
+## Technical capabilities
+
+jedi-language-server aims to support Jedi's capabilities and expose them through the Language Server Protocol. It supports the following Language Server capabilities:
+
+### Language Features
+
+- [completionItem/resolve](https://microsoft.github.io/language-server-protocol/specification#completionItem_resolve)
+- [textDocument/codeAction](https://microsoft.github.io/language-server-protocol/specification#textDocument_codeAction) (refactor.inline, refactor.extract)
+- [textDocument/completion](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_completion)
+- [textDocument/definition](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_definition)
+- [textDocument/documentHighlight](https://microsoft.github.io/language-server-protocol/specification#textDocument_documentHighlight)
+- [textDocument/documentSymbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_documentSymbol)
+- [textDocument/typeDefinition](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_typeDefinition)
+- [textDocument/hover](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_hover)
+- [textDocument/publishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)
+- [textDocument/references](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_references)
+- [textDocument/rename](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_rename)
+- [textDocument/signatureHelp](https://microsoft.github.io/language-server-protocol/specification#textDocument_signatureHelp)
+- [workspace/symbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspace_symbol)
+
+### Text Synchronization (for diagnostics)
+
+- [textDocument/didChange](https://microsoft.github.io/language-server-protocol/specification#textDocument_didChange)
+- [textDocument/didOpen](https://microsoft.github.io/language-server-protocol/specification#textDocument_didOpen)
+- [textDocument/didSave](https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave)
 
 ## Local Development
 
