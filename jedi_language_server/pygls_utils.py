@@ -7,11 +7,11 @@ Helper functions that simplify working with pygls
 from typing import Optional
 
 from lsprotocol.types import Position, Range
-from pygls.workspace import Document
+from pygls.workspace import TextDocument  # type: ignore[attr-defined]
 
 
 def char_before_cursor(
-    document: Document, position: Position, default: str = ""
+    document: TextDocument, position: Position, default: str = ""
 ) -> str:
     """Get the character directly before the cursor."""
     try:
@@ -21,7 +21,7 @@ def char_before_cursor(
 
 
 def char_after_cursor(
-    document: Document, position: Position, default: str = ""
+    document: TextDocument, position: Position, default: str = ""
 ) -> str:
     """Get the character directly before the cursor."""
     try:
@@ -31,7 +31,7 @@ def char_after_cursor(
 
 
 def current_word_range(
-    document: Document, position: Position
+    document: TextDocument, position: Position
 ) -> Optional[Range]:
     """Get the range of the word under the cursor."""
     word = document.word_at_position(position)

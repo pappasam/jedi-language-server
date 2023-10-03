@@ -32,7 +32,7 @@ from lsprotocol.types import (
     SymbolInformation,
     SymbolKind,
 )
-from pygls.workspace import Document
+from pygls.workspace import TextDocument  # type: ignore[attr-defined]
 
 from .initialization_options import HoverDisableOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
@@ -113,7 +113,7 @@ def set_jedi_settings(  # pylint: disable=invalid-name
         jedi.set_debug_function(func_cb=_jedi_debug_function)
 
 
-def script(project: Optional[Project], document: Document) -> Script:
+def script(project: Optional[Project], document: TextDocument) -> Script:
     """Simplifies getting jedi Script."""
     return Script(code=document.source, path=document.path, project=project)
 
