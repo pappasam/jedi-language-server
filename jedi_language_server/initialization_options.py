@@ -13,6 +13,7 @@ from cattrs import Converter
 from cattrs.gen import make_dict_structure_fn, override
 from lsprotocol.types import MarkupKind
 
+# pylint: disable=invalid-field-call
 # pylint: disable=missing-class-docstring
 # pylint: disable=too-few-public-methods
 
