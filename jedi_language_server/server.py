@@ -78,6 +78,8 @@ from .initialization_options import (
 class JediLanguageServerProtocol(LanguageServerProtocol):
     """Override some built-in functions."""
 
+    _server: "JediLanguageServer"
+
     @lsp_method(INITIALIZE)
     def lsp_initialize(self, params: InitializeParams) -> InitializeResult:
         """Override built-in initialization.
@@ -85,7 +87,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         Here, we can conditionally register functions to features based
         on client capabilities and initializationOptions.
         """
-        server: "JediLanguageServer" = self._server
+        server = self._server
         try:
             server.initialization_options = (
                 initialization_options_converter.structure(
@@ -203,7 +205,7 @@ def completion(
     snippet_disable = server.initialization_options.completion.disable_snippets
     resolve_eagerly = server.initialization_options.completion.resolve_eagerly
     ignore_patterns = server.initialization_options.completion.ignore_patterns
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     completions_jedi_raw = jedi_script.complete(*jedi_lines)
@@ -232,7 +234,7 @@ def completion(
         snippet_support and not snippet_disable and not is_import_context
     )
     char_before_cursor = pygls_utils.char_before_cursor(
-        document=server.workspace.get_document(params.text_document.uri),
+        document=server.workspace.get_text_document(params.text_document.uri),
         position=params.position,
     )
     jedi_utils.clear_completions_cache()
@@ -270,7 +272,7 @@ def signature_help(
     handle markdown well in the signature. Will update if this changes in the
     future.
     """
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     signatures_jedi = jedi_script.get_signatures(*jedi_lines)
@@ -310,7 +312,7 @@ def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
     """Support Goto Definition."""
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.goto(
@@ -331,7 +333,7 @@ def type_definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
     """Support Goto Type Definition."""
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.infer(*jedi_lines)
@@ -358,7 +360,7 @@ def highlight(
     Finally, we only return names if there are more than 1. Otherwise, we don't
     want to highlight anything.
     """
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.get_references(*jedi_lines, scope="file")
@@ -376,7 +378,7 @@ def hover(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[Hover]:
     """Support Hover."""
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     markup_kind = _choose_markup(server)
@@ -397,7 +399,7 @@ def references(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
     """Obtain all references to text."""
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.get_references(*jedi_lines)
@@ -431,7 +433,7 @@ def document_symbol(
     non-hierarchical symbols, we simply remove `param` symbols. Others are
     included for completeness.
     """
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     names = jedi_script.get_names(all_scopes=True, definitions=True)
     if get_capability(
@@ -513,7 +515,7 @@ def rename(
     server: JediLanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace."""
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     try:
@@ -545,7 +547,7 @@ def code_action(
         2. Extract variable
         3. Extract function
     """
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     code_actions = []
     jedi_lines = jedi_utils.line_column(params.range.start)
@@ -649,7 +651,7 @@ def _publish_diagnostics(server: JediLanguageServer, uri: str) -> None:
     if uri not in server.workspace.documents:
         return
 
-    doc = server.workspace.get_document(uri)
+    doc = server.workspace.get_text_document(uri)
     diagnostic = jedi_utils.lsp_python_diagnostic(uri, doc.source)
     diagnostics = [diagnostic] if diagnostic else []
 

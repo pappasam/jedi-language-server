@@ -23,7 +23,10 @@ from lsprotocol.types import (
     TextDocumentEdit,
     TextEdit,
 )
-from pygls.workspace import Document, Workspace
+from pygls.workspace import (  # type: ignore[attr-defined]
+    TextDocument,
+    Workspace,
+)
 
 
 def is_valid_python(code: str) -> bool:
@@ -74,7 +77,7 @@ class RefactoringConverter:
         changed_files = self.refactoring.get_changed_files()
         for path, changed_file in changed_files.items():
             uri = path.as_uri()
-            document = self.workspace.get_document(uri)
+            document = self.workspace.get_text_document(uri)
             version = 0 if document.version is None else document.version
             text_edits = lsp_text_edits(document, changed_file)
             if text_edits:
@@ -91,7 +94,7 @@ _OPCODES_CHANGE = {"replace", "delete", "insert"}
 
 
 def lsp_text_edits(
-    document: Document, changed_file: ChangedFile
+    document: TextDocument, changed_file: ChangedFile
 ) -> List[Union[TextEdit, AnnotatedTextEdit]]:
     """Take a jedi `ChangedFile` and convert to list of text edits.
 
