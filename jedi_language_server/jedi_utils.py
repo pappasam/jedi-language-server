@@ -85,7 +85,7 @@ def debounce(
 
 
 def _jedi_debug_function(
-    color: str,  # pylint: disable=unused-argument
+    color: str,
     str_out: str,
 ) -> None:
     """Jedi debugging function that prints to stderr.
@@ -95,7 +95,7 @@ def _jedi_debug_function(
     print(str_out, file=sys.stderr)
 
 
-def set_jedi_settings(  # pylint: disable=invalid-name
+def set_jedi_settings(
     initialization_options: InitializationOptions,
 ) -> None:
     """Sets jedi settings."""
@@ -200,7 +200,6 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
     accessible with dot notation are removed from display. See comments
     inline for cleaning steps.
     """
-    # pylint: disable=too-many-branches
     _name_lookup: Dict[Name, DocumentSymbol] = {}
     results: List[DocumentSymbol] = []
     for name in names:
@@ -454,7 +453,6 @@ def is_import(script_: Script, line: int, column: int) -> bool:
     completions, without any text, which will may cause issues for users with
     manually triggered completions.
     """
-    # pylint: disable=protected-access
     tree_name = script_._module_node.get_name_of_position((line, column))
     if tree_name is None:
         return False
@@ -478,7 +476,7 @@ def clear_completions_cache() -> None:
     _MOST_RECENT_COMPLETIONS.clear()
 
 
-def lsp_completion_item(  # pylint: disable=too-many-arguments
+def lsp_completion_item(
     completion: Completion,
     char_before_cursor: str,
     enable_snippets: bool,
@@ -516,7 +514,7 @@ def lsp_completion_item(  # pylint: disable=too-many-arguments
 
     try:
         snippet_signature = get_snippet_signature(signatures[0])
-    except Exception:  # pylint: disable=broad-except
+    except Exception:
         return completion_item
     new_text = completion_name + snippet_signature
     completion_item.insert_text = new_text
@@ -575,7 +573,7 @@ def convert_docstring(docstring: str, markup_kind: MarkupKind) -> str:
             return docstring_to_markdown.convert(docstring_stripped).strip()
         except docstring_to_markdown.UnknownFormatError:
             return _md_text(docstring_stripped, markup_kind)
-        except Exception as error:  # pylint: disable=broad-except
+        except Exception as error:
             result = (
                 docstring_stripped
                 + "\n"
@@ -653,7 +651,6 @@ def hover_text(
     initialization_options: InitializationOptions,
 ) -> Optional[str]:
     """Get a hover string from a list of names."""
-    # pylint: disable=too-many-branches
     if not names:
         return None
     name = names[0]

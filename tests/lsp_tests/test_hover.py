@@ -8,8 +8,6 @@ from tests.lsp_test_client.utils import as_uri
 
 HOVER_TEST_ROOT = TEST_DATA / "hover"
 
-# pylint: disable=line-too-long
-
 
 def test_hover_on_module():
     """Tests hover on the name of a imported module.
