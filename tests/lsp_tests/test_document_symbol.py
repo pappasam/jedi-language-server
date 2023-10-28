@@ -19,7 +19,6 @@ def test_document_symbol() -> None:
 
     Test Data: tests/test_data/symbol/symbol_test1.py
     """
-
     with session.LspSession() as ls_session:
         ls_session.initialize()
         uri = as_uri(SYMBOL_TEST_ROOT / "symbol_test1.py")

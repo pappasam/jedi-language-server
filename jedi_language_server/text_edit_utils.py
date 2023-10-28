@@ -141,15 +141,14 @@ class Opcode(NamedTuple):
 
 
 def get_opcodes(old: str, new: str) -> List[Opcode]:
-    """Obtain typed opcodes from two files (old and new)"""
+    """Obtain typed opcodes from two files (old and new)."""
     diff = difflib.SequenceMatcher(a=old, b=new)
     return [Opcode(*opcode) for opcode in diff.get_opcodes()]
 
 
 # pylint: disable=too-few-public-methods
 class PositionLookup:
-    """Data structure to convert a byte offset in a file to a line number and
-    character."""
+    """Data structure to convert byte offset file to line number and character."""
 
     def __init__(self, code: str) -> None:
         # Create a list saying at what offset in the file each line starts.
@@ -160,8 +159,7 @@ class PositionLookup:
             offset += len(line)
 
     def get(self, offset: int) -> Position:
-        """Get the position in the file that corresponds to the given
-        offset."""
+        """Get the position in the file that corresponds to the given offset."""
         line = bisect_right(self.line_starts, offset) - 1
         character = offset - self.line_starts[line]
         return Position(line=line, character=character)

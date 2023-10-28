@@ -212,7 +212,6 @@ def test_lsp_rename_last_line():
 
 def test_rename_package() -> None:
     """Tests renaming of an imported package."""
-
     test_root = REFACTOR_TEST_ROOT / "rename_package_test1"
     with session.LspSession() as ls_session:
         ls_session.initialize()
@@ -311,7 +310,6 @@ def test_rename_module() -> None:
 
 def test_lsp_code_action() -> None:
     """Tests code actions like extract variable and extract function."""
-
     with session.LspSession() as ls_session:
         ls_session.initialize()
         uri = as_uri((REFACTOR_TEST_ROOT / "code_action_test1.py"))
@@ -380,7 +378,6 @@ def test_lsp_code_action2() -> None:
 
     Identified in: https://github.com/pappasam/jedi-language-server/issues/96
     """
-
     with session.LspSession() as ls_session:
         ls_session.initialize()
         uri = as_uri((REFACTOR_TEST_ROOT / "code_action_test2.py"))
