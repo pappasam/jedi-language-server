@@ -9,8 +9,8 @@ require: ## Check that prerequisites are installed.
             printf "\033[1m\033[31mERROR\033[0m: python3 not installed\n" >&2 ; \
 	    exit 1; \
 	fi
-	@if ! python3 -c "import sys; sys.exit(sys.version_info < (3,6))"; then \
-            printf "\033[1m\033[31mERROR\033[0m: python 3.6+ required\n" >&2 ; \
+	@if ! python3 -c "import sys; sys.exit(sys.version_info < (3,8))"; then \
+            printf "\033[1m\033[31mERROR\033[0m: python 3.8+ required\n" >&2 ; \
 	    exit 1; \
 	fi
 	@if ! command -v poetry > /dev/null; then \
