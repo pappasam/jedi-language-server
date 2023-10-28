@@ -32,7 +32,7 @@ from lsprotocol.types import (
     SymbolInformation,
     SymbolKind,
 )
-from pygls.workspace import TextDocument  # type: ignore[attr-defined]
+from pygls.workspace import TextDocument
 
 from .initialization_options import HoverDisableOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
