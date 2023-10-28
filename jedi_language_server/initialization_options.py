@@ -149,7 +149,7 @@ def structure(cls: type) -> Any:
         **{
             a.name: override(rename=convert_class_keys(a.name))
             for a in fields(cls)
-        }
+        },
     )
 
 

@@ -2,13 +2,6 @@
 requires = ["poetry-core>=1.6.1"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 79
-
-[tool.isort]
-profile = "black"
-line_length = 79
-
 [tool.poetry]
 name = "jedi-language-server"
 version = "0.41.1"
@@ -40,7 +33,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-jedi = "^0.19.0"
+jedi = "^0.19.1"
 pygls = "^1.1.0"
 cattrs = ">=23.1.2"
 docstring-to-markdown = "0.*"
@@ -48,17 +41,15 @@ lsprotocol = ">=2022.0.0a9"
 typing-extensions = {version = "^4.5.0", python = "<3.10"}
 
 [tool.poetry.dev-dependencies]
-pre-commit = ">=2.19.0"
-pytest = ">=7.1.2"
-toml-sort = ">=0.20.0"
-isort = ">=5.10.1"
-pylint = ">=2.13.9"
-mypy = ">=0.961"
-black = ">=22.6.0"
-PyHamcrest = ">=2.0.3"
-python-lsp-jsonrpc = ">=1.0.0"
-pytest-cov = ">=3.0.0"
-docformatter = ">=1.4,!=1.5.1"
+PyHamcrest = "*"
+mypy = "*"
+nox = "*"
+pre-commit = "*"
+pytest = "*"
+pytest-cov = "*"
+python-lsp-jsonrpc = "*"
+ruff = "*"
+toml-sort = "*"
 
 [tool.poetry.scripts]
 jedi-language-server = 'jedi_language_server.cli:cli'
@@ -66,3 +57,32 @@ jedi-language-server = 'jedi_language_server.cli:cli'
 [tool.poetry.urls]
 Changelog = "https://github.com/pappasam/jedi-language-server/blob/main/CHANGELOG.md"
 Issues = "https://github.com/pappasam/jedi-language-server/issues"
+
+[tool.ruff]
+line-length = 79
+target-version = "py38"
+unsafe-fixes = true
+
+[tool.ruff.lint]
+select = [
+  "D", # pydocstyle
+  "E", # pycodestyle
+  "F", # pyflakes
+  "I" # isort
+]
+ignore = [
+  "D10", # missing-docstring
+  "D206", # indent-with-spaces
+  "D300", # triple-single-quotes
+  "D401", # imperative-mood
+  "E111", # indentation-with-invalid-multiple
+  "E114", # indentation-with-invalid-multiple-comment
+  "E117", # over-indented
+  "E501" # line-too-long
+]
+
+[tool.ruff.per-file-ignores]
+"tests/test_data/*" = ["ALL"]
+
+[tool.ruff.pydocstyle]
+convention = "pep257"

@@ -6,7 +6,6 @@ import platform
 import tempfile
 from threading import Event
 
-import pytest
 from hamcrest import assert_that, is_
 
 from tests import TEST_DATA
@@ -102,7 +101,6 @@ def test_publish_diagnostics_on_open():
 
 def test_publish_diagnostics_on_change():
     """Tests publish diagnostics on change."""
-
     with open(
         DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt", "r"
     ) as text_file:
@@ -211,7 +209,6 @@ def test_publish_diagnostics_on_change():
 
 def test_publish_diagnostics_on_save():
     """Tests publish diagnostics on save."""
-
     with open(
         DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt", "r"
     ) as text_file:

@@ -503,10 +503,18 @@ cd jedi-language-server
 make setup
 ```
 
+### Automatically format files
+
+```bash
+make fix
+```
+
 ### Run tests
 
 ```bash
-make test
+make lint
+make typecheck
+make tests
 ```
 
 ## Inspiration

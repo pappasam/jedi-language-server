@@ -12,7 +12,6 @@ from jedi_language_server.initialization_options import (
 
 def test_initialization_options() -> None:
     """Test our adjustments to parsing of the initialization options."""
-
     initialization_options = initialization_options_converter.structure(
         {
             "completion": {

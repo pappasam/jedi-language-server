@@ -217,8 +217,7 @@ class LspSession(MethodDispatcher):
         self._notification_callbacks[notification_name] = callback
 
     def get_notification_callback(self, notification_name):
-        """Gets callback if set or default callback for a given LS
-        notification."""
+        """Gets callback if set or default callback for a given LS notification."""
         try:
             return self._notification_callbacks[notification_name]
         except KeyError:
