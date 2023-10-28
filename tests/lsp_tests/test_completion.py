@@ -11,8 +11,6 @@ from tests.lsp_test_client.utils import as_uri
 
 COMPLETION_TEST_ROOT = TEST_DATA / "completion"
 
-# pylint: disable=line-too-long
-
 
 def test_lsp_completion() -> None:
     """Test a simple completion request.
@@ -93,7 +91,6 @@ def test_eager_lsp_completion() -> None:
             }
         )
 
-        # pylint: disable=line-too-long
         expected = {
             "isIncomplete": False,
             "items": [
@@ -139,7 +136,6 @@ def test_lsp_completion_class_method() -> None:
             }
         )
 
-        # pylint: disable=line-too-long
         expected = {
             "isIncomplete": False,
             "items": [

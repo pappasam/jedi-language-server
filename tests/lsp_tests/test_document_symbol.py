@@ -11,8 +11,6 @@ from tests.lsp_test_client.utils import as_uri
 
 SYMBOL_TEST_ROOT = TEST_DATA / "symbol"
 
-# pylint: disable=line-too-long
-
 
 def test_document_symbol() -> None:
     """Test document symbol request.

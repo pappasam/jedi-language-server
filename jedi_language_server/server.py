@@ -201,7 +201,6 @@ def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> Optional[CompletionList]:
     """Returns completion items."""
-    # pylint: disable=too-many-locals
     snippet_disable = server.initialization_options.completion.disable_snippets
     resolve_eagerly = server.initialization_options.completion.resolve_eagerly
     ignore_patterns = server.initialization_options.completion.ignore_patterns
@@ -628,8 +627,8 @@ def code_action(
 
 @SERVER.feature(WORKSPACE_DID_CHANGE_CONFIGURATION)
 def did_change_configuration(
-    server: JediLanguageServer,  # pylint: disable=unused-argument
-    params: DidChangeConfigurationParams,  # pylint: disable=unused-argument
+    server: JediLanguageServer,
+    params: DidChangeConfigurationParams,
 ) -> None:
     """Implement event for workspace/didChangeConfiguration.
 
@@ -667,8 +666,8 @@ def did_save_diagnostics(
 
 
 def did_save_default(
-    server: JediLanguageServer,  # pylint: disable=unused-argument
-    params: DidSaveTextDocumentParams,  # pylint: disable=unused-argument
+    server: JediLanguageServer,
+    params: DidSaveTextDocumentParams,
 ) -> None:
     """Actions run on textDocument/didSave: default."""
 
@@ -682,8 +681,8 @@ def did_change_diagnostics(
 
 
 def did_change_default(
-    server: JediLanguageServer,  # pylint: disable=unused-argument
-    params: DidChangeTextDocumentParams,  # pylint: disable=unused-argument
+    server: JediLanguageServer,
+    params: DidChangeTextDocumentParams,
 ) -> None:
     """Actions run on textDocument/didChange: default."""
 
@@ -697,8 +696,8 @@ def did_open_diagnostics(
 
 
 def did_open_default(
-    server: JediLanguageServer,  # pylint: disable=unused-argument
-    params: DidOpenTextDocumentParams,  # pylint: disable=unused-argument
+    server: JediLanguageServer,
+    params: DidOpenTextDocumentParams,
 ) -> None:
     """Actions run on textDocument/didOpen: default."""
 
@@ -712,8 +711,8 @@ def did_close_diagnostics(
 
 
 def did_close_default(
-    server: JediLanguageServer,  # pylint: disable=unused-argument
-    params: DidCloseTextDocumentParams,  # pylint: disable=unused-argument
+    server: JediLanguageServer,
+    params: DidCloseTextDocumentParams,
 ) -> None:
     """Actions run on textDocument/didClose: default."""
 

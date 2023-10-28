@@ -1,4 +1,4 @@
-# jedi-language-server
+# Jedi Language Server
 
 [![image-version](https://img.shields.io/pypi/v/jedi-language-server.svg)](https://python.org/pypi/jedi-language-server)
 [![image-license](https://img.shields.io/pypi/l/jedi-language-server.svg)](https://python.org/pypi/jedi-language-server)
@@ -11,17 +11,17 @@ A [Python](https://www.python.org/) [Language Server](https://microsoft.github.i
 
 ## Installation
 
-Some frameworks, like coc-jedi and vscode-python, will install and manage jedi-language-server for you. If you're setting up manually, you can run the following from your command line (bash / zsh):
+Some frameworks, like coc-jedi and vscode-python, will install and manage `jedi-language-server` for you. If you're setting up manually, you can run the following from your command line (bash / zsh):
 
 ```bash
 pip install -U jedi-language-server
 ```
 
-Alternatively (and preferably), use [pipx](https://github.com/pipxproject/pipx) to keep jedi-language-server and its dependencies isolated from your other Python dependencies. Don't worry, jedi is smart enough to figure out which Virtual environment you're currently using!
+Alternatively (and preferably), use [pipx](https://github.com/pipxproject/pipx) to keep `jedi-language-server` and its dependencies isolated from your other Python dependencies. Don't worry, jedi is smart enough to figure out which Virtual environment you're currently using!
 
 ## Editor Setup
 
-The following instructions show how to use jedi-language-server with your development tooling. The instructions assume you have already installed jedi-language-server.
+The following instructions show how to use `jedi-language-server` with your development tooling. The instructions assume you have already installed `jedi-language-server`.
 
 ### Vim / Neovim
 
@@ -45,13 +45,13 @@ Note: this list is non-exhaustive. If you know of a great choice not included in
 
 ### Visual Studio Code (vscode)
 
-Starting from the [October 2021 release](https://github.com/microsoft/vscode-python/releases/tag/2021.10.1317843341), set the `python.languageServer` setting to `Jedi` to use jedi-language-server.
+Starting from the [October 2021 release](https://github.com/microsoft/vscode-python/releases/tag/2021.10.1317843341), set the `python.languageServer` setting to `Jedi` to use `jedi-language-server`.
 
 See: <https://github.com/pappasam/jedi-language-server/issues/50#issuecomment-781101169>
 
 ## Configuration
 
-jedi-language-server supports the following [initializationOptions](https://microsoft.github.io/language-server-protocol/specification#initialize):
+`jedi-language-server` supports the following [initializationOptions](https://microsoft.github.io/language-server-protocol/specification#initialize):
 
 ```json
 {
@@ -107,12 +107,12 @@ The different sections of the InitializationOptions are explained below, in deta
 
 ### markupKindPreferred
 
-The preferred MarkupKind for all jedi-language-server messages that take [MarkupContent](https://microsoft.github.io/language-server-protocol/specification#markupContent).
+The preferred MarkupKind for all `jedi-language-server` messages that take [MarkupContent](https://microsoft.github.io/language-server-protocol/specification#markupContent).
 
 - type: `string`
 - accepted values: `"markdown"`, `"plaintext"`
 
-If omitted, jedi-language-server defaults to the client-preferred configuration. If there is no client-preferred configuration, jedi language server users `"plaintext"`.
+If omitted, `jedi-language-server` defaults to the client-preferred configuration. If there is no client-preferred configuration, jedi language server users `"plaintext"`.
 
 ### jediSettings.autoImportModules
 
@@ -329,7 +329,7 @@ Disable hover text identified by name in list of jedi-type specified.
 
 #### hover.disable.\[jedi-type\].fullNames
 
-Disable hover text identified by the fully qualified name in list of jedi-type specified. If no fully qualified name can be found, jedi-language-server will default to the name to prevent any unexpected behavior for users (relevant for jedi types like keywords that don't have full names).
+Disable hover text identified by the fully qualified name in list of jedi-type specified. If no fully qualified name can be found, `jedi-language-server` will default to the name to prevent any unexpected behavior for users (relevant for jedi types like keywords that don't have full names).
 
 - type: `string[]`
 - default: `[]`
@@ -390,7 +390,7 @@ Maximum number of symbols returned by a call to `workspace/symbols`.
 }
 ```
 
-A value less than or equal to zero removes the maximum and allows jedi-language-server to return all workplace symbols found by jedi.
+A value less than or equal to zero removes the maximum and allows `jedi-language-server` to return all workplace symbols found by jedi.
 
 ### workspace.symbols.ignoreFolders
 
@@ -415,7 +415,7 @@ If you manually set this option, it overrides the default. Setting it to an empt
 
 Diagnostics are provided by Python's built-in `compile` function.
 
-If you would like additional diagnostics (from [pylint](https://github.com/PyCQA/pylint), [mypy](https://github.com/python/mypy), etc.), we recommend using other tools (like [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver)) to complement `jedi-language-server`.
+If you would like additional diagnostics, we recommend using other tools (like [diagnostic-language-server](https://github.com/iamcco/diagnostic-languageserver)) to complement `jedi-language-server`.
 
 ## Code Formatting
 
@@ -423,7 +423,7 @@ Again, we recommend that you use [diagnostic-language-server](https://github.com
 
 ## Command line usage
 
-jedi-language-server can be run directly from the command line.
+`jedi-language-server` can be run directly from the command line.
 
 ```console
 $ jedi-language-server --help
@@ -519,9 +519,9 @@ make tests
 
 ## Inspiration
 
-Palantir's [python-language-server](https://github.com/palantir/python-language-server) inspired this project. In fact, for consistency's sake, many of python-language-server's CLI options are used as-is in jedi-language-server.
+Palantir's [python-language-server](https://github.com/palantir/python-language-server) inspired this project. In fact, for consistency's sake, many of python-language-server's CLI options are used as-is in `jedi-language-server`.
 
-Unlike python-language-server, jedi-language-server:
+Unlike python-language-server, `jedi-language-server`:
 
 - Uses [pygls](https://github.com/openlawlibrary/pygls) instead of creating its own low-level Language Server Protocol bindings
 - Supports one powerful 3rd party static analysis / completion / refactoring library: Jedi. By only supporting Jedi, we can focus on supporting all Jedi features without exposing ourselves to too many broken 3rd party dependencies (I'm looking at you, [rope](https://github.com/python-rope/rope)).

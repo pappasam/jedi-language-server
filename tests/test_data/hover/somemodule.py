@@ -11,5 +11,5 @@ class SomeClass:
     def some_method(self):
         """Method doc string for testing."""
 
-    def some_method2(self):  # pylint: disable=missing-function-docstring
+    def some_method2(self):
         pass

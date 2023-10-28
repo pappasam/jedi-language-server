@@ -146,7 +146,6 @@ def get_opcodes(old: str, new: str) -> List[Opcode]:
     return [Opcode(*opcode) for opcode in diff.get_opcodes()]
 
 
-# pylint: disable=too-few-public-methods
 class PositionLookup:
     """Data structure to convert byte offset file to line number and character."""
 

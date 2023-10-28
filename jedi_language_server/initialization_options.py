@@ -13,12 +13,7 @@ from cattrs import Converter
 from cattrs.gen import make_dict_structure_fn, override
 from lsprotocol.types import MarkupKind
 
-# pylint: disable=invalid-field-call
-# pylint: disable=missing-class-docstring
-# pylint: disable=too-few-public-methods
-
 if sys.version_info >= (3, 10):
-    # pylint: disable-next=unexpected-keyword-arg
     light_dataclass = dataclass(kw_only=True, eq=False, match_args=False)
 else:
     light_dataclass = dataclass(eq=False)

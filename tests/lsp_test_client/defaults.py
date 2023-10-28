@@ -4,7 +4,7 @@ import os
 import tests.lsp_test_client as lsp_client
 
 VSCODE_DEFAULT_INITIALIZE = {
-    "processId": os.getpid(),  # pylint: disable=no-member
+    "processId": os.getpid(),
     "clientInfo": {"name": "vscode", "version": "1.45.0"},
     "rootPath": str(lsp_client.PROJECT_ROOT),
     "rootUri": lsp_client.PROJECT_URI,
