@@ -23,10 +23,7 @@ from lsprotocol.types import (
     TextDocumentEdit,
     TextEdit,
 )
-from pygls.workspace import (  # type: ignore[attr-defined]
-    TextDocument,
-    Workspace,
-)
+from pygls.workspace import TextDocument, Workspace
 
 
 def is_valid_python(code: str) -> bool:
