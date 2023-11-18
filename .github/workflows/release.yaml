@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04]
-        python-version: ['3.11']
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v2
       - name: Setup, Python ${{ matrix.python-version }}
@@ -18,11 +18,10 @@ jobs:
           architecture: x64
       - name: Deploy with Python ${{ matrix.python-version }}
         env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
         run: |
           python -m pip install -U pip
           python -m pip install wheel
           python -m pip install poetry
           poetry build
-          poetry publish --username="$PYPI_USERNAME" --password="$PYPI_PASSWORD"
+          poetry publish
