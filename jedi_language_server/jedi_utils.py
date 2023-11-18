@@ -9,14 +9,21 @@ import sys
 import threading
 from ast import PyCF_ONLY_AST
 from inspect import Parameter
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 import docstring_to_markdown
 import jedi.api.errors
 import jedi.inference.references
 import jedi.settings
 from jedi import Project, Script
-from jedi.api.classes import BaseName, Completion, Name, ParamName, Signature
+from jedi.api.classes import (
+    BaseName,
+    BaseSignature,
+    Completion,
+    Name,
+    ParamName,
+    Signature,
+)
 from lsprotocol.types import (
     CompletionItem,
     CompletionItemKind,
@@ -298,21 +305,19 @@ def lsp_python_diagnostic(uri: str, source: str) -> Optional[Diagnostic]:
         compile(source, uri, "exec", PyCF_ONLY_AST)
         return None
     except SyntaxError as err:
-        column = err.offset - 1 if err.offset is not None else 0
-        line = err.lineno - 1 if err.lineno is not None else 0
-
+        column = max(0, err.offset - 1 if err.offset is not None else 0)
+        line = max(0, err.lineno - 1 if err.lineno is not None else 0)
         _until_column = getattr(err, "end_offset", None)
         _until_line = getattr(err, "end_lineno", None)
-
-        until_column = (
-            _until_column - 1 if _until_column is not None else column + 1
+        until_column = max(
+            0, _until_column - 1 if _until_column is not None else column + 1
         )
-        until_line = _until_line - 1 if _until_line is not None else line
-
+        until_line = max(
+            0, _until_line - 1 if _until_line is not None else line
+        )
         if (line, column) >= (until_line, until_column):
             until_column, until_line = column, line
             column = 0
-
         return Diagnostic(
             range=Range(
                 start=Position(line=line, character=column),
@@ -419,7 +424,7 @@ _POSITION_PARAMETERS = {
 _PARAM_NAME_IGNORE = {"/", "*"}
 
 
-def get_snippet_signature(signature: Signature) -> str:
+def get_snippet_signature(signature: Union[Signature, BaseSignature]) -> str:
     """Return the snippet signature."""
     params: List[ParamName] = signature.params
     if not params:
@@ -525,11 +530,6 @@ def lsp_completion_item(
 def _md_bold(value: str, markup_kind: MarkupKind) -> str:
     """Add bold surrounding when markup_kind is markdown."""
     return f"**{value}**" if markup_kind == MarkupKind.Markdown else value
-
-
-def _md_italic(value: str, markup_kind: MarkupKind) -> str:
-    """Add italic surrounding when markup_kind is markdown."""
-    return f"*{value}*" if markup_kind == MarkupKind.Markdown else value
 
 
 def _md_text(value: str, markup_kind: MarkupKind) -> str:

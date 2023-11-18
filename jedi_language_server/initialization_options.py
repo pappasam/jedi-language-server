@@ -141,7 +141,7 @@ def structure(cls: type) -> Any:
     return make_dict_structure_fn(
         cls,
         initialization_options_converter,
-        **{
+        **{  # type: ignore[arg-type]
             a.name: override(rename=convert_class_keys(a.name))
             for a in fields(cls)
         },
