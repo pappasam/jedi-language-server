@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.41.2
+
+### Fixed
+
+- Issue where `lsp_python_diagnostic` may use invalid `lsprotocol.types.Position.character`: <https://github.com/pappasam/jedi-language-server/issues/272>
+
 ## 0.41.1
 
 ### Added
