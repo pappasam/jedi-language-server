@@ -9,7 +9,7 @@ import sys
 import threading
 from ast import PyCF_ONLY_AST
 from inspect import Parameter
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import docstring_to_markdown
 import jedi.api.errors
@@ -424,7 +424,7 @@ _POSITION_PARAMETERS = {
 _PARAM_NAME_IGNORE = {"/", "*"}
 
 
-def get_snippet_signature(signature: Union[Signature, BaseSignature]) -> str:
+def get_snippet_signature(signature: BaseSignature) -> str:
     """Return the snippet signature."""
     params: List[ParamName] = signature.params
     if not params:
