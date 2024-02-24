@@ -17,6 +17,7 @@ from lsprotocol.types import (
     INITIALIZE,
     TEXT_DOCUMENT_CODE_ACTION,
     TEXT_DOCUMENT_COMPLETION,
+    TEXT_DOCUMENT_DECLARATION,
     TEXT_DOCUMENT_DEFINITION,
     TEXT_DOCUMENT_DID_CHANGE,
     TEXT_DOCUMENT_DID_CLOSE,
@@ -304,6 +305,23 @@ def signature_help(
         if signatures
         else None
     )
+
+
+@SERVER.feature(TEXT_DOCUMENT_DECLARATION)
+def declaration(
+    server: JediLanguageServer, params: TextDocumentPositionParams
+) -> Optional[List[Location]]:
+    """Support Goto Declaration."""
+    document = server.workspace.get_text_document(params.text_document.uri)
+    jedi_script = jedi_utils.script(server.project, document)
+    jedi_lines = jedi_utils.line_column(params.position)
+    names = jedi_script.goto(*jedi_lines)
+    definitions = [
+        definition
+        for definition in (jedi_utils.lsp_location(name) for name in names)
+        if definition is not None
+    ]
+    return definitions if definitions else None
 
 
 @SERVER.feature(TEXT_DOCUMENT_DEFINITION)

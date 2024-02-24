@@ -456,6 +456,7 @@ jedi-language-server aims to support Jedi's capabilities and expose them through
 - [completionItem/resolve](https://microsoft.github.io/language-server-protocol/specification#completionItem_resolve)
 - [textDocument/codeAction](https://microsoft.github.io/language-server-protocol/specification#textDocument_codeAction) (refactor.inline, refactor.extract)
 - [textDocument/completion](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_completion)
+- [textDocument/declaration](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_declaration)
 - [textDocument/definition](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_definition)
 - [textDocument/documentHighlight](https://microsoft.github.io/language-server-protocol/specification#textDocument_documentHighlight)
 - [textDocument/documentSymbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_documentSymbol)

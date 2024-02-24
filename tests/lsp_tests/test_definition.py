@@ -36,3 +36,31 @@ def test_definition():
         ]
 
         assert_that(actual, is_(expected))
+
+
+def test_declaration():
+    """Tests declaration on an imported module.
+
+    Test Data: tests/test_data/definition/definition_test1.py
+    """
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        uri = as_uri(DEFINITION_TEST_ROOT / "definition_test1.py")
+        actual = ls_session.text_document_declaration(
+            {
+                "textDocument": {"uri": uri},
+                "position": {"line": 5, "character": 0},
+            }
+        )
+
+        expected = [
+            {
+                "uri": uri,
+                "range": {
+                    "start": {"line": 2, "character": 26},
+                    "end": {"line": 2, "character": 37},
+                },
+            }
+        ]
+
+        assert_that(actual, is_(expected))
