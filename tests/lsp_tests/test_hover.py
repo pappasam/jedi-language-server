@@ -27,7 +27,7 @@ def test_hover_on_module():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "```python\nmodule somemodule\n```\n---\n```text\nModule doc string for testing.\n```",
+                "value": "```python\nmodule somemodule\n```\n---\nModule doc string for testing.",
             },
             "range": {
                 "start": {"line": 2, "character": 7},
@@ -55,7 +55,7 @@ def test_hover_on_function():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "```python\ndef do_something()\n```\n---\n```text\nFunction doc string for testing.\n```\n**Full name:** `somemodule.do_something`",
+                "value": "```python\ndef do_something()\n```\n---\nFunction doc string for testing.\n**Full name:** `somemodule.do_something`",
             },
             "range": {
                 "start": {"line": 4, "character": 11},
@@ -83,7 +83,7 @@ def test_hover_on_class():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "```python\nclass SomeClass()\n```\n---\n```text\nClass doc string for testing.\n```\n**Full name:** `somemodule.SomeClass`",
+                "value": "```python\nclass SomeClass()\n```\n---\nClass doc string for testing.\n**Full name:** `somemodule.SomeClass`",
             },
             "range": {
                 "start": {"line": 6, "character": 15},
@@ -111,7 +111,7 @@ def test_hover_on_method():
         expected = {
             "contents": {
                 "kind": "markdown",
-                "value": "```python\ndef some_method()\n```\n---\n```text\nMethod doc string for testing.\n```\n**Full name:** `somemodule.SomeClass.some_method`",
+                "value": "```python\ndef some_method()\n```\n---\nMethod doc string for testing.\n**Full name:** `somemodule.SomeClass.some_method`",
             },
             "range": {
                 "start": {"line": 8, "character": 2},
