@@ -1,6 +1,15 @@
 [build-system]
-requires = ["poetry-core>=1.7.1"]
+requires = ["poetry-core>=1.8.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = "3.8"
+strict = true
+enable_error_code = "ignore-without-code,redundant-expr,truthy-bool"
+
+[[tool.mypy.overrides]]
+module = "jedi.*"
+ignore_missing_imports = true
 
 [tool.poetry]
 name = "jedi-language-server"
@@ -40,7 +49,7 @@ docstring-to-markdown = "0.*"
 lsprotocol = ">=2022.0.0a9"
 typing-extensions = {version = "^4.5.0", python = "<3.10"}
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 PyHamcrest = "*"
 mypy = "*"
 nox = "*"
@@ -81,8 +90,8 @@ ignore = [
   "E501" # line-too-long
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/test_data/*" = ["ALL"]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "pep257"

@@ -41,7 +41,7 @@ def test_signature_help(trigger_char, column, active_param):
                     ),
                     "documentation": {
                         "kind": "markdown",
-                        "value": "```text\nThis is a test function.\n```",
+                        "value": "This is a test function.",
                     },
                     "parameters": [
                         {"label": "arg1: str"},
