@@ -433,7 +433,7 @@ usage: jedi-language-server [-h] [--version] [--tcp] [--ws] [--host HOST] [--por
 If testing sending requests over stdio manually from the command line, you must include Windows-style line endings: `\r\n`. For an example, from within this project, run the following:
 
 ```console
-$ jedi-language-server < ./example-initialization-request.txt
+$ jedi-language-server -v < ./example-initialization-request.txt
 INFO:pygls.server:Starting IO server
 ...
 ```
