@@ -46,7 +46,7 @@ jedi = "^0.19.1"
 pygls = "^1.1.0"
 cattrs = ">=23.1.2"
 docstring-to-markdown = "0.*"
-lsprotocol = ">=2022.0.0a9"
+lsprotocol = ">=2022.0.0a9,<=2023.0.1"
 typing-extensions = {version = "^4.5.0", python = "<3.10"}
 
 [tool.poetry.group.dev.dependencies]
