@@ -4,7 +4,6 @@ This module is a bridge between `jedi.Refactoring` and
 `pygls.types.TextEdit` types
 """
 
-
 import ast
 import difflib
 from bisect import bisect_right
