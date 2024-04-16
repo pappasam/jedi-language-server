@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.41.4
+
+### Fixed
+
+- `lsprotocol`'s dependency specification in this project ended up pulling in an alpha version of the project. This release fixes that issue: <https://github.com/pappasam/jedi-language-server/issues/302>
+
 ## 0.41.3
 
 ### Added
