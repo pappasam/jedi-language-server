@@ -3,7 +3,6 @@
 Helper functions that simplify working with pygls
 """
 
-
 from typing import Optional
 
 from lsprotocol.types import Position, Range

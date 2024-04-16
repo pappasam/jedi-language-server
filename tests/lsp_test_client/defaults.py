@@ -1,4 +1,5 @@
 """Default values for lsp test client."""
+
 import os
 
 import tests.lsp_test_client as lsp_client
