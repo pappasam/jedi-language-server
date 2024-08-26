@@ -420,14 +420,11 @@ def references(
     jedi_script = jedi_utils.script(server.project, document)
     jedi_lines = jedi_utils.line_column(params.position)
     names = jedi_script.get_references(*jedi_lines)
-    ignore_folders = (
-        server.initialization_options.workspace.symbols.ignore_folders
-    )
+    ignore_folders = server.initialization_options.workspace.symbols.ignore_folders
     locations = [
         location
         for location in (jedi_utils.lsp_location(name) for name in names)
-        if location is not None
-        and not _ignore_folder(location, ignore_folders)
+        if location is not None and not _ignore_folder(location, ignore_folders)
     ]
     return locations if locations else None
 
