@@ -406,13 +406,17 @@ def complete_sort_name(name: Completion, append_text: str) -> str:
     return "v" + append_text
 
 
-def clean_completion_name(name: str, char_before_cursor: str) -> str:
+def clean_completion_name(
+    name: str, char_before_cursor: str, char_after_cursor: str
+) -> str:
     """Clean the completion name, stripping bad surroundings.
 
     Currently, removes surrounding " and '.
     """
     if char_before_cursor in {"'", '"'}:
-        return name.lstrip(char_before_cursor)
+        name = name.lstrip(char_before_cursor)
+    if char_after_cursor in {"'", '"'}:
+        name = name.rstrip(char_after_cursor)
     return name
 
 
@@ -484,6 +488,7 @@ def clear_completions_cache() -> None:
 def lsp_completion_item(
     completion: Completion,
     char_before_cursor: str,
+    char_after_cursor: str,
     enable_snippets: bool,
     resolve_eagerly: bool,
     markup_kind: MarkupKind,
@@ -491,11 +496,13 @@ def lsp_completion_item(
 ) -> CompletionItem:
     """Using a Jedi completion, obtain a jedi completion item."""
     completion_name = completion.name
-    name_clean = clean_completion_name(completion_name, char_before_cursor)
+    name_clean = clean_completion_name(
+        completion_name, char_before_cursor, char_after_cursor
+    )
     lsp_type = get_lsp_completion_type(completion.type)
     completion_item = CompletionItem(
-        label=completion_name,
-        filter_text=completion_name,
+        label=name_clean,
+        filter_text=name_clean,
         kind=lsp_type,
         sort_text=complete_sort_name(completion, sort_append_text),
         insert_text=name_clean,
@@ -521,7 +528,7 @@ def lsp_completion_item(
         snippet_signature = get_snippet_signature(signatures[0])
     except Exception:
         return completion_item
-    new_text = completion_name + snippet_signature
+    new_text = name_clean + snippet_signature
     completion_item.insert_text = new_text
     completion_item.insert_text_format = InsertTextFormat.Snippet
     return completion_item
