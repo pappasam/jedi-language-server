@@ -237,6 +237,10 @@ def completion(
         document=server.workspace.get_text_document(params.text_document.uri),
         position=params.position,
     )
+    char_after_cursor = pygls_utils.char_after_cursor(
+        document=server.workspace.get_text_document(params.text_document.uri),
+        position=params.position,
+    )
     jedi_utils.clear_completions_cache()
     # number of characters in the string representation of the total number of
     # completions returned by jedi.
@@ -245,12 +249,14 @@ def completion(
         jedi_utils.lsp_completion_item(
             completion=completion,
             char_before_cursor=char_before_cursor,
+            char_after_cursor=char_after_cursor,
             enable_snippets=enable_snippets,
             resolve_eagerly=resolve_eagerly,
             markup_kind=markup_kind,
             sort_append_text=str(count).zfill(total_completion_chars),
         )
         for count, completion in enumerate(completions_jedi)
+        if completion.type != "path"
     ]
     return (
         CompletionList(is_incomplete=False, items=completion_items)
