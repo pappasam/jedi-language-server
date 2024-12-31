@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Mandatory support for Python 3.12 (by setting `jedi = "^0.19.2"`)
+- Mandatory support for Python 3.13 (by setting `jedi = "^0.19.2"`)
 
 ### Removed
 
