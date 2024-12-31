@@ -11,14 +11,6 @@ repos:
         exclude: ^tests/test_data/
   - repo: local
     hooks:
-      - id: toml-sort
-        name: toml-sort
-        entry: poetry run toml-sort --check
-        language: system
-        types: [toml]
-        exclude: ^poetry.lock
-  - repo: local
-    hooks:
       - id: typecheck
         name: typecheck
         entry: poetry run nox -s typecheck
