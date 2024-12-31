@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.8.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 strict = true
 enable_error_code = "ignore-without-code,redundant-expr,truthy-bool"
 
@@ -13,7 +13,7 @@ ignore_missing_imports = true
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.42.0"
+version = "0.43.0"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
@@ -24,28 +24,33 @@ keywords = [
   "completion",
   "refactoring",
   "lsp",
-  "language-server-protocol"
+  "language-server-protocol",
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Software Development :: Code Generators",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Text Editors :: Integrated Development Environments (IDE)",
   "Topic :: Utilities",
-  "Typing :: Typed"
+  "Typing :: Typed",
 ]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-jedi = "^0.19.1"
+python = "^3.9"
+jedi = "^0.19.2"
 pygls = "^1.1.0"
 cattrs = ">=23.1.2"
 docstring-to-markdown = "0.*"
 lsprotocol = ">=2023.0.1"
-typing-extensions = {version = "^4.5.0", python = "<3.10"}
+typing-extensions = { version = "^4.5.0", python = "<3.10" }
 
 [tool.poetry.group.dev.dependencies]
 PyHamcrest = "*"
@@ -56,7 +61,6 @@ pytest = "*"
 pytest-cov = "*"
 python-lsp-jsonrpc = "*"
 ruff = "*"
-toml-sort = "*"
 
 [tool.poetry.scripts]
 jedi-language-server = 'jedi_language_server.cli:cli'
@@ -67,7 +71,7 @@ Issues = "https://github.com/pappasam/jedi-language-server/issues"
 
 [tool.ruff]
 line-length = 79
-target-version = "py38"
+target-version = "py39"
 unsafe-fixes = true
 
 [tool.ruff.lint]
@@ -75,17 +79,17 @@ select = [
   "D", # pydocstyle
   "E", # pycodestyle
   "F", # pyflakes
-  "I" # isort
+  "I", # isort
 ]
 ignore = [
-  "D10", # missing-docstring
+  "D10",  # missing-docstring
   "D206", # indent-with-spaces
   "D300", # triple-single-quotes
   "D401", # imperative-mood
   "E111", # indentation-with-invalid-multiple
   "E114", # indentation-with-invalid-multiple-comment
   "E117", # over-indented
-  "E501" # line-too-long
+  "E501", # line-too-long
 ]
 
 [tool.ruff.lint.per-file-ignores]
