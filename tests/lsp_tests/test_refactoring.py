@@ -79,6 +79,93 @@ def test_lsp_rename_function():
         assert_that(actual, is_(expected))
 
 
+def test_lsp_rename_function_notebook():
+    """Tests single notebook function rename."""
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        path = REFACTOR_TEST_ROOT / "rename_test1.ipynb"
+        cell_uris = ls_session.open_notebook_document(path)
+        actual = ls_session.text_document_rename(
+            {
+                "textDocument": {"uri": cell_uris[2]},
+                "position": {"line": 0, "character": 4},
+                "newName": "my_function_1",
+            }
+        )
+
+        expected = {
+            "documentChanges": [
+                {
+                    "textDocument": {
+                        "uri": cell_uris[0],
+                        "version": 1,
+                    },
+                    "edits": [
+                        {
+                            "range": {
+                                "start": {"line": 0, "character": 6},
+                                "end": {"line": 0, "character": 6},
+                            },
+                            "newText": "_",
+                        },
+                        {
+                            "range": {
+                                "start": {"line": 0, "character": 10},
+                                "end": {"line": 0, "character": 10},
+                            },
+                            "newText": "tion_",
+                        },
+                    ],
+                },
+                {
+                    "textDocument": {
+                        "uri": cell_uris[1],
+                        "version": 1,
+                    },
+                    "edits": [
+                        {
+                            "range": {
+                                "start": {"line": 1, "character": 6},
+                                "end": {"line": 1, "character": 6},
+                            },
+                            "newText": "_",
+                        },
+                        {
+                            "range": {
+                                "start": {"line": 1, "character": 10},
+                                "end": {"line": 1, "character": 10},
+                            },
+                            "newText": "tion_",
+                        },
+                    ],
+                },
+                {
+                    "textDocument": {
+                        "uri": cell_uris[2],
+                        "version": 1,
+                    },
+                    "edits": [
+                        {
+                            "range": {
+                                "start": {"line": 0, "character": 2},
+                                "end": {"line": 0, "character": 2},
+                            },
+                            "newText": "_",
+                        },
+                        {
+                            "range": {
+                                "start": {"line": 0, "character": 6},
+                                "end": {"line": 0, "character": 6},
+                            },
+                            "newText": "tion_",
+                        },
+                    ],
+                },
+            ],
+        }
+        assert actual == expected
+
+
 def test_lsp_rename_variable_at_line_start():
     """Tests renaming a variable that appears at the start of a line."""
     with session.LspSession() as ls_session:
@@ -254,6 +341,66 @@ def test_rename_package() -> None:
         assert_that(actual, is_(expected))
 
 
+def test_rename_package_notebook() -> None:
+    """Tests renaming of an imported package in a notebook."""
+    test_root = REFACTOR_TEST_ROOT / "rename_package_test1"
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        path = test_root / "rename_test_main.ipynb"
+        cell_uris = ls_session.open_notebook_document(path)
+        actual = ls_session.text_document_rename(
+            {
+                "textDocument": {"uri": cell_uris[0]},
+                "position": {"line": 0, "character": 12},
+                "newName": "new_name",
+            }
+        )
+        old_name_uri = as_uri(test_root / "old_name")
+        new_name_uri = as_uri(test_root / "new_name")
+
+        expected = {
+            "documentChanges": [
+                {
+                    "textDocument": {
+                        "uri": cell_uris[0],
+                        "version": 1,
+                    },
+                    "edits": [
+                        {
+                            "range": {
+                                "start": {"line": 0, "character": 5},
+                                "end": {"line": 0, "character": 8},
+                            },
+                            "newText": "new",
+                        }
+                    ],
+                },
+                {
+                    "textDocument": {
+                        "uri": as_uri(test_root / "rename_test_main.py"),
+                        "version": 0,
+                    },
+                    "edits": [
+                        {
+                            "range": {
+                                "start": {"line": 2, "character": 5},
+                                "end": {"line": 2, "character": 8},
+                            },
+                            "newText": "new",
+                        },
+                    ],
+                },
+                {
+                    "kind": "rename",
+                    "oldUri": old_name_uri,
+                    "newUri": new_name_uri,
+                    "options": {"overwrite": True, "ignoreIfExists": True},
+                },
+            ]
+        }
+        assert actual == expected
+
+
 def test_rename_module() -> None:
     """Tests example from the following example.
 
@@ -353,6 +500,73 @@ def test_lsp_code_action() -> None:
                             "textDocument": {
                                 "uri": uri,
                                 "version": 0,
+                            },
+                            "edits": [],
+                        }
+                    ]
+                },
+            },
+        ]
+
+        # Cannot use hamcrest directly for this due to unpredictable
+        # variations in how the text edits are generated.
+
+        assert_that(len(actual), is_(len(expected)))
+
+        # Remove the edits
+        actual[0]["edit"]["documentChanges"][0]["edits"] = []
+        actual[1]["edit"]["documentChanges"][0]["edits"] = []
+
+        assert_that(actual, is_(expected))
+
+
+def test_lsp_code_action_notebook() -> None:
+    """Tests code actions like extract variable and extract function in notebooks."""
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        path = REFACTOR_TEST_ROOT / "code_action_test1.ipynb"
+        cell_uris = ls_session.open_notebook_document(path)
+        uri = cell_uris[0]
+        actual = ls_session.text_document_code_action(
+            {
+                "textDocument": {"uri": uri},
+                "range": {
+                    "start": {"line": 4, "character": 10},
+                    "end": {"line": 4, "character": 10},
+                },
+                "context": {"diagnostics": []},
+            }
+        )
+
+        expected = [
+            {
+                "title": StringPattern(
+                    r"Extract expression into variable 'jls_extract_var'"
+                ),
+                "kind": "refactor.extract",
+                "edit": {
+                    "documentChanges": [
+                        {
+                            "textDocument": {
+                                "uri": uri,
+                                "version": 1,
+                            },
+                            "edits": [],
+                        }
+                    ]
+                },
+            },
+            {
+                "title": StringPattern(
+                    r"Extract expression into function 'jls_extract_def'"
+                ),
+                "kind": "refactor.extract",
+                "edit": {
+                    "documentChanges": [
+                        {
+                            "textDocument": {
+                                "uri": uri,
+                                "version": 1,
                             },
                             "edits": [],
                         }

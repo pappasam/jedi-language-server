@@ -10,11 +10,15 @@ import itertools
 from typing import Any, List, Optional, Union
 
 import cattrs
-from jedi import Project, __version__
+from jedi import Project, Script, __version__
 from jedi.api.refactoring import RefactoringError
 from lsprotocol.types import (
     COMPLETION_ITEM_RESOLVE,
     INITIALIZE,
+    NOTEBOOK_DOCUMENT_DID_CHANGE,
+    NOTEBOOK_DOCUMENT_DID_CLOSE,
+    NOTEBOOK_DOCUMENT_DID_OPEN,
+    NOTEBOOK_DOCUMENT_DID_SAVE,
     TEXT_DOCUMENT_CODE_ACTION,
     TEXT_DOCUMENT_COMPLETION,
     TEXT_DOCUMENT_DECLARATION,
@@ -41,9 +45,13 @@ from lsprotocol.types import (
     CompletionOptions,
     CompletionParams,
     DidChangeConfigurationParams,
+    DidChangeNotebookDocumentParams,
     DidChangeTextDocumentParams,
+    DidCloseNotebookDocumentParams,
     DidCloseTextDocumentParams,
+    DidOpenNotebookDocumentParams,
     DidOpenTextDocumentParams,
+    DidSaveNotebookDocumentParams,
     DidSaveTextDocumentParams,
     DocumentHighlight,
     DocumentSymbol,
@@ -55,6 +63,9 @@ from lsprotocol.types import (
     MarkupContent,
     MarkupKind,
     MessageType,
+    NotebookDocumentSyncOptions,
+    NotebookDocumentSyncOptionsNotebookSelectorType2,
+    NotebookDocumentSyncOptionsNotebookSelectorType2CellsType,
     ParameterInformation,
     RenameParams,
     SignatureHelp,
@@ -69,7 +80,7 @@ from pygls.capabilities import get_capability
 from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
-from . import jedi_utils, pygls_utils, text_edit_utils
+from . import jedi_utils, notebook_utils, pygls_utils, text_edit_utils
 from .initialization_options import (
     InitializationOptions,
     initialization_options_converter,
@@ -113,28 +124,58 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         # Configure didOpen, didChange, and didSave
         # currently need to be configured manually
         diagnostics = initialization_options.diagnostics
-        did_open = (
-            did_open_diagnostics
+        did_open_text_document = (
+            did_open_text_document_diagnostics
             if diagnostics.enable and diagnostics.did_open
-            else did_open_default
+            else did_open_text_document_default
         )
-        did_change = (
-            did_change_diagnostics
+        did_change_text_document = (
+            did_change_text_document_diagnostics
             if diagnostics.enable and diagnostics.did_change
-            else did_change_default
+            else did_change_text_document_default
         )
-        did_save = (
-            did_save_diagnostics
+        did_save_text_document = (
+            did_save_text_document_diagnostics
             if diagnostics.enable and diagnostics.did_save
-            else did_save_default
+            else did_save_text_document_default
         )
-        did_close = (
-            did_close_diagnostics if diagnostics.enable else did_close_default
+        did_close_text_document = (
+            did_close_text_document_diagnostics
+            if diagnostics.enable
+            else did_close_text_document_default
         )
-        server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
-        server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
-        server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
-        server.feature(TEXT_DOCUMENT_DID_CLOSE)(did_close)
+        did_open_notebook_document = (
+            did_open_notebook_document_diagnostics
+            if diagnostics.enable and diagnostics.did_open
+            else did_open_notebook_document_default
+        )
+        did_change_notebook_document = (
+            did_change_notebook_document_diagnostics
+            if diagnostics.enable and diagnostics.did_change
+            else did_change_notebook_document_default
+        )
+        did_save_notebook_document = (
+            did_save_notebook_document_diagnostics
+            if diagnostics.enable and diagnostics.did_save
+            else did_save_notebook_document_default
+        )
+        did_close_notebook_document = (
+            did_close_notebook_document_diagnostics
+            if diagnostics.enable
+            else did_close_notebook_document_default
+        )
+        server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open_text_document)
+        server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change_text_document)
+        server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save_text_document)
+        server.feature(TEXT_DOCUMENT_DID_CLOSE)(did_close_text_document)
+        server.feature(NOTEBOOK_DOCUMENT_DID_OPEN)(did_open_notebook_document)
+        server.feature(NOTEBOOK_DOCUMENT_DID_CHANGE)(
+            did_change_notebook_document
+        )
+        server.feature(NOTEBOOK_DOCUMENT_DID_SAVE)(did_save_notebook_document)
+        server.feature(NOTEBOOK_DOCUMENT_DID_CLOSE)(
+            did_close_notebook_document
+        )
 
         if server.initialization_options.hover.enable:
             server.feature(TEXT_DOCUMENT_HOVER)(hover)
@@ -175,6 +216,18 @@ SERVER = JediLanguageServer(
     name="jedi-language-server",
     version=__version__,
     protocol_cls=JediLanguageServerProtocol,
+    # Advertise support for Python notebook cells.
+    notebook_document_sync=NotebookDocumentSyncOptions(
+        notebook_selector=[
+            NotebookDocumentSyncOptionsNotebookSelectorType2(
+                cells=[
+                    NotebookDocumentSyncOptionsNotebookSelectorType2CellsType(
+                        language="python"
+                    )
+                ]
+            )
+        ]
+    ),
 )
 
 
@@ -206,8 +259,23 @@ def completion(
     resolve_eagerly = server.initialization_options.completion.resolve_eagerly
     ignore_patterns = server.initialization_options.completion.ignore_patterns
     document = server.workspace.get_text_document(params.text_document.uri)
-    jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(params.position)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=document.uri
+    )
+    source = (
+        notebook_mapper.source
+        if notebook_mapper is not None
+        else document.source
+    )
+    jedi_script = Script(
+        code=source, path=document.path, project=server.project
+    )
+    position = (
+        notebook_mapper.notebook_position(document.uri, params.position)
+        if notebook_mapper is not None
+        else params.position
+    )
+    jedi_lines = jedi_utils.line_column(position)
     completions_jedi_raw = jedi_script.complete(*jedi_lines)
     if not ignore_patterns:
         # A performance optimization. ignore_patterns should usually be empty;
@@ -234,12 +302,10 @@ def completion(
         snippet_support and not snippet_disable and not is_import_context
     )
     char_before_cursor = pygls_utils.char_before_cursor(
-        document=server.workspace.get_text_document(params.text_document.uri),
-        position=params.position,
+        document, params.position
     )
     char_after_cursor = pygls_utils.char_after_cursor(
-        document=server.workspace.get_text_document(params.text_document.uri),
-        position=params.position,
+        document, params.position
     )
     jedi_utils.clear_completions_cache()
     # number of characters in the string representation of the total number of
@@ -279,8 +345,23 @@ def signature_help(
     future.
     """
     document = server.workspace.get_text_document(params.text_document.uri)
-    jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(params.position)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=document.uri
+    )
+    source = (
+        notebook_mapper.source
+        if notebook_mapper is not None
+        else document.source
+    )
+    jedi_script = Script(
+        code=source, path=document.path, project=server.project
+    )
+    position = (
+        notebook_mapper.notebook_position(document.uri, params.position)
+        if notebook_mapper is not None
+        else params.position
+    )
+    jedi_lines = jedi_utils.line_column(position)
     signatures_jedi = jedi_script.get_signatures(*jedi_lines)
     markup_kind = _choose_markup(server)
     signatures = [
@@ -319,14 +400,33 @@ def declaration(
 ) -> Optional[List[Location]]:
     """Support Goto Declaration."""
     document = server.workspace.get_text_document(params.text_document.uri)
-    jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(params.position)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=document.uri
+    )
+    source = (
+        notebook_mapper.source
+        if notebook_mapper is not None
+        else document.source
+    )
+    jedi_script = Script(
+        code=source, path=document.path, project=server.project
+    )
+    position = (
+        notebook_mapper.notebook_position(document.uri, params.position)
+        if notebook_mapper is not None
+        else params.position
+    )
+    jedi_lines = jedi_utils.line_column(position)
     names = jedi_script.goto(*jedi_lines)
     definitions = [
         definition
         for definition in (jedi_utils.lsp_location(name) for name in names)
         if definition is not None
     ]
+    if notebook_mapper is not None:
+        definitions = notebook_utils.text_document_or_cell_locations(
+            server.workspace, definitions
+        )
     return definitions if definitions else None
 
 
@@ -336,8 +436,23 @@ def definition(
 ) -> Optional[List[Location]]:
     """Support Goto Definition."""
     document = server.workspace.get_text_document(params.text_document.uri)
-    jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(params.position)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=document.uri
+    )
+    source = (
+        notebook_mapper.source
+        if notebook_mapper is not None
+        else document.source
+    )
+    jedi_script = Script(
+        code=source, path=document.path, project=server.project
+    )
+    position = (
+        notebook_mapper.notebook_position(document.uri, params.position)
+        if notebook_mapper is not None
+        else params.position
+    )
+    jedi_lines = jedi_utils.line_column(position)
     names = jedi_script.goto(
         *jedi_lines,
         follow_imports=True,
@@ -348,6 +463,10 @@ def definition(
         for definition in (jedi_utils.lsp_location(name) for name in names)
         if definition is not None
     ]
+    if notebook_mapper is not None:
+        definitions = notebook_utils.text_document_or_cell_locations(
+            server.workspace, definitions
+        )
     return definitions if definitions else None
 
 
@@ -357,14 +476,33 @@ def type_definition(
 ) -> Optional[List[Location]]:
     """Support Goto Type Definition."""
     document = server.workspace.get_text_document(params.text_document.uri)
-    jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(params.position)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=document.uri
+    )
+    source = (
+        notebook_mapper.source
+        if notebook_mapper is not None
+        else document.source
+    )
+    jedi_script = Script(
+        code=source, path=document.path, project=server.project
+    )
+    position = (
+        notebook_mapper.notebook_position(document.uri, params.position)
+        if notebook_mapper is not None
+        else params.position
+    )
+    jedi_lines = jedi_utils.line_column(position)
     names = jedi_script.infer(*jedi_lines)
     definitions = [
         definition
         for definition in (jedi_utils.lsp_location(name) for name in names)
         if definition is not None
     ]
+    if notebook_mapper is not None:
+        definitions = notebook_utils.text_document_or_cell_locations(
+            server.workspace, definitions
+        )
     return definitions if definitions else None
 
 
@@ -402,8 +540,23 @@ def hover(
 ) -> Optional[Hover]:
     """Support Hover."""
     document = server.workspace.get_text_document(params.text_document.uri)
-    jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(params.position)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=document.uri
+    )
+    source = (
+        notebook_mapper.source
+        if notebook_mapper is not None
+        else document.source
+    )
+    jedi_script = Script(
+        code=source, path=document.path, project=server.project
+    )
+    position = (
+        notebook_mapper.notebook_position(document.uri, params.position)
+        if notebook_mapper is not None
+        else params.position
+    )
+    jedi_lines = jedi_utils.line_column(position)
     markup_kind = _choose_markup(server)
     hover_text = jedi_utils.hover_text(
         jedi_script.help(*jedi_lines),
@@ -423,14 +576,33 @@ def references(
 ) -> Optional[List[Location]]:
     """Obtain all references to text."""
     document = server.workspace.get_text_document(params.text_document.uri)
-    jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(params.position)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=document.uri
+    )
+    source = (
+        notebook_mapper.source
+        if notebook_mapper is not None
+        else document.source
+    )
+    jedi_script = Script(
+        code=source, path=document.path, project=server.project
+    )
+    position = (
+        notebook_mapper.notebook_position(document.uri, params.position)
+        if notebook_mapper is not None
+        else params.position
+    )
+    jedi_lines = jedi_utils.line_column(position)
     names = jedi_script.get_references(*jedi_lines)
     locations = [
         location
         for location in (jedi_utils.lsp_location(name) for name in names)
         if location is not None
     ]
+    if notebook_mapper is not None:
+        locations = notebook_utils.text_document_or_cell_locations(
+            server.workspace, locations
+        )
     return locations if locations else None
 
 
@@ -466,11 +638,10 @@ def document_symbol(
     ):
         document_symbols = jedi_utils.lsp_document_symbols(names)
         return document_symbols if document_symbols else None
-
     symbol_information = [
         symbol_info
         for symbol_info in (
-            jedi_utils.lsp_symbol_information(name)
+            jedi_utils.lsp_symbol_information(name, document.uri)
             for name in names
             if name.type != "param"
         )
@@ -539,8 +710,23 @@ def rename(
 ) -> Optional[WorkspaceEdit]:
     """Rename a symbol across a workspace."""
     document = server.workspace.get_text_document(params.text_document.uri)
-    jedi_script = jedi_utils.script(server.project, document)
-    jedi_lines = jedi_utils.line_column(params.position)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=document.uri
+    )
+    source = (
+        notebook_mapper.source
+        if notebook_mapper is not None
+        else document.source
+    )
+    jedi_script = Script(
+        code=source, path=document.path, project=server.project
+    )
+    position = (
+        notebook_mapper.notebook_position(document.uri, params.position)
+        if notebook_mapper is not None
+        else params.position
+    )
+    jedi_lines = jedi_utils.line_column(position)
     try:
         refactoring = jedi_script.rename(*jedi_lines, new_name=params.new_name)
     except RefactoringError:
@@ -571,10 +757,30 @@ def code_action(
         3. Extract function
     """
     document = server.workspace.get_text_document(params.text_document.uri)
-    jedi_script = jedi_utils.script(server.project, document)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=document.uri
+    )
+    source = (
+        notebook_mapper.source
+        if notebook_mapper is not None
+        else document.source
+    )
+    jedi_script = Script(
+        code=source, path=document.path, project=server.project
+    )
     code_actions = []
-    jedi_lines = jedi_utils.line_column(params.range.start)
-    jedi_lines_extract = jedi_utils.line_column_range(params.range)
+    position = (
+        notebook_mapper.notebook_position(document.uri, params.range.start)
+        if notebook_mapper is not None
+        else params.range.start
+    )
+    range_ = (
+        notebook_mapper.notebook_range(document.uri, params.range)
+        if notebook_mapper is not None
+        else params.range
+    )
+    jedi_lines = jedi_utils.line_column(position)
+    jedi_lines_extract = jedi_utils.line_column_range(range_)
 
     try:
         if params.range.start.line != params.range.end.line:
@@ -675,21 +881,31 @@ def _publish_diagnostics(server: JediLanguageServer, uri: str) -> None:
         return
 
     doc = server.workspace.get_text_document(uri)
-    diagnostic = jedi_utils.lsp_python_diagnostic(uri, doc.source)
+    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
+        server.workspace, cell_uri=uri
+    )
+    if (
+        notebook_mapper
+        and (cell_index := notebook_mapper.cell_index(uri)) is not None
+    ):
+        display_uri = f"cell {cell_index + 1}"
+    else:
+        display_uri = doc.uri
+    diagnostic = jedi_utils.lsp_python_diagnostic(display_uri, doc.source)
     diagnostics = [diagnostic] if diagnostic else []
 
     server.publish_diagnostics(uri, diagnostics)
 
 
 # TEXT_DOCUMENT_DID_SAVE
-def did_save_diagnostics(
+def did_save_text_document_diagnostics(
     server: JediLanguageServer, params: DidSaveTextDocumentParams
 ) -> None:
     """Actions run on textDocument/didSave: diagnostics."""
     _publish_diagnostics(server, params.text_document.uri)
 
 
-def did_save_default(
+def did_save_text_document_default(
     server: JediLanguageServer,
     params: DidSaveTextDocumentParams,
 ) -> None:
@@ -697,14 +913,14 @@ def did_save_default(
 
 
 # TEXT_DOCUMENT_DID_CHANGE
-def did_change_diagnostics(
+def did_change_text_document_diagnostics(
     server: JediLanguageServer, params: DidChangeTextDocumentParams
 ) -> None:
     """Actions run on textDocument/didChange: diagnostics."""
     _publish_diagnostics(server, params.text_document.uri)
 
 
-def did_change_default(
+def did_change_text_document_default(
     server: JediLanguageServer,
     params: DidChangeTextDocumentParams,
 ) -> None:
@@ -712,33 +928,121 @@ def did_change_default(
 
 
 # TEXT_DOCUMENT_DID_OPEN
-def did_open_diagnostics(
+def did_open_text_document_diagnostics(
     server: JediLanguageServer, params: DidOpenTextDocumentParams
 ) -> None:
     """Actions run on textDocument/didOpen: diagnostics."""
     _publish_diagnostics(server, params.text_document.uri)
 
 
-def did_open_default(
+def did_open_text_document_default(
     server: JediLanguageServer,
     params: DidOpenTextDocumentParams,
 ) -> None:
     """Actions run on textDocument/didOpen: default."""
 
 
+def _clear_diagnostics(server: JediLanguageServer, uri: str) -> None:
+    """Helper function to clear diagnostics for a file."""
+    server.publish_diagnostics(uri, [])
+
+
 # TEXT_DOCUMENT_DID_CLOSE
-def did_close_diagnostics(
+def did_close_text_document_diagnostics(
     server: JediLanguageServer, params: DidCloseTextDocumentParams
 ) -> None:
     """Actions run on textDocument/didClose: diagnostics."""
-    server.publish_diagnostics(params.text_document.uri, [])
+    _clear_diagnostics(server, params.text_document.uri)
 
 
-def did_close_default(
+def did_close_text_document_default(
     server: JediLanguageServer,
     params: DidCloseTextDocumentParams,
 ) -> None:
     """Actions run on textDocument/didClose: default."""
+
+
+# NOTEBOOK_DOCUMENT_DID_SAVE
+def did_save_notebook_document_diagnostics(
+    server: JediLanguageServer, params: DidSaveNotebookDocumentParams
+) -> None:
+    """Actions run on notebookDocument/didSave: diagnostics."""
+    notebook_document = server.workspace.get_notebook_document(
+        notebook_uri=params.notebook_document.uri
+    )
+    if notebook_document:
+        for cell in notebook_document.cells:
+            text_document = server.workspace.text_documents[cell.document]
+            _publish_diagnostics(server, text_document.uri)
+
+
+def did_save_notebook_document_default(
+    server: JediLanguageServer,
+    params: DidSaveNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didSave: default."""
+
+
+# NOTEBOOK_DOCUMENT_DID_CHANGE
+def did_change_notebook_document_diagnostics(
+    server: JediLanguageServer, params: DidChangeNotebookDocumentParams
+) -> None:
+    """Actions run on notebookDocument/didChange: diagnostics."""
+    cells = params.change.cells
+    if cells:
+        structure = cells.structure
+        if structure:
+            did_open = structure.did_open
+            if did_open:
+                for text_document_item in did_open:
+                    _publish_diagnostics(server, text_document_item.uri)
+            did_close = structure.did_close
+            if did_close:
+                for text_document in did_close:
+                    _clear_diagnostics(server, text_document.uri)
+        text_content = cells.text_content
+        if text_content:
+            for change in text_content:
+                _publish_diagnostics(server, change.document.uri)
+
+
+def did_change_notebook_document_default(
+    server: JediLanguageServer,
+    params: DidChangeNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didChange: default."""
+
+
+# NOTEBOOK_DOCUMENT_DID_OPEN
+def did_open_notebook_document_diagnostics(
+    server: JediLanguageServer, params: DidOpenNotebookDocumentParams
+) -> None:
+    """Actions run on notebookDocument/didOpen: diagnostics."""
+    for text_document in params.cell_text_documents:
+        _publish_diagnostics(server, text_document.uri)
+
+
+def did_open_notebook_document_default(
+    server: JediLanguageServer,
+    params: DidOpenNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didOpen: default."""
+
+
+# NOTEBOOK_DOCUMENT_DID_CLOSE
+def did_close_notebook_document_diagnostics(
+    server: JediLanguageServer, params: DidCloseNotebookDocumentParams
+) -> None:
+    """Actions run on notebookDocument/didClose: diagnostics."""
+    for text_document in params.cell_text_documents:
+        _clear_diagnostics(server, text_document.uri)
+
+
+def did_close_notebook_document_default(
+    server: JediLanguageServer,
+    params: DidCloseNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didClose: default."""
 
 
 def _choose_markup(server: JediLanguageServer) -> MarkupKind:

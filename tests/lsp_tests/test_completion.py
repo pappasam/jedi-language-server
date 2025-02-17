@@ -195,3 +195,62 @@ def test_lsp_completion_class_noargs() -> None:
             ],
         }
         assert_that(actual, is_(expected))
+
+
+def test_lsp_completion_notebook() -> None:
+    """Test a simple completion request, in a notebook.
+
+    Test Data: tests/test_data/completion/completion_test1.ipynb
+    """
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+
+        path = COMPLETION_TEST_ROOT / "completion_test1.ipynb"
+        cell_uris = ls_session.open_notebook_document(path)
+        actual = ls_session.text_document_completion(
+            {
+                "textDocument": {"uri": cell_uris[1]},
+                "position": {"line": 0, "character": 2},
+                "context": {"triggerKind": 1},
+            }
+        )
+
+        expected = {
+            "isIncomplete": False,
+            "items": [
+                {
+                    "label": "my_function",
+                    "kind": 3,
+                    "sortText": "v0",
+                    "filterText": "my_function",
+                    "insertText": "my_function()$0",
+                    "insertTextFormat": 2,
+                }
+            ],
+        }
+        assert_that(actual, is_(expected))
+
+        actual = ls_session.completion_item_resolve(
+            {
+                "label": "my_function",
+                "kind": 3,
+                "sortText": "v0",
+                "filterText": "my_function",
+                "insertText": "my_function()$0",
+                "insertTextFormat": 2,
+            }
+        )
+        expected = {
+            "label": "my_function",
+            "kind": 3,
+            "detail": "def my_function()",
+            "documentation": {
+                "kind": "markdown",
+                "value": "Simple test function.",
+            },
+            "sortText": "v0",
+            "filterText": "my_function",
+            "insertText": "my_function()$0",
+            "insertTextFormat": 2,
+        }
+        assert_that(actual, is_(expected))

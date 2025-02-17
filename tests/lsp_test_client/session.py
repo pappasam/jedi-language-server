@@ -1,5 +1,6 @@
 """Provides LSP session helpers for testing."""
 
+import json
 import os
 import subprocess
 import sys
@@ -11,6 +12,7 @@ from pylsp_jsonrpc.endpoint import Endpoint
 from pylsp_jsonrpc.streams import JsonRpcStreamReader, JsonRpcStreamWriter
 
 from tests.lsp_test_client import defaults
+from tests.lsp_test_client.utils import as_uri
 
 LSP_EXIT_TIMEOUT = 5000
 
@@ -64,6 +66,8 @@ class LspSession(MethodDispatcher):
         }
         self._endpoint = Endpoint(dispatcher, self._writer.write)
         self._thread_pool.submit(self._reader.listen, self._endpoint.consume)
+
+        self._last_cell_id = 0
         return self
 
     def __exit__(self, typ, value, _tb):
@@ -201,19 +205,92 @@ class LspSession(MethodDispatcher):
         )
         return fut.result()
 
-    def notify_did_change(self, did_change_params):
-        """Sends did change notification to LSP Server."""
+    def notify_did_change_text_document(self, did_change_params):
+        """Sends did change text document notification to LSP Server."""
         self._send_notification(
             "textDocument/didChange", params=did_change_params
         )
 
-    def notify_did_save(self, did_save_params):
-        """Sends did save notification to LSP Server."""
+    def notify_did_save_text_document(self, did_save_params):
+        """Sends did save text document notification to LSP Server."""
         self._send_notification("textDocument/didSave", params=did_save_params)
 
-    def notify_did_open(self, did_open_params):
-        """Sends did open notification to LSP Server."""
+    def notify_did_open_text_document(self, did_open_params):
+        """Sends did open text document notification to LSP Server."""
         self._send_notification("textDocument/didOpen", params=did_open_params)
+
+    def notify_did_close_text_document(self, did_close_params):
+        """Sends did close text document notification to LSP Server."""
+        self._send_notification(
+            "textDocument/didClose", params=did_close_params
+        )
+
+    def notify_did_change_notebook_document(self, did_change_params):
+        """Sends did change notebook document notification to LSP Server."""
+        self._send_notification(
+            "notebookDocument/didChange", params=did_change_params
+        )
+
+    def notify_did_save_notebook_document(self, did_save_params):
+        """Sends did save notebook document notification to LSP Server."""
+        self._send_notification(
+            "notebookDocument/didSave", params=did_save_params
+        )
+
+    def notify_did_open_notebook_document(self, did_open_params):
+        """Sends did open notebook document notification to LSP Server."""
+        self._send_notification(
+            "notebookDocument/didOpen", params=did_open_params
+        )
+
+    def notify_did_close_notebook_document(self, did_close_params):
+        """Sends did close notebook document notification to LSP Server."""
+        self._send_notification(
+            "notebookDocument/didClose", params=did_close_params
+        )
+
+    def open_notebook_document(self, path):
+        """Opens a notebook document on the LSP Server."""
+        # Construct did_open_notebook_document params from the notebook file.
+        notebook = json.loads(path.read_text("utf-8"))
+        uri = as_uri(path)
+        lsp_cells = []
+        lsp_cell_text_documents = []
+        for cell in notebook["cells"]:
+            self._last_cell_id += 1
+            cell_uri = f"{uri}#{self._last_cell_id}"
+            lsp_cells.append(
+                {
+                    "kind": 2 if cell["cell_type"] == "code" else 1,
+                    "document": cell_uri,
+                    "metadata": {"metadata": cell["metadata"]},
+                }
+            )
+            lsp_cell_text_documents.append(
+                {
+                    "uri": cell_uri,
+                    "languageId": "python",
+                    "version": 1,
+                    "text": "".join(cell["source"]),
+                }
+            )
+
+        # Notify the server.
+        self.notify_did_open_notebook_document(
+            {
+                "notebookDocument": {
+                    "uri": uri,
+                    "notebookType": "jupyter-notebook",
+                    "languageId": "python",
+                    "version": 1,
+                    "cells": lsp_cells,
+                },
+                "cellTextDocuments": lsp_cell_text_documents,
+            }
+        )
+
+        # Return the generated cell URIs.
+        return [cell["document"] for cell in lsp_cells]
 
     def set_notification_callback(self, notification_name, callback):
         """Set custom LS notification handler."""

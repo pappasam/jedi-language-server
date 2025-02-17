@@ -22,7 +22,9 @@ from lsprotocol.types import (
     TextDocumentEdit,
     TextEdit,
 )
-from pygls.workspace import TextDocument, Workspace
+from pygls.workspace import Workspace
+
+from . import notebook_utils
 
 
 def is_valid_python(code: str) -> bool:
@@ -74,23 +76,33 @@ class RefactoringConverter:
         for path, changed_file in changed_files.items():
             uri = path.as_uri()
             document = self.workspace.get_text_document(uri)
+            notebook = notebook_utils.notebook_coordinate_mapper(
+                self.workspace, notebook_uri=uri
+            )
+            source = notebook.source if notebook else document.source
             version = 0 if document.version is None else document.version
-            text_edits = lsp_text_edits(document, changed_file)
+            text_edits = lsp_text_edits(source, changed_file)
             if text_edits:
-                yield TextDocumentEdit(
+                text_document_edit = TextDocumentEdit(
                     text_document=OptionalVersionedTextDocumentIdentifier(
                         uri=uri,
                         version=version,
                     ),
                     edits=text_edits,
                 )
+                if notebook is not None:
+                    yield from notebook.cell_text_document_edits(
+                        text_document_edit
+                    )
+                else:
+                    yield text_document_edit
 
 
 _OPCODES_CHANGE = {"replace", "delete", "insert"}
 
 
 def lsp_text_edits(
-    document: TextDocument, changed_file: ChangedFile
+    old_code: str, changed_file: ChangedFile
 ) -> List[Union[TextEdit, AnnotatedTextEdit]]:
     """Take a jedi `ChangedFile` and convert to list of text edits.
 
@@ -103,7 +115,6 @@ def lsp_text_edits(
     if not is_valid_python(new_code):
         return []
 
-    old_code = document.source
     position_lookup = PositionLookup(old_code)
     text_edits: List[Union[TextEdit, AnnotatedTextEdit]] = []
     for opcode in get_opcodes(old_code, new_code):

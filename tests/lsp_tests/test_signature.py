@@ -55,3 +55,51 @@ def test_signature_help(trigger_char, column, active_param):
         }
 
         assert_that(actual, is_(expected))
+
+
+@pytest.mark.parametrize(
+    ["trigger_char", "column", "active_param"], [("(", 14, 0), (",", 18, 1)]
+)
+def test_signature_help_notebook(trigger_char, column, active_param):
+    """Tests signature help response for a function in a notebook.
+
+    Test Data: tests/test_data/signature/signature_test1.ipynb
+    """
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+        path = SIGNATURE_TEST_ROOT / "signature_test1.ipynb"
+        cell_uris = ls_session.open_notebook_document(path)
+        actual = ls_session.text_document_signature_help(
+            {
+                "textDocument": {"uri": cell_uris[1]},
+                "position": {"line": 0, "character": column},
+                "context": {
+                    "isRetrigger": False,
+                    "triggerCharacter": trigger_char,
+                    "triggerKind": 2,
+                },
+            }
+        )
+
+        expected = {
+            "signatures": [
+                {
+                    "label": (
+                        "def some_function(arg1: str, arg2: int, arg3: list)"
+                    ),
+                    "documentation": {
+                        "kind": "markdown",
+                        "value": "This is a test function.",
+                    },
+                    "parameters": [
+                        {"label": "arg1: str"},
+                        {"label": "arg2: int"},
+                        {"label": "arg3: list"},
+                    ],
+                }
+            ],
+            "activeSignature": 0,
+            "activeParameter": active_param,
+        }
+
+        assert_that(actual, is_(expected))
