@@ -179,8 +179,8 @@ def test_references(position, expected):
     initialize_params["workspaceFolders"] = [
         {"uri": as_uri(REFERENCES_TEST_ROOT), "name": "jedi_lsp"}
     ]
-    initialize_params["rootPath"]: str(REFERENCES_TEST_ROOT)
-    initialize_params["rootUri"]: as_uri(REFERENCES_TEST_ROOT)
+    initialize_params["rootPath"] = str(REFERENCES_TEST_ROOT)
+    initialize_params["rootUri"] = as_uri(REFERENCES_TEST_ROOT)
 
     with session.LspSession() as ls_session:
         ls_session.initialize(initialize_params)
