@@ -1,5 +1,8 @@
 """Tests for refactoring requests."""
 
+import sys
+
+import pytest
 from hamcrest import assert_that, is_
 
 from tests import TEST_DATA
@@ -341,6 +344,11 @@ def test_rename_package() -> None:
         assert_that(actual, is_(expected))
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Fails on Windows due to how pygls handles line endings "
+    "(https://github.com/pappasam/jedi-language-server/issues/159)",
+)
 def test_rename_package_notebook() -> None:
     """Tests renaming of an imported package in a notebook."""
     test_root = REFACTOR_TEST_ROOT / "rename_package_test1"
