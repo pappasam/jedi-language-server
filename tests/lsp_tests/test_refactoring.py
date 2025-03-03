@@ -163,7 +163,7 @@ def test_lsp_rename_function_notebook():
                 },
             ],
         }
-        assert actual == expected
+        assert_that(actual, is_(expected))
 
 
 def test_lsp_rename_variable_at_line_start():
@@ -398,7 +398,7 @@ def test_rename_package_notebook() -> None:
                 },
             ]
         }
-        assert actual == expected
+        assert_that(actual, is_(expected))
 
 
 def test_rename_module() -> None:

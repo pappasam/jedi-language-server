@@ -76,10 +76,12 @@ class RefactoringConverter:
         for path, changed_file in changed_files.items():
             uri = path.as_uri()
             document = self.workspace.get_text_document(uri)
-            notebook = notebook_utils.notebook_coordinate_mapper(
+            notebook_mapper = notebook_utils.notebook_coordinate_mapper(
                 self.workspace, notebook_uri=uri
             )
-            source = notebook.source if notebook else document.source
+            source = (
+                notebook_mapper.source if notebook_mapper else document.source
+            )
             version = 0 if document.version is None else document.version
             text_edits = lsp_text_edits(source, changed_file)
             if text_edits:
@@ -90,8 +92,8 @@ class RefactoringConverter:
                     ),
                     edits=text_edits,
                 )
-                if notebook is not None:
-                    yield from notebook.cell_text_document_edits(
+                if notebook_mapper is not None:
+                    yield from notebook_mapper.cell_text_document_edits(
                         text_document_edit
                     )
                 else:
