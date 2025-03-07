@@ -1,12 +1,18 @@
 """Utility functions for handling notebook documents."""
 
+from __future__ import annotations
+
 from collections import defaultdict
 from typing import (
+    TYPE_CHECKING,
+    Callable,
     Dict,
     Iterable,
     List,
     NamedTuple,
     Optional,
+    Tuple,
+    TypeVar,
     Union,
     cast,
 )
@@ -14,16 +20,24 @@ from typing import (
 import attrs
 from lsprotocol.types import (
     AnnotatedTextEdit,
+    CodeActionParams,
+    CompletionParams,
+    Hover,
     Location,
     NotebookDocument,
     OptionalVersionedTextDocumentIdentifier,
     Position,
     Range,
+    RenameParams,
     TextDocumentEdit,
+    TextDocumentPositionParams,
     TextEdit,
 )
 from pygls.uris import to_fs_path
 from pygls.workspace import TextDocument, Workspace
+
+if TYPE_CHECKING:
+    from .server import JediLanguageServer
 
 
 def notebook_coordinate_mapper(
@@ -239,3 +253,85 @@ def cell_index(workspace: Workspace, cell_uri: str) -> int:
     index = notebook.cell_index(cell_uri)
     assert index is not None
     return index
+
+
+NotebookSupportedParams = Union[
+    CodeActionParams,
+    CompletionParams,
+    RenameParams,
+    TextDocumentPositionParams,
+]
+T_params = TypeVar(
+    "T_params",
+    bound=NotebookSupportedParams,
+)
+
+
+def notebook_text_document_and_params(
+    workspace: Workspace,
+    params: T_params,
+) -> Tuple[TextDocument, T_params]:
+    notebook = notebook_coordinate_mapper(
+        workspace, cell_uri=params.text_document.uri
+    )
+    if notebook is None:
+        raise ValueError(
+            f"Notebook not found with cell URI: {params.text_document.uri}"
+        )
+    document = TextDocument(uri=notebook._document.uri, source=notebook.source)
+
+    position = getattr(params, "position", None)
+    if position is not None:
+        notebook_position = notebook.notebook_position(
+            params.text_document.uri, position
+        )
+        params = attrs.evolve(params, position=notebook_position)  # type: ignore[arg-type]
+
+    range = getattr(params, "range", None)
+    if range is not None:
+        notebook_range = notebook.notebook_range(
+            params.text_document.uri, range
+        )
+        params = attrs.evolve(params, range=notebook_range)  # type: ignore[arg-type]
+
+    return document, params
+
+
+T = TypeVar("T")
+
+
+def with_notebook_support(
+    f: Callable[
+        [JediLanguageServer, T_params, Optional[TextDocument]],
+        T,
+    ],
+) -> Callable[[JediLanguageServer, T_params], T]:
+    def wrapped(server: JediLanguageServer, params: T_params) -> T:
+        document, params = notebook_text_document_and_params(
+            server.workspace, params
+        )
+        result = f(server, params, document)
+
+        if (
+            isinstance(result, list)
+            and result
+            and isinstance(result[0], Location)
+        ):
+            return cast(
+                T, text_document_or_cell_locations(server.workspace, result)
+            )
+
+        if isinstance(result, Hover) and result.range is not None:
+            notebook_mapper = notebook_coordinate_mapper(
+                server.workspace, cell_uri=params.text_document.uri
+            )
+            if notebook_mapper is None:
+                return cast(T, result)
+            location = notebook_mapper.cell_range(result.range)
+            if location is None or location.uri != params.text_document.uri:
+                return cast(T, result)
+            return cast(T, attrs.evolve(result, range=location.range))
+
+        return result
+
+    return wrapped

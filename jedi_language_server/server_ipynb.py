@@ -1,6 +1,5 @@
-from typing import List, Optional, Tuple, TypeVar, Union
+from typing import List, Optional
 
-import attrs
 from lsprotocol.types import (
     TEXT_DOCUMENT_CODE_ACTION,
     TEXT_DOCUMENT_COMPLETION,
@@ -26,52 +25,35 @@ from lsprotocol.types import (
     WorkspaceEdit,
 )
 from pygls.workspace import Workspace
-from pygls.workspace.text_document import TextDocument
 
 from . import notebook_utils, server_utils
 from .server import SERVER, JediLanguageServer
-
-T_params = TypeVar(
-    "T_params",
-    bound=Union[
-        CodeActionParams,
-        CompletionParams,
-        RenameParams,
-        TextDocumentPositionParams,
-    ],
-)
 
 
 @SERVER.notebook_feature(TEXT_DOCUMENT_COMPLETION)
 def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> Optional[CompletionList]:
-    document, params = _notebook_text_document_and_params(
-        server.workspace, params
+    return notebook_utils.with_notebook_support(server_utils.completion)(
+        server, params
     )
-    return server_utils.completion(server, params, document)
 
 
 @SERVER.notebook_feature(TEXT_DOCUMENT_SIGNATURE_HELP)
 def signature_help(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[SignatureHelp]:
-    document, params = _notebook_text_document_and_params(
-        server.workspace, params
+    return notebook_utils.with_notebook_support(server_utils.signature_help)(
+        server, params
     )
-    return server_utils.signature_help(server, params, document)
 
 
 @SERVER.notebook_feature(TEXT_DOCUMENT_DECLARATION)
 def declaration(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
-    document, params = _notebook_text_document_and_params(
-        server.workspace, params
-    )
-    locations = server_utils.declaration(server, params, document)
-    return notebook_utils.text_document_or_cell_locations(
-        server.workspace, locations
+    return notebook_utils.with_notebook_support(server_utils.declaration)(
+        server, params
     )
 
 
@@ -79,12 +61,8 @@ def declaration(
 def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
-    document, params = _notebook_text_document_and_params(
-        server.workspace, params
-    )
-    locations = server_utils.definition(server, params, document)
-    return notebook_utils.text_document_or_cell_locations(
-        server.workspace, locations
+    return notebook_utils.with_notebook_support(server_utils.definition)(
+        server, params
     )
 
 
@@ -92,48 +70,25 @@ def definition(
 def type_definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
-    document, params = _notebook_text_document_and_params(
-        server.workspace, params
-    )
-    locations = server_utils.type_definition(server, params, document)
-    return notebook_utils.text_document_or_cell_locations(
-        server.workspace, locations
+    return notebook_utils.with_notebook_support(server_utils.type_definition)(
+        server, params
     )
 
 
 def hover(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[Hover]:
-    document, params = _notebook_text_document_and_params(
-        server.workspace, params
+    return notebook_utils.with_notebook_support(server_utils.hover)(
+        server, params
     )
-    # TODO: Can we clean this up?
-    #       Maybe have a single notebook_to_cell and vice versa function that
-    #       can handle most needed lsprotocol types?
-    hover = server_utils.hover(server, params, document)
-    if hover is None or hover.range is None:
-        return hover
-    notebook_mapper = notebook_utils.notebook_coordinate_mapper(
-        server.workspace, cell_uri=params.text_document.uri
-    )
-    if notebook_mapper is None:
-        return hover
-    location = notebook_mapper.cell_range(hover.range)
-    if location is None or location.uri != params.text_document.uri:
-        return hover
-    return attrs.evolve(hover, range=location.range)
 
 
 @SERVER.notebook_feature(TEXT_DOCUMENT_REFERENCES)
 def references(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
-    document, params = _notebook_text_document_and_params(
-        server.workspace, params
-    )
-    locations = server_utils.references(server, params, document)
-    return notebook_utils.text_document_or_cell_locations(
-        server.workspace, locations
+    return notebook_utils.with_notebook_support(server_utils.references)(
+        server, params
     )
 
 
@@ -141,10 +96,9 @@ def references(
 def rename(
     server: JediLanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
-    document, params = _notebook_text_document_and_params(
-        server.workspace, params
+    return notebook_utils.with_notebook_support(server_utils.rename)(
+        server, params
     )
-    return server_utils.rename(server, params, document)
 
 
 @SERVER.notebook_feature(TEXT_DOCUMENT_CODE_ACTION)
@@ -152,10 +106,9 @@ def code_action(
     server: JediLanguageServer,
     params: CodeActionParams,
 ) -> Optional[List[CodeAction]]:
-    document, params = _notebook_text_document_and_params(
-        server.workspace, params
+    return notebook_utils.with_notebook_support(server_utils.code_action)(
+        server, params
     )
-    return server_utils.code_action(server, params, document)
 
 
 # NOTEBOOK_DOCUMENT_DID_SAVE
@@ -242,36 +195,6 @@ def did_close_notebook_document_default(
     params: DidCloseNotebookDocumentParams,
 ) -> None:
     """Actions run on notebookDocument/didClose: default."""
-
-
-def _notebook_text_document_and_params(
-    workspace: Workspace,
-    params: T_params,
-) -> Tuple[TextDocument, T_params]:
-    notebook = notebook_utils.notebook_coordinate_mapper(
-        workspace, cell_uri=params.text_document.uri
-    )
-    if notebook is None:
-        raise ValueError(
-            f"Notebook not found with cell URI: {params.text_document.uri}"
-        )
-    document = TextDocument(uri=notebook._document.uri, source=notebook.source)
-
-    position = getattr(params, "position", None)
-    if position is not None:
-        notebook_position = notebook.notebook_position(
-            params.text_document.uri, position
-        )
-        params = attrs.evolve(params, position=notebook_position)  # type: ignore[arg-type]
-
-    range = getattr(params, "range", None)
-    if range is not None:
-        notebook_range = notebook.notebook_range(
-            params.text_document.uri, range
-        )
-        params = attrs.evolve(params, range=notebook_range)  # type: ignore[arg-type]
-
-    return document, params
 
 
 def _cell_filename(
