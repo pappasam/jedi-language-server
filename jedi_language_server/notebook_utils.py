@@ -8,6 +8,7 @@ from typing import (
     NamedTuple,
     Optional,
     Union,
+    cast,
 )
 
 import attrs
@@ -21,6 +22,7 @@ from lsprotocol.types import (
     TextDocumentEdit,
     TextEdit,
 )
+from pygls.uris import to_fs_path
 from pygls.workspace import TextDocument, Workspace
 
 
@@ -35,6 +37,12 @@ def notebook_coordinate_mapper(
     )
     if notebook_document is None:
         return None
+        # msg = "Notebook document not found for"
+        # if notebook_uri is not None:
+        #     msg += f" notebook_uri={notebook_uri}"
+        # if cell_uri is not None:
+        #     msg += f" cell_uri={cell_uri}"
+        # raise ValueError(msg)
     cells = [
         workspace.text_documents[cell.document]
         for cell in notebook_document.cells
@@ -80,6 +88,13 @@ class NotebookCoordinateMapper:
             )
 
             start_line = end_line
+
+    @property
+    def path(self) -> str:
+        path = to_fs_path(self._document.uri)
+        if path is None:
+            raise ValueError("Could not convert notebook URI to path")
+        return cast(str, path)
 
     @property
     def source(self) -> str:
@@ -194,9 +209,12 @@ class NotebookCoordinateMapper:
 
 
 def text_document_or_cell_locations(
-    workspace: Workspace, locations: List[Location]
-) -> List[Location]:
+    workspace: Workspace, locations: Optional[List[Location]]
+) -> Optional[List[Location]]:
     """Convert concatenated notebook locations to cell locations, leaving text document locations as-is."""
+    if locations is None:
+        return None
+
     results = []
     for location in locations:
         mapper = notebook_coordinate_mapper(
@@ -208,4 +226,16 @@ def text_document_or_cell_locations(
                 location = cell_location
 
         results.append(location)
-    return results
+
+    return results if results else None
+
+
+def cell_index(workspace: Workspace, cell_uri: str) -> int:
+    notebook = notebook_coordinate_mapper(workspace, cell_uri=cell_uri)
+    if notebook is None:
+        raise ValueError(
+            f"Notebook document not found for cell URI: {cell_uri}"
+        )
+    index = notebook.cell_index(cell_uri)
+    assert index is not None
+    return index
