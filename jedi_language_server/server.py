@@ -144,17 +144,17 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         )
         did_open_notebook = (
             did_open_notebook_diagnostics
-            if diagnostics.enable
+            if diagnostics.enable and diagnostics.did_open
             else did_open_notebook_default
         )
         did_change_notebook = (
             did_change_notebook_diagnostics
-            if diagnostics.enable
+            if diagnostics.enable and diagnostics.did_change
             else did_change_notebook_default
         )
         did_save_notebook = (
             did_save_notebook_diagnostics
-            if diagnostics.enable
+            if diagnostics.enable and diagnostics.did_save
             else did_save_notebook_default
         )
         did_close_notebook = (
