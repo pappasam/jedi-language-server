@@ -63,6 +63,9 @@ from lsprotocol.types import (
     MarkupContent,
     MarkupKind,
     MessageType,
+    NotebookDocumentSyncOptions,
+    NotebookDocumentSyncOptionsNotebookSelectorType2,
+    NotebookDocumentSyncOptionsNotebookSelectorType2CellsType,
     ParameterInformation,
     RenameParams,
     SignatureHelp,
@@ -207,6 +210,18 @@ SERVER = JediLanguageServer(
     name="jedi-language-server",
     version=__version__,
     protocol_cls=JediLanguageServerProtocol,
+    # Advertise support for Python notebook cells.
+    notebook_document_sync=NotebookDocumentSyncOptions(
+        notebook_selector=[
+            NotebookDocumentSyncOptionsNotebookSelectorType2(
+                cells=[
+                    NotebookDocumentSyncOptionsNotebookSelectorType2CellsType(
+                        language="python"
+                    )
+                ]
+            )
+        ]
+    ),
 )
 
 
