@@ -1,10 +1,7 @@
 """Utility functions for handling notebook documents."""
 
-from __future__ import annotations
-
 from collections import defaultdict
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -33,10 +30,8 @@ from lsprotocol.types import (
     TextDocumentPositionParams,
     TextEdit,
 )
+from pygls.server import LanguageServer
 from pygls.workspace import TextDocument, Workspace
-
-if TYPE_CHECKING:
-    from .server import JediLanguageServer
 
 
 def notebook_coordinate_mapper(
@@ -247,6 +242,7 @@ NotebookSupportedParams = Union[
     RenameParams,
     TextDocumentPositionParams,
 ]
+T_ls = TypeVar("T_ls", bound=LanguageServer)
 T_params = TypeVar(
     "T_params",
     bound=NotebookSupportedParams,
@@ -257,7 +253,7 @@ T = TypeVar("T")
 
 
 class ServerWrapper:
-    def __init__(self, server: JediLanguageServer):
+    def __init__(self, server: LanguageServer):
         self.server = server
         self.workspace = WorkspaceWrapper(server.workspace)
 
@@ -279,37 +275,31 @@ class WorkspaceWrapper:
         return TextDocument(uri=notebook._document.uri, source=notebook.source)
 
 
-# TODO: Mismatched input/output function is needed due to how pygls server.feature() works.
 def supports_notebooks(
-    f: Callable[[JediLanguageServer, T_params], T],
-) -> Callable[[T_params], T]:
-    from .server import SERVER
-
-    server = SERVER
-
-    def wrapped(params: T_params) -> T:
-        nonlocal server
+    f: Callable[[T_ls, T_params], T],
+) -> Callable[[T_ls, T_params], T]:
+    def wrapped(ls: T_ls, params: T_params) -> T:
         notebook = notebook_coordinate_mapper(
-            server.workspace, cell_uri=params.text_document.uri
+            ls.workspace, cell_uri=params.text_document.uri
         )
         if notebook is not None:
             position = getattr(params, "position", None)
-            if position is not None:
+            if isinstance(position, Position):
                 notebook_position = notebook.notebook_position(
                     params.text_document.uri, position
                 )
                 params = attrs.evolve(params, position=notebook_position)  # type: ignore[arg-type]
 
             range = getattr(params, "range", None)
-            if range is not None:
+            if isinstance(range, Range):
                 notebook_range = notebook.notebook_range(
                     params.text_document.uri, range
                 )
                 params = attrs.evolve(params, range=notebook_range)  # type: ignore[arg-type]
 
-            server = cast("JediLanguageServer", ServerWrapper(server))
+            ls = cast(T_ls, ServerWrapper(ls))
 
-        result = f(server, params)
+        result = f(ls, params)
 
         if (
             isinstance(result, list)
@@ -317,12 +307,12 @@ def supports_notebooks(
             and isinstance(result[0], Location)
         ):
             return cast(
-                T, text_document_or_cell_locations(server.workspace, result)
+                T, text_document_or_cell_locations(ls.workspace, result)
             )
 
         if isinstance(result, Hover) and result.range is not None:
             notebook_mapper = notebook_coordinate_mapper(
-                server.workspace, cell_uri=params.text_document.uri
+                ls.workspace, cell_uri=params.text_document.uri
             )
             if notebook_mapper is None:
                 return cast(T, result)
