@@ -104,9 +104,14 @@ class NotebookCoordinateMapper:
             start_line = end_line
 
     @property
-    def source(self) -> str:
+    def notebook_source(self) -> str:
         """Concatenated notebook source."""
         return "\n".join(cell.source for cell in self._cells)
+
+    @property
+    def notebook_uri(self) -> str:
+        """The notebook document's URI."""
+        return self._document.uri
 
     def notebook_position(
         self, cell_uri: str, cell_position: Position
@@ -241,6 +246,7 @@ def cell_filename(
     workspace: Workspace,
     cell_uri: str,
 ) -> str:
+    """Get the filename (used in diagnostics) for a cell URI."""
     mapper = notebook_coordinate_mapper(workspace, cell_uri=cell_uri)
     if mapper is None:
         raise ValueError(
@@ -296,16 +302,20 @@ _TextDocumentCoordinatesParams = Union[
 T = TypeVar("T")
 
 
-class ServerWrapper:
+class ServerWrapper(LanguageServer):
     def __init__(self, server: LanguageServer):
         self._wrapped = server
-        self.workspace = WorkspaceWrapper(server.workspace)
+        self._workspace = WorkspaceWrapper(server.workspace)
+
+    @property
+    def workspace(self) -> Workspace:
+        return self._workspace
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self._wrapped, name)
 
 
-class WorkspaceWrapper:
+class WorkspaceWrapper(Workspace):
     def __init__(self, workspace: Workspace):
         self._wrapped = workspace
 
@@ -313,33 +323,35 @@ class WorkspaceWrapper:
         return getattr(self._wrapped, name)
 
     def get_text_document(self, doc_uri: str) -> TextDocument:
-        notebook = notebook_coordinate_mapper(self._wrapped, cell_uri=doc_uri)
-        if notebook is None:
+        mapper = notebook_coordinate_mapper(self._wrapped, cell_uri=doc_uri)
+        if mapper is None:
             return self._wrapped.get_text_document(doc_uri)
-        return TextDocument(uri=notebook._document.uri, source=notebook.source)
+        return TextDocument(
+            uri=mapper.notebook_uri, source=mapper.notebook_source
+        )
 
 
-def _map_params_to_notebook(
-    notebook: NotebookCoordinateMapper, params: T_params
+def _notebook_params(
+    mapper: NotebookCoordinateMapper, params: T_params
 ) -> T_params:
     if hasattr(params, "position"):
-        notebook_position = notebook.notebook_position(
+        notebook_position = mapper.notebook_position(
             params.text_document.uri, params.position
         )
-        # Ignore mypy error since it doesn't seem to narrow params via the hasattr.
+        # Ignore mypy error since it doesn't seem to narrow via hasattr.
         params = attrs.evolve(params, position=notebook_position)  # type: ignore[call-arg]
 
     if hasattr(params, "range"):
-        notebook_range = notebook.notebook_range(
+        notebook_range = mapper.notebook_range(
             params.text_document.uri, params.range
         )
-        # Ignore mypy error since it doesn't seem to narrow params via the hasattr.
+        # Ignore mypy error since it doesn't seem to narrow via hasattr.
         params = attrs.evolve(params, range=notebook_range)  # type: ignore[call-arg]
 
     return params
 
 
-def _map_result_to_cells(
+def _cell_results(
     workspace: Workspace,
     mapper: Optional[NotebookCoordinateMapper],
     params: _TextDocumentCoordinatesParams,
@@ -363,12 +375,24 @@ def _map_result_to_cells(
 def supports_notebooks(
     f: Callable[[T_ls, T_params], T],
 ) -> Callable[[T_ls, T_params], T]:
+    """Decorator to add basic notebook support to a language server feature.
+
+    It works by converting params from cell coordinates to notebook coordinates
+    before calling the wrapped function, and then converting the result back
+    to cell coordinates.
+    """
+
     def wrapped(ls: T_ls, params: T_params) -> T:
         mapper = notebook_coordinate_mapper(
             ls.workspace, cell_uri=params.text_document.uri
         )
-        params = _map_params_to_notebook(mapper, params) if mapper else params
-        result = f(ls, params)
-        return _map_result_to_cells(ls.workspace, mapper, params, result)
+        notebook_params = (
+            _notebook_params(mapper, params) if mapper else params
+        )
+        notebook_server = cast(T_ls, ServerWrapper(ls))
+        result = f(notebook_server, notebook_params)
+        return _cell_results(
+            notebook_server.workspace, mapper, notebook_params, result
+        )
 
     return wrapped

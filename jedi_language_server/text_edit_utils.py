@@ -80,7 +80,9 @@ class RefactoringConverter:
                 self.workspace, notebook_uri=uri
             )
             source = (
-                notebook_mapper.source if notebook_mapper else document.source
+                notebook_mapper.notebook_source
+                if notebook_mapper
+                else document.source
             )
             version = 0 if document.version is None else document.version
             text_edits = lsp_text_edits(source, changed_file)
