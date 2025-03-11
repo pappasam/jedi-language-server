@@ -9,7 +9,6 @@ from typing import (
     List,
     NamedTuple,
     Optional,
-    Protocol,
     TypeVar,
     Union,
     cast,
@@ -40,7 +39,6 @@ from lsprotocol.types import (
     SemanticTokensRangeParams,
     SignatureHelpParams,
     TextDocumentEdit,
-    TextDocumentIdentifier,
     TextDocumentPositionParams,
     TextEdit,
 )
@@ -239,61 +237,60 @@ def text_document_or_cell_locations(
     return results if results else None
 
 
-def cell_index(workspace: Workspace, cell_uri: str) -> int:
-    notebook = notebook_coordinate_mapper(workspace, cell_uri=cell_uri)
-    if notebook is None:
+def cell_filename(
+    workspace: Workspace,
+    cell_uri: str,
+) -> str:
+    mapper = notebook_coordinate_mapper(workspace, cell_uri=cell_uri)
+    if mapper is None:
         raise ValueError(
             f"Notebook document not found for cell URI: {cell_uri}"
         )
-    index = notebook.cell_index(cell_uri)
+    index = mapper.cell_index(cell_uri)
     assert index is not None
-    return index
+    return f"cell {index + 1}"
 
 
-TextDocumentPositionParamsTypes = (
-    CompletionParams,
-    RenameParams,
-    TextDocumentPositionParams,
-)
 T_ls = TypeVar("T_ls", bound=LanguageServer)
-
-
-class _TextDocumentPositionParams(Protocol):
-    text_document: TextDocumentIdentifier
-    position: Position
-
-
-class _TextDocumentRangeParams(Protocol):
-    text_document: TextDocumentIdentifier
-    range: Range
-
-
-_TextDocumentPositionOrRangeParams = Union[
-    _TextDocumentPositionParams, _TextDocumentRangeParams
-]
 
 T_params = TypeVar(
     "T_params",
-    # # Position
-    # CallHierarchyPrepareParams,
-    # CompletionParams,
-    # DefinitionParams,
-    # DocumentHighlightParams,
-    # DocumentOnTypeFormattingParams,
-    # HoverParams,
-    # PrepareRenameParams,
-    # ReferenceParams,
-    # RenameParams,
-    # SignatureHelpParams,
-    # TextDocumentPositionParams,
-    # # Range
-    # CodeActionParams,
-    # ColorPresentationParams,
-    # InlayHintParams,
-    # InlineValueParams,
-    # SemanticTokensRangeParams,
-    bound=_TextDocumentPositionOrRangeParams,
+    CallHierarchyPrepareParams,
+    CodeActionParams,
+    ColorPresentationParams,
+    CompletionParams,
+    DefinitionParams,
+    DocumentHighlightParams,
+    DocumentOnTypeFormattingParams,
+    HoverParams,
+    InlayHintParams,
+    InlineValueParams,
+    PrepareRenameParams,
+    ReferenceParams,
+    RenameParams,
+    SemanticTokensRangeParams,
+    SignatureHelpParams,
+    TextDocumentPositionParams,
 )
+
+_TextDocumentCoordinatesParams = Union[
+    CallHierarchyPrepareParams,
+    CodeActionParams,
+    ColorPresentationParams,
+    CompletionParams,
+    DefinitionParams,
+    DocumentHighlightParams,
+    DocumentOnTypeFormattingParams,
+    HoverParams,
+    InlayHintParams,
+    InlineValueParams,
+    PrepareRenameParams,
+    ReferenceParams,
+    RenameParams,
+    SemanticTokensRangeParams,
+    SignatureHelpParams,
+    TextDocumentPositionParams,
+]
 
 
 T = TypeVar("T")
@@ -322,61 +319,41 @@ class WorkspaceWrapper:
         return TextDocument(uri=notebook._document.uri, source=notebook.source)
 
 
-def _pre(notebook: NotebookCoordinateMapper, params: T_params) -> T_params:
-    if isinstance(
-        params,
-        (
-            CallHierarchyPrepareParams,
-            CompletionParams,
-            DefinitionParams,
-            DocumentHighlightParams,
-            DocumentOnTypeFormattingParams,
-            HoverParams,
-            PrepareRenameParams,
-            ReferenceParams,
-            RenameParams,
-            SignatureHelpParams,
-            TextDocumentPositionParams,
-        ),
-    ):
+def _map_params_to_notebook(
+    notebook: NotebookCoordinateMapper, params: T_params
+) -> T_params:
+    if hasattr(params, "position"):
         notebook_position = notebook.notebook_position(
             params.text_document.uri, params.position
         )
-        return cast(T_params, attrs.evolve(params, position=notebook_position))
+        # Ignore mypy error since it doesn't seem to narrow params via the hasattr.
+        params = attrs.evolve(params, position=notebook_position)  # type: ignore[call-arg]
 
-    if isinstance(
-        params,
-        (
-            CodeActionParams,
-            ColorPresentationParams,
-            InlayHintParams,
-            InlineValueParams,
-            SemanticTokensRangeParams,
-        ),
-    ):
+    if hasattr(params, "range"):
         notebook_range = notebook.notebook_range(
             params.text_document.uri, params.range
         )
-        return cast(T_params, attrs.evolve(params, range=notebook_range))
+        # Ignore mypy error since it doesn't seem to narrow params via the hasattr.
+        params = attrs.evolve(params, range=notebook_range)  # type: ignore[call-arg]
 
     return params
 
 
-def _post(
+def _map_result_to_cells(
     workspace: Workspace,
-    notebook: Optional[NotebookCoordinateMapper],
-    params: _TextDocumentPositionOrRangeParams,
+    mapper: Optional[NotebookCoordinateMapper],
+    params: _TextDocumentCoordinatesParams,
     result: T,
 ) -> T:
     if isinstance(result, list) and result and isinstance(result[0], Location):
         return cast(T, text_document_or_cell_locations(workspace, result))
 
     if (
-        notebook is not None
+        mapper is not None
         and isinstance(result, Hover)
         and result.range is not None
     ):
-        location = notebook.cell_range(result.range)
+        location = mapper.cell_range(result.range)
         if location is not None and location.uri == params.text_document.uri:
             return cast(T, attrs.evolve(result, range=location.range))
 
@@ -387,25 +364,11 @@ def supports_notebooks(
     f: Callable[[T_ls, T_params], T],
 ) -> Callable[[T_ls, T_params], T]:
     def wrapped(ls: T_ls, params: T_params) -> T:
-        notebook = notebook_coordinate_mapper(
+        mapper = notebook_coordinate_mapper(
             ls.workspace, cell_uri=params.text_document.uri
         )
-        params = _pre(notebook, params) if notebook else params
+        params = _map_params_to_notebook(mapper, params) if mapper else params
         result = f(ls, params)
-        return _post(ls.workspace, notebook, params, result)
+        return _map_result_to_cells(ls.workspace, mapper, params, result)
 
     return wrapped
-
-
-def cell_filename(
-    workspace: Workspace,
-    cell_uri: str,
-) -> str:
-    notebook = notebook_coordinate_mapper(workspace, cell_uri=cell_uri)
-    if notebook is None:
-        raise ValueError(
-            f"Notebook document not found for cell URI: {cell_uri}"
-        )
-    index = notebook.cell_index(cell_uri)
-    assert index is not None
-    return f"cell {index + 1}"
