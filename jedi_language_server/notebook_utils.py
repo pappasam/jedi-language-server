@@ -9,6 +9,7 @@ from typing import (
     List,
     NamedTuple,
     Optional,
+    Protocol,
     TypeVar,
     Union,
     cast,
@@ -17,16 +18,29 @@ from typing import (
 import attrs
 from lsprotocol.types import (
     AnnotatedTextEdit,
+    CallHierarchyPrepareParams,
     CodeActionParams,
+    ColorPresentationParams,
     CompletionParams,
+    DefinitionParams,
+    DocumentHighlightParams,
+    DocumentOnTypeFormattingParams,
     Hover,
+    HoverParams,
+    InlayHintParams,
+    InlineValueParams,
     Location,
     NotebookDocument,
     OptionalVersionedTextDocumentIdentifier,
     Position,
+    PrepareRenameParams,
     Range,
+    ReferenceParams,
     RenameParams,
+    SemanticTokensRangeParams,
+    SignatureHelpParams,
     TextDocumentEdit,
+    TextDocumentIdentifier,
     TextDocumentPositionParams,
     TextEdit,
 )
@@ -236,16 +250,49 @@ def cell_index(workspace: Workspace, cell_uri: str) -> int:
     return index
 
 
-NotebookSupportedParams = Union[
-    CodeActionParams,
+TextDocumentPositionParamsTypes = (
     CompletionParams,
     RenameParams,
     TextDocumentPositionParams,
-]
+)
 T_ls = TypeVar("T_ls", bound=LanguageServer)
+
+
+class _TextDocumentPositionParams(Protocol):
+    text_document: TextDocumentIdentifier
+    position: Position
+
+
+class _TextDocumentRangeParams(Protocol):
+    text_document: TextDocumentIdentifier
+    range: Range
+
+
+_TextDocumentPositionOrRangeParams = Union[
+    _TextDocumentPositionParams, _TextDocumentRangeParams
+]
+
 T_params = TypeVar(
     "T_params",
-    bound=NotebookSupportedParams,
+    # # Position
+    # CallHierarchyPrepareParams,
+    # CompletionParams,
+    # DefinitionParams,
+    # DocumentHighlightParams,
+    # DocumentOnTypeFormattingParams,
+    # HoverParams,
+    # PrepareRenameParams,
+    # ReferenceParams,
+    # RenameParams,
+    # SignatureHelpParams,
+    # TextDocumentPositionParams,
+    # # Range
+    # CodeActionParams,
+    # ColorPresentationParams,
+    # InlayHintParams,
+    # InlineValueParams,
+    # SemanticTokensRangeParams,
+    bound=_TextDocumentPositionOrRangeParams,
 )
 
 
@@ -254,25 +301,86 @@ T = TypeVar("T")
 
 class ServerWrapper:
     def __init__(self, server: LanguageServer):
-        self.server = server
+        self._wrapped = server
         self.workspace = WorkspaceWrapper(server.workspace)
 
     def __getattr__(self, name: str) -> Any:
-        return getattr(self.server, name)
+        return getattr(self._wrapped, name)
 
 
 class WorkspaceWrapper:
     def __init__(self, workspace: Workspace):
-        self.workspace = workspace
+        self._wrapped = workspace
 
     def __getattr__(self, name: str) -> Any:
-        return getattr(self.workspace, name)
+        return getattr(self._wrapped, name)
 
     def get_text_document(self, doc_uri: str) -> TextDocument:
-        notebook = notebook_coordinate_mapper(self.workspace, cell_uri=doc_uri)
+        notebook = notebook_coordinate_mapper(self._wrapped, cell_uri=doc_uri)
         if notebook is None:
-            return self.workspace.get_text_document(doc_uri)
+            return self._wrapped.get_text_document(doc_uri)
         return TextDocument(uri=notebook._document.uri, source=notebook.source)
+
+
+def _pre(notebook: NotebookCoordinateMapper, params: T_params) -> T_params:
+    if isinstance(
+        params,
+        (
+            CallHierarchyPrepareParams,
+            CompletionParams,
+            DefinitionParams,
+            DocumentHighlightParams,
+            DocumentOnTypeFormattingParams,
+            HoverParams,
+            PrepareRenameParams,
+            ReferenceParams,
+            RenameParams,
+            SignatureHelpParams,
+            TextDocumentPositionParams,
+        ),
+    ):
+        notebook_position = notebook.notebook_position(
+            params.text_document.uri, params.position
+        )
+        return cast(T_params, attrs.evolve(params, position=notebook_position))
+
+    if isinstance(
+        params,
+        (
+            CodeActionParams,
+            ColorPresentationParams,
+            InlayHintParams,
+            InlineValueParams,
+            SemanticTokensRangeParams,
+        ),
+    ):
+        notebook_range = notebook.notebook_range(
+            params.text_document.uri, params.range
+        )
+        return cast(T_params, attrs.evolve(params, range=notebook_range))
+
+    return params
+
+
+def _post(
+    workspace: Workspace,
+    notebook: Optional[NotebookCoordinateMapper],
+    params: _TextDocumentPositionOrRangeParams,
+    result: T,
+) -> T:
+    if isinstance(result, list) and result and isinstance(result[0], Location):
+        return cast(T, text_document_or_cell_locations(workspace, result))
+
+    if (
+        notebook is not None
+        and isinstance(result, Hover)
+        and result.range is not None
+    ):
+        location = notebook.cell_range(result.range)
+        if location is not None and location.uri == params.text_document.uri:
+            return cast(T, attrs.evolve(result, range=location.range))
+
+    return result
 
 
 def supports_notebooks(
@@ -282,46 +390,9 @@ def supports_notebooks(
         notebook = notebook_coordinate_mapper(
             ls.workspace, cell_uri=params.text_document.uri
         )
-        if notebook is not None:
-            position = getattr(params, "position", None)
-            if isinstance(position, Position):
-                notebook_position = notebook.notebook_position(
-                    params.text_document.uri, position
-                )
-                params = attrs.evolve(params, position=notebook_position)  # type: ignore[arg-type]
-
-            range = getattr(params, "range", None)
-            if isinstance(range, Range):
-                notebook_range = notebook.notebook_range(
-                    params.text_document.uri, range
-                )
-                params = attrs.evolve(params, range=notebook_range)  # type: ignore[arg-type]
-
-            ls = cast(T_ls, ServerWrapper(ls))
-
+        params = _pre(notebook, params) if notebook else params
         result = f(ls, params)
-
-        if (
-            isinstance(result, list)
-            and result
-            and isinstance(result[0], Location)
-        ):
-            return cast(
-                T, text_document_or_cell_locations(ls.workspace, result)
-            )
-
-        if isinstance(result, Hover) and result.range is not None:
-            notebook_mapper = notebook_coordinate_mapper(
-                ls.workspace, cell_uri=params.text_document.uri
-            )
-            if notebook_mapper is None:
-                return cast(T, result)
-            location = notebook_mapper.cell_range(result.range)
-            if location is None or location.uri != params.text_document.uri:
-                return cast(T, result)
-            return cast(T, attrs.evolve(result, range=location.range))
-
-        return result
+        return _post(ls.workspace, notebook, params, result)
 
     return wrapped
 
