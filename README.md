@@ -7,7 +7,7 @@
 [![github-action-testing](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml/badge.svg)](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml)
 [![poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 
-A [Python](https://www.python.org/) [Language Server](https://microsoft.github.io/language-server-protocol/) powered by the latest version of [Jedi](https://jedi.readthedocs.io/en/latest/).
+A [Python](https://www.python.org/) [Language Server](https://microsoft.github.io/language-server-protocol/), with additional support for [computational notebooks](https://docs.jupyter.org/en/latest/#what-is-a-notebook), powered by the latest version of [Jedi](https://jedi.readthedocs.io/en/latest/).
 
 ## Installation
 
@@ -23,12 +23,12 @@ Alternatively (and preferably), use [pipx](https://github.com/pipxproject/pipx) 
 
 The following instructions show how to use `jedi-language-server` with your development tooling. The instructions assume you have already installed `jedi-language-server`.
 
-### Vim / Neovim
+### Vim and Neovim
 
-Users may choose 1 of the following options:
+For Neovim, this project is supported out-of-the-box by [Neovim's native LSP client](https://neovim.io/doc/user/lsp.html) through [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig). See [here](https://github.com/neovim/nvim-lspconfig/blob/master/doc/configs.md#jedi_language_server) for an example configuration.
 
-- [Neovim's native LSP client](https://neovim.io/doc/user/lsp.html). See [here](https://github.com/neovim/nvim-lspconfig/blob/master/doc/server_configurations.md#jedi_language_server) for an example configuration.
-- [coc.nvim](https://github.com/neoclide/coc.nvim) with [coc-jedi](https://github.com/pappasam/coc-jedi).
+For Vim, here are some additional, actively maintained options:
+
 - [ALE](https://github.com/dense-analysis/ale).
 - [vim-lsp](https://github.com/prabirshrestha/vim-lsp).
 
@@ -474,6 +474,10 @@ jedi-language-server aims to support Jedi's capabilities and expose them through
 - [textDocument/didOpen](https://microsoft.github.io/language-server-protocol/specification#textDocument_didOpen)
 - [textDocument/didSave](https://microsoft.github.io/language-server-protocol/specification#textDocument_didSave)
 
+### Notebook document support
+
+- [NotebookDocumentSyncClientCapabilities](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notebookDocumentSyncClientCapabilities)
+
 ## Local Development
 
 To build and run this project from source:
@@ -525,7 +529,7 @@ Palantir's [python-language-server](https://github.com/palantir/python-language-
 Unlike python-language-server, `jedi-language-server`:
 
 - Uses [pygls](https://github.com/openlawlibrary/pygls) instead of creating its own low-level Language Server Protocol bindings
-- Supports one powerful 3rd party static analysis / completion / refactoring library: Jedi. By only supporting Jedi, we can focus on supporting all Jedi features without exposing ourselves to too many broken 3rd party dependencies (I'm looking at you, [rope](https://github.com/python-rope/rope)).
+- Supports one powerful 3rd party static analysis / completion / refactoring library: Jedi. By only supporting Jedi, we can focus on supporting all Jedi features without exposing ourselves to too many broken 3rd party dependencies.
 - Is supremely simple because of its scope constraints. Leave complexity to the Jedi [master](https://github.com/davidhalter). If the force is strong with you, please submit a PR!
 
 ## Articles
