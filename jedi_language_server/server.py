@@ -626,6 +626,13 @@ def code_action(
         2. Extract variable
         3. Extract function
     """
+    # Code actions are not yet supported for notebooks.
+    notebook = server.workspace.get_notebook_document(
+        cell_uri=params.text_document.uri
+    )
+    if notebook is not None:
+        return None
+
     document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     code_actions = []

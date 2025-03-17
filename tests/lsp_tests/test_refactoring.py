@@ -546,53 +546,8 @@ def test_lsp_code_action_notebook() -> None:
             }
         )
 
-        expected = [
-            {
-                "title": StringPattern(
-                    r"Extract expression into variable 'jls_extract_var'"
-                ),
-                "kind": "refactor.extract",
-                "edit": {
-                    "documentChanges": [
-                        {
-                            "textDocument": {
-                                "uri": uri,
-                                "version": 1,
-                            },
-                            "edits": [],
-                        }
-                    ]
-                },
-            },
-            {
-                "title": StringPattern(
-                    r"Extract expression into function 'jls_extract_def'"
-                ),
-                "kind": "refactor.extract",
-                "edit": {
-                    "documentChanges": [
-                        {
-                            "textDocument": {
-                                "uri": uri,
-                                "version": 1,
-                            },
-                            "edits": [],
-                        }
-                    ]
-                },
-            },
-        ]
-
-        # Cannot use hamcrest directly for this due to unpredictable
-        # variations in how the text edits are generated.
-
-        assert_that(len(actual), is_(len(expected)))
-
-        # Remove the edits
-        actual[0]["edit"]["documentChanges"][0]["edits"] = []
-        actual[1]["edit"]["documentChanges"][0]["edits"] = []
-
-        assert_that(actual, is_(expected))
+        # Code actions are not yet supported in notebooks.
+        assert_that(actual, is_(None))
 
 
 def test_lsp_code_action2() -> None:
