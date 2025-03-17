@@ -78,10 +78,12 @@ def debounce(
             key = call_args.arguments[keyed_by] if keyed_by else None
 
             def run() -> None:
-                with lock:
-                    del timers[key]
-                func(*args, **kwargs)
-                _debounce_semaphore.release()
+                try:
+                    with lock:
+                        del timers[key]
+                    func(*args, **kwargs)
+                finally:
+                    _debounce_semaphore.release()
 
             with lock:
                 old_timer = timers.get(key)
