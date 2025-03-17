@@ -41,6 +41,7 @@ from lsprotocol.types import (
 )
 from pygls.workspace import TextDocument
 
+from .constants import MAX_CONCURRENT_DEBOUNCE_CALLS
 from .initialization_options import HoverDisableOptions, InitializationOptions
 from .type_map import get_lsp_completion_type, get_lsp_symbol_type
 
@@ -53,13 +54,15 @@ else:
 P = ParamSpec("P")
 
 
+_debounce_semaphore = threading.Semaphore(MAX_CONCURRENT_DEBOUNCE_CALLS)
+
+
 def debounce(
-    interval_s: int, keyed_by: Optional[str] = None
+    interval_s: float, keyed_by: Optional[str] = None
 ) -> Callable[[Callable[P, None]], Callable[P, None]]:
     """Debounce calls to this function until interval_s seconds have passed.
 
-    Decorator copied from https://github.com/python-lsp/python-lsp-
-    server
+    Decorator adapted from https://github.com/python-lsp/python-lsp-server
     """
 
     def wrapper(func: Callable[P, None]) -> Callable[P, None]:
@@ -68,20 +71,25 @@ def debounce(
 
         @functools.wraps(func)
         def debounced(*args: P.args, **kwargs: P.kwargs) -> None:
+            _debounce_semaphore.acquire()
+
             sig = inspect.signature(func)
             call_args = sig.bind(*args, **kwargs)
             key = call_args.arguments[keyed_by] if keyed_by else None
 
             def run() -> None:
-                with lock:
-                    del timers[key]
-                return func(*args, **kwargs)
+                try:
+                    with lock:
+                        del timers[key]
+                    func(*args, **kwargs)
+                finally:
+                    _debounce_semaphore.release()
 
             with lock:
                 old_timer = timers.get(key)
                 if old_timer:
                     old_timer.cancel()
-
+                    _debounce_semaphore.release()
                 timer = threading.Timer(interval_s, run)
                 timers[key] = timer
                 timer.start()
@@ -148,22 +156,26 @@ def lsp_range(name: Name) -> Optional[Range]:
     )
 
 
-def lsp_location(name: Name) -> Optional[Location]:
+def lsp_location(name: Name, uri: Optional[str] = None) -> Optional[Location]:
     """Get LSP location from Jedi definition."""
-    module_path = name.module_path
-    if module_path is None:
-        return None
+    if uri is None:
+        module_path = name.module_path
+        if module_path is None:
+            return None
+        uri = module_path.as_uri()
 
     lsp = lsp_range(name)
     if lsp is None:
         return None
 
-    return Location(uri=module_path.as_uri(), range=lsp)
+    return Location(uri=uri, range=lsp)
 
 
-def lsp_symbol_information(name: Name) -> Optional[SymbolInformation]:
+def lsp_symbol_information(
+    name: Name, uri: Optional[str] = None
+) -> Optional[SymbolInformation]:
     """Get LSP SymbolInformation from Jedi definition."""
-    location = lsp_location(name)
+    location = lsp_location(name, uri)
     if location is None:
         return None
 

@@ -15,6 +15,10 @@ from jedi.api.refactoring import RefactoringError
 from lsprotocol.types import (
     COMPLETION_ITEM_RESOLVE,
     INITIALIZE,
+    NOTEBOOK_DOCUMENT_DID_CHANGE,
+    NOTEBOOK_DOCUMENT_DID_CLOSE,
+    NOTEBOOK_DOCUMENT_DID_OPEN,
+    NOTEBOOK_DOCUMENT_DID_SAVE,
     TEXT_DOCUMENT_CODE_ACTION,
     TEXT_DOCUMENT_COMPLETION,
     TEXT_DOCUMENT_DECLARATION,
@@ -41,9 +45,13 @@ from lsprotocol.types import (
     CompletionOptions,
     CompletionParams,
     DidChangeConfigurationParams,
+    DidChangeNotebookDocumentParams,
     DidChangeTextDocumentParams,
+    DidCloseNotebookDocumentParams,
     DidCloseTextDocumentParams,
+    DidOpenNotebookDocumentParams,
     DidOpenTextDocumentParams,
+    DidSaveNotebookDocumentParams,
     DidSaveTextDocumentParams,
     DocumentHighlight,
     DocumentSymbol,
@@ -55,6 +63,9 @@ from lsprotocol.types import (
     MarkupContent,
     MarkupKind,
     MessageType,
+    NotebookDocumentSyncOptions,
+    NotebookDocumentSyncOptionsNotebookSelectorType2,
+    NotebookDocumentSyncOptionsNotebookSelectorType2CellsType,
     ParameterInformation,
     RenameParams,
     SignatureHelp,
@@ -69,7 +80,7 @@ from pygls.capabilities import get_capability
 from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
-from . import jedi_utils, pygls_utils, text_edit_utils
+from . import jedi_utils, notebook_utils, pygls_utils, text_edit_utils
 from .initialization_options import (
     InitializationOptions,
     initialization_options_converter,
@@ -131,10 +142,34 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         did_close = (
             did_close_diagnostics if diagnostics.enable else did_close_default
         )
+        did_open_notebook = (
+            did_open_notebook_diagnostics
+            if diagnostics.enable and diagnostics.did_open
+            else did_open_notebook_default
+        )
+        did_change_notebook = (
+            did_change_notebook_diagnostics
+            if diagnostics.enable and diagnostics.did_change
+            else did_change_notebook_default
+        )
+        did_save_notebook = (
+            did_save_notebook_diagnostics
+            if diagnostics.enable and diagnostics.did_save
+            else did_save_notebook_default
+        )
+        did_close_notebook = (
+            did_close_notebook_diagnostics
+            if diagnostics.enable
+            else did_close_notebook_default
+        )
         server.feature(TEXT_DOCUMENT_DID_OPEN)(did_open)
         server.feature(TEXT_DOCUMENT_DID_CHANGE)(did_change)
         server.feature(TEXT_DOCUMENT_DID_SAVE)(did_save)
         server.feature(TEXT_DOCUMENT_DID_CLOSE)(did_close)
+        server.feature(NOTEBOOK_DOCUMENT_DID_OPEN)(did_open_notebook)
+        server.feature(NOTEBOOK_DOCUMENT_DID_CHANGE)(did_change_notebook)
+        server.feature(NOTEBOOK_DOCUMENT_DID_SAVE)(did_save_notebook)
+        server.feature(NOTEBOOK_DOCUMENT_DID_CLOSE)(did_close_notebook)
 
         if server.initialization_options.hover.enable:
             server.feature(TEXT_DOCUMENT_HOVER)(hover)
@@ -175,6 +210,18 @@ SERVER = JediLanguageServer(
     name="jedi-language-server",
     version=__version__,
     protocol_cls=JediLanguageServerProtocol,
+    # Advertise support for Python notebook cells.
+    notebook_document_sync=NotebookDocumentSyncOptions(
+        notebook_selector=[
+            NotebookDocumentSyncOptionsNotebookSelectorType2(
+                cells=[
+                    NotebookDocumentSyncOptionsNotebookSelectorType2CellsType(
+                        language="python"
+                    )
+                ]
+            )
+        ]
+    ),
 )
 
 
@@ -198,6 +245,7 @@ def completion_item_resolve(
         trigger_characters=[".", "'", '"'], resolve_provider=True
     ),
 )
+@notebook_utils.supports_notebooks
 def completion(
     server: JediLanguageServer, params: CompletionParams
 ) -> Optional[CompletionList]:
@@ -269,6 +317,7 @@ def completion(
     TEXT_DOCUMENT_SIGNATURE_HELP,
     SignatureHelpOptions(trigger_characters=["(", ","]),
 )
+@notebook_utils.supports_notebooks
 def signature_help(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[SignatureHelp]:
@@ -314,6 +363,7 @@ def signature_help(
 
 
 @SERVER.feature(TEXT_DOCUMENT_DECLARATION)
+@notebook_utils.supports_notebooks
 def declaration(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
@@ -331,6 +381,7 @@ def declaration(
 
 
 @SERVER.feature(TEXT_DOCUMENT_DEFINITION)
+@notebook_utils.supports_notebooks
 def definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
@@ -352,6 +403,7 @@ def definition(
 
 
 @SERVER.feature(TEXT_DOCUMENT_TYPE_DEFINITION)
+@notebook_utils.supports_notebooks
 def type_definition(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
@@ -397,6 +449,7 @@ def highlight(
 
 
 # Registered with HOVER dynamically
+@notebook_utils.supports_notebooks
 def hover(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[Hover]:
@@ -418,6 +471,7 @@ def hover(
 
 
 @SERVER.feature(TEXT_DOCUMENT_REFERENCES)
+@notebook_utils.supports_notebooks
 def references(
     server: JediLanguageServer, params: TextDocumentPositionParams
 ) -> Optional[List[Location]]:
@@ -470,7 +524,7 @@ def document_symbol(
     symbol_information = [
         symbol_info
         for symbol_info in (
-            jedi_utils.lsp_symbol_information(name)
+            jedi_utils.lsp_symbol_information(name, document.uri)
             for name in names
             if name.type != "param"
         )
@@ -534,6 +588,7 @@ def workspace_symbol(
 
 
 @SERVER.feature(TEXT_DOCUMENT_RENAME)
+@notebook_utils.supports_notebooks
 def rename(
     server: JediLanguageServer, params: RenameParams
 ) -> Optional[WorkspaceEdit]:
@@ -560,6 +615,7 @@ def rename(
         ],
     ),
 )
+@notebook_utils.supports_notebooks
 def code_action(
     server: JediLanguageServer, params: CodeActionParams
 ) -> Optional[List[CodeAction]]:
@@ -570,6 +626,13 @@ def code_action(
         2. Extract variable
         3. Extract function
     """
+    # Code actions are not yet supported for notebooks.
+    notebook = server.workspace.get_notebook_document(
+        cell_uri=params.text_document.uri
+    )
+    if notebook is not None:
+        return None
+
     document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
     code_actions = []
@@ -665,7 +728,9 @@ def did_change_configuration(
 # client capability or user configuration. These are associated with
 # JediLanguageServer within JediLanguageServerProtocol.lsp_initialize
 @jedi_utils.debounce(1, keyed_by="uri")
-def _publish_diagnostics(server: JediLanguageServer, uri: str) -> None:
+def _publish_diagnostics(
+    server: JediLanguageServer, uri: str, filename: Optional[str] = None
+) -> None:
     """Helper function to publish diagnostics for a file."""
     # The debounce decorator delays the execution by 1 second
     # canceling notifications that happen in that interval.
@@ -673,9 +738,11 @@ def _publish_diagnostics(server: JediLanguageServer, uri: str) -> None:
     # whether the document still exists
     if uri not in server.workspace.documents:
         return
+    if filename is None:
+        filename = uri
 
     doc = server.workspace.get_text_document(uri)
-    diagnostic = jedi_utils.lsp_python_diagnostic(uri, doc.source)
+    diagnostic = jedi_utils.lsp_python_diagnostic(filename, doc.source)
     diagnostics = [diagnostic] if diagnostic else []
 
     server.publish_diagnostics(uri, diagnostics)
@@ -731,7 +798,7 @@ def did_close_diagnostics(
     server: JediLanguageServer, params: DidCloseTextDocumentParams
 ) -> None:
     """Actions run on textDocument/didClose: diagnostics."""
-    server.publish_diagnostics(params.text_document.uri, [])
+    _clear_diagnostics(server, params.text_document.uri)
 
 
 def did_close_default(
@@ -739,6 +806,106 @@ def did_close_default(
     params: DidCloseTextDocumentParams,
 ) -> None:
     """Actions run on textDocument/didClose: default."""
+
+
+# NOTEBOOK_DOCUMENT_DID_SAVE
+def did_save_notebook_diagnostics(
+    server: JediLanguageServer,
+    params: DidSaveNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didSave: diagnostics."""
+    notebook_document = server.workspace.get_notebook_document(
+        notebook_uri=params.notebook_document.uri
+    )
+    if notebook_document:
+        for cell in notebook_document.cells:
+            text_document = server.workspace.text_documents[cell.document]
+            _publish_cell_diagnostics(server, text_document.uri)
+
+
+def did_save_notebook_default(
+    server: JediLanguageServer,
+    params: DidSaveNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didSave: default."""
+
+
+# NOTEBOOK_DOCUMENT_DID_CHANGE
+def did_change_notebook_diagnostics(
+    server: JediLanguageServer,
+    params: DidChangeNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didChange: diagnostics."""
+    cells = params.change.cells
+    if cells:
+        structure = cells.structure
+        if structure:
+            did_open = structure.did_open
+            if did_open:
+                for text_document_item in did_open:
+                    _publish_cell_diagnostics(
+                        server,
+                        text_document_item.uri,
+                    )
+            did_close = structure.did_close
+            if did_close:
+                for text_document in did_close:
+                    _clear_diagnostics(server, text_document.uri)
+        text_content = cells.text_content
+        if text_content:
+            for change in text_content:
+                _publish_cell_diagnostics(server, change.document.uri)
+
+
+def did_change_notebook_default(
+    server: JediLanguageServer,
+    params: DidChangeNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didChange: default."""
+
+
+# NOTEBOOK_DOCUMENT_DID_OPEN
+def did_open_notebook_diagnostics(
+    server: JediLanguageServer,
+    params: DidOpenNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didOpen: diagnostics."""
+    for text_document in params.cell_text_documents:
+        _publish_cell_diagnostics(server, text_document.uri)
+
+
+def did_open_notebook_default(
+    server: JediLanguageServer,
+    params: DidOpenNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didOpen: default."""
+
+
+# NOTEBOOK_DOCUMENT_DID_CLOSE
+def did_close_notebook_diagnostics(
+    server: JediLanguageServer,
+    params: DidCloseNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didClose: diagnostics."""
+    for text_document in params.cell_text_documents:
+        _clear_diagnostics(server, text_document.uri)
+
+
+def did_close_notebook_default(
+    server: JediLanguageServer,
+    params: DidCloseNotebookDocumentParams,
+) -> None:
+    """Actions run on notebookDocument/didClose: default."""
+
+
+def _clear_diagnostics(server: JediLanguageServer, uri: str) -> None:
+    """Helper function to clear diagnostics for a file."""
+    server.publish_diagnostics(uri, [])
+
+
+def _publish_cell_diagnostics(server: JediLanguageServer, uri: str) -> None:
+    filename = notebook_utils.cell_filename(server.workspace, uri)
+    return _publish_diagnostics(server, uri, filename)
 
 
 def _choose_markup(server: JediLanguageServer) -> MarkupKind:
