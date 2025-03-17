@@ -13,7 +13,7 @@ ignore_missing_imports = true
 
 [tool.poetry]
 name = "jedi-language-server"
-version = "0.43.1"
+version = "0.44.0"
 description = "A language server for Jedi!"
 authors = ["Sam Roeca <samuel.roeca@gmail.com>"]
 readme = "README.md"
