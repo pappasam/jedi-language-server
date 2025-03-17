@@ -279,26 +279,6 @@ T_params = TypeVar(
     TextDocumentPositionParams,
 )
 
-_TextDocumentCoordinatesParams = Union[
-    CallHierarchyPrepareParams,
-    CodeActionParams,
-    ColorPresentationParams,
-    CompletionParams,
-    DefinitionParams,
-    DocumentHighlightParams,
-    DocumentOnTypeFormattingParams,
-    HoverParams,
-    InlayHintParams,
-    InlineValueParams,
-    PrepareRenameParams,
-    ReferenceParams,
-    RenameParams,
-    SemanticTokensRangeParams,
-    SignatureHelpParams,
-    TextDocumentPositionParams,
-]
-
-
 T = TypeVar("T")
 
 
@@ -354,7 +334,7 @@ def _notebook_params(
 def _cell_results(
     workspace: Workspace,
     mapper: Optional[NotebookCoordinateMapper],
-    params: _TextDocumentCoordinatesParams,
+    cell_uri: str,
     result: T,
 ) -> T:
     if isinstance(result, list) and result and isinstance(result[0], Location):
@@ -366,7 +346,7 @@ def _cell_results(
         and result.range is not None
     ):
         location = mapper.cell_range(result.range)
-        if location is not None and location.uri == params.text_document.uri:
+        if location is not None and location.uri == cell_uri:
             return cast(T, attrs.evolve(result, range=location.range))
 
     return result
@@ -392,7 +372,7 @@ def supports_notebooks(
         notebook_server = cast(T_ls, ServerWrapper(ls))
         result = f(notebook_server, notebook_params)
         return _cell_results(
-            notebook_server.workspace, mapper, notebook_params, result
+            notebook_server.workspace, mapper, params.text_document.uri, result
         )
 
     return wrapped
