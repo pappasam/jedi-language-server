@@ -10,7 +10,8 @@ import itertools
 from typing import Any, List, Optional, Union
 
 import cattrs
-from jedi import Project, __version__
+from jedi import Project, Script, __version__
+from jedi.api.classes import Name
 from jedi.api.refactoring import RefactoringError
 from lsprotocol.types import (
     COMPLETION_ITEM_RESOLVE,
@@ -32,6 +33,8 @@ from lsprotocol.types import (
     TEXT_DOCUMENT_HOVER,
     TEXT_DOCUMENT_REFERENCES,
     TEXT_DOCUMENT_RENAME,
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE,
     TEXT_DOCUMENT_SIGNATURE_HELP,
     TEXT_DOCUMENT_TYPE_DEFINITION,
     WORKSPACE_DID_CHANGE_CONFIGURATION,
@@ -67,7 +70,14 @@ from lsprotocol.types import (
     NotebookDocumentSyncOptionsNotebookSelectorType2,
     NotebookDocumentSyncOptionsNotebookSelectorType2CellsType,
     ParameterInformation,
+    Position,
+    Range,
     RenameParams,
+    SemanticTokens,
+    SemanticTokensLegend,
+    SemanticTokensParams,
+    SemanticTokensRangeParams,
+    SemanticTokenTypes,
     SignatureHelp,
     SignatureHelpOptions,
     SignatureInformation,
@@ -76,11 +86,13 @@ from lsprotocol.types import (
     WorkspaceEdit,
     WorkspaceSymbolParams,
 )
+from lsprotocol.validators import INTEGER_MAX_VALUE
 from pygls.capabilities import get_capability
 from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
 from . import jedi_utils, notebook_utils, pygls_utils, text_edit_utils
+from .constants import TYPE_TO_TOKEN_ID
 from .initialization_options import (
     InitializationOptions,
     initialization_options_converter,
@@ -722,6 +734,148 @@ def did_change_configuration(
     Currently does nothing, but necessary for pygls. See::
         <https://github.com/pappasam/jedi-language-server/issues/58>
     """
+
+
+def _raw_semantic_token(
+    server: JediLanguageServer, n: Name
+) -> Union[list[int], None]:
+    """Find an appropriate semantic token for the name.
+
+    This works by looking up the definition (using jedi ``goto``) of the name and
+    matching the definition's type to one of the availabile semantic tokens. Further
+    improvements are possible by inspecting context, e.g. semantic token modifiers such
+    as ``abstract`` or ``async`` or even different tokens, e.g. ``property`` or
+    ``method``. Dunder methods may warrant special treatment/modifiers as well.
+    The return is a "raw" semantic token rather than a "diff." This is in the form of a
+    length 5 array of integers where the elements are the line number, starting
+    character, length, token index, and modifiers (as an integer whose binary
+    representation has bits set at the indices of all applicable modifiers).
+    """
+    definitions: list[Name] = n.goto(
+        follow_imports=True,
+        follow_builtin_imports=True,
+        only_stubs=False,
+        prefer_stubs=False,
+    )
+    if not definitions:
+        server.show_message_log(
+            f"no definitions found for name {n.description} ({n.line}:{n.column})",
+            MessageType.Debug,
+        )
+        return None
+
+    if len(definitions) > 1:
+        server.show_message_log(
+            f"multiple definitions found for name {n.description} ({n.line}:{n.column})",
+            MessageType.Debug,
+        )
+
+    definition, *_ = definitions
+    if (
+        definition_type := TYPE_TO_TOKEN_ID.get(definition.type, None)
+    ) is None:
+        server.show_message_log(
+            f"no matching semantic token for name {n.description} ({n.line}:{n.column})",
+            MessageType.Debug,
+        )
+        return None
+
+    return [n.line - 1, n.column, len(n.name), definition_type, 0]
+
+
+@SERVER.thread()
+@SERVER.feature(
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
+    SemanticTokensLegend(
+        token_types=list(SemanticTokenTypes), token_modifiers=[]
+    ),
+)
+def semantic_tokens_full(
+    server: JediLanguageServer, params: SemanticTokensParams
+) -> SemanticTokens:
+    """Thin wrap around  _semantic_tokens_range()."""
+    document = server.workspace.get_text_document(params.text_document.uri)
+    jedi_script = jedi_utils.script(server.project, document)
+
+    server.show_message_log(
+        f"semantic_tokens_full {params.text_document.uri} ",
+        MessageType.Log,
+    )
+
+    return _semantic_tokens_range(
+        server,
+        jedi_script,
+        Range(Position(0, 0), Position(INTEGER_MAX_VALUE, INTEGER_MAX_VALUE)),
+    )
+
+
+@SERVER.thread()
+@SERVER.feature(
+    TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE,
+    SemanticTokensLegend(
+        token_types=list(SemanticTokenTypes), token_modifiers=[]
+    ),
+)
+def semantic_tokens_range(
+    server: JediLanguageServer, params: SemanticTokensRangeParams
+) -> SemanticTokens:
+    """Thin wrap around  _semantic_tokens_range()."""
+    document = server.workspace.get_text_document(params.text_document.uri)
+    jedi_script = jedi_utils.script(server.project, document)
+
+    server.show_message_log(
+        f"semantic_tokens_range {params.text_document.uri} {params.range}",
+        MessageType.Log,
+    )
+
+    return _semantic_tokens_range(server, jedi_script, params.range)
+
+
+def _semantic_tokens_range(
+    server: JediLanguageServer, jedi_script: Script, doc_range: Range
+) -> SemanticTokens:
+    """General purpose function to do full / range semantic tokens."""
+    line, column = doc_range.start.line, doc_range.start.character
+    names = jedi_script.get_names(
+        all_scopes=True, definitions=True, references=True
+    )
+    data = []
+
+    for n in names:
+        if (
+            not doc_range.start
+            < Position(n.line - 1, n.column)
+            < doc_range.end
+        ):
+            continue
+
+        token = _raw_semantic_token(server, n)
+
+        server.show_message_log(
+            f"raw token for name {n.description} ({n.line - 1}:{n.column}): {token}",
+            MessageType.Debug,
+        )
+        if token is None:
+            continue
+
+        token_line, token_column = token[0], token[1]
+        delta_column = (
+            token_column - column if token_line == line else token_column
+        )
+        delta_line = token_line - line
+
+        line = token_line
+        column = token_column
+        token[0] = delta_line
+        token[1] = delta_column
+
+        server.show_message_log(
+            f"diff token for name {n.description} ({n.line - 1}:{n.column}): {token}",
+            MessageType.Debug,
+        )
+        data.extend(token)
+
+    return SemanticTokens(data=data)
 
 
 # Static capability or initializeOptions functions that rely on a specific
