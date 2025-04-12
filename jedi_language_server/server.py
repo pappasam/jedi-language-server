@@ -77,7 +77,6 @@ from lsprotocol.types import (
     SemanticTokensLegend,
     SemanticTokensParams,
     SemanticTokensRangeParams,
-    SemanticTokenTypes,
     SignatureHelp,
     SignatureHelpOptions,
     SignatureInformation,
@@ -92,7 +91,10 @@ from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
 from . import jedi_utils, notebook_utils, pygls_utils, text_edit_utils
-from .constants import SEMANTIC_TO_TOKEN_ID, SUPPORTED_SEMANTIC_TYPES
+from .constants import (
+    SEMANTIC_TO_TOKEN_ID,
+    SUPPORTED_SEMANTIC_TYPES,
+)
 from .initialization_options import (
     InitializationOptions,
     initialization_options_converter,
@@ -767,7 +769,7 @@ def _raw_semantic_token(
     if len(definitions) > 1:
         msg = (
             f"multiple definitions found for name \"{n.description}\" of type '{n.type}' ({n.line}:{n.column}):\n"
-            f" {"\n".join(map(lambda n: str(n), definitions))}"
+            f" {'\n'.join(map(lambda n: str(n), definitions))}"
         )
         server.show_message_log(msg, MessageType.Debug)
 
