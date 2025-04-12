@@ -759,23 +759,24 @@ def _raw_semantic_token(
     )
     if not definitions:
         server.show_message_log(
-            f"no definitions found for name {n.description} ({n.line}:{n.column})",
+            f"no definitions found for name \"{n.description}\" of type '{n.type}' ({n.line}:{n.column})",
             MessageType.Debug,
         )
         return None
 
     if len(definitions) > 1:
-        server.show_message_log(
-            f"multiple definitions found for name {n.description} ({n.line}:{n.column})",
-            MessageType.Debug,
+        msg = (
+            f"multiple definitions found for name \"{n.description}\" of type '{n.type}' ({n.line}:{n.column}):\n"
+            f" {"\n".join(map(lambda n: str(n), definitions))}"
         )
+        server.show_message_log(msg, MessageType.Debug)
 
     definition, *_ = definitions
     if (
         definition_type := SEMANTIC_TO_TOKEN_ID.get(definition.type, None)
     ) is None:
         server.show_message_log(
-            f"no matching semantic token for name {n.description} ({n.line}:{n.column})",
+            f"no matching semantic token for \"{n.description}\" of type '{n.type}' ({n.line}:{n.column})",
             MessageType.Debug,
         )
         return None
@@ -851,10 +852,10 @@ def _semantic_tokens_range(
 
         token = _raw_semantic_token(server, n)
 
-        server.show_message_log(
-            f"raw token for name {n.description} ({n.line - 1}:{n.column}): {token}",
-            MessageType.Debug,
-        )
+        # server.show_message_log(
+        #     f"raw token for name {n.description} ({n.line - 1}:{n.column}): {token}",
+        #     MessageType.Debug,
+        # )
         if token is None:
             continue
 
@@ -869,10 +870,10 @@ def _semantic_tokens_range(
         token[0] = delta_line
         token[1] = delta_column
 
-        server.show_message_log(
-            f"diff token for name {n.description} ({n.line - 1}:{n.column}): {token}",
-            MessageType.Debug,
-        )
+        # server.show_message_log(
+        #     f"diff token for name {n.description} ({n.line - 1}:{n.column}): {token}",
+        #     MessageType.Debug,
+        # )
         data.extend(token)
 
     return SemanticTokens(data=data)
