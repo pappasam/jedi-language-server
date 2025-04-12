@@ -92,7 +92,7 @@ from pygls.protocol import LanguageServerProtocol, lsp_method
 from pygls.server import LanguageServer
 
 from . import jedi_utils, notebook_utils, pygls_utils, text_edit_utils
-from .constants import TYPE_TO_TOKEN_ID
+from .constants import SEMANTIC_TO_TOKEN_ID, SUPPORTED_SEMANTIC_TYPES
 from .initialization_options import (
     InitializationOptions,
     initialization_options_converter,
@@ -772,7 +772,7 @@ def _raw_semantic_token(
 
     definition, *_ = definitions
     if (
-        definition_type := TYPE_TO_TOKEN_ID.get(definition.type, None)
+        definition_type := SEMANTIC_TO_TOKEN_ID.get(definition.type, None)
     ) is None:
         server.show_message_log(
             f"no matching semantic token for name {n.description} ({n.line}:{n.column})",
@@ -787,7 +787,7 @@ def _raw_semantic_token(
 @SERVER.feature(
     TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
     SemanticTokensLegend(
-        token_types=list(SemanticTokenTypes), token_modifiers=[]
+        token_types=SUPPORTED_SEMANTIC_TYPES, token_modifiers=[]
     ),
 )
 def semantic_tokens_full(
@@ -813,7 +813,7 @@ def semantic_tokens_full(
 @SERVER.feature(
     TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE,
     SemanticTokensLegend(
-        token_types=list(SemanticTokenTypes), token_modifiers=[]
+        token_types=SUPPORTED_SEMANTIC_TYPES, token_modifiers=[]
     ),
 )
 def semantic_tokens_range(
@@ -839,7 +839,7 @@ def _semantic_tokens_range(
     names = jedi_script.get_names(
         all_scopes=True, definitions=True, references=True
     )
-    data = []
+    data: list[int] = []
 
     for n in names:
         if (

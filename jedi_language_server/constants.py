@@ -7,7 +7,7 @@ MAX_CONCURRENT_DEBOUNCE_CALLS = 10
 
 _token_types = list(SemanticTokenTypes)
 
-TYPE_TO_TOKEN_ID = {
+SEMANTIC_TO_TOKEN_ID = {
     "module": _token_types.index(SemanticTokenTypes.Namespace),
     "class": _token_types.index(SemanticTokenTypes.Class),
     "function": _token_types.index(SemanticTokenTypes.Function),
@@ -15,3 +15,5 @@ TYPE_TO_TOKEN_ID = {
     "statement": _token_types.index(SemanticTokenTypes.Variable),
     "property": _token_types.index(SemanticTokenTypes.Property),
 }
+
+SUPPORTED_SEMANTIC_TYPES = list(map(lambda t: t.value, _token_types))
