@@ -767,9 +767,12 @@ def _raw_semantic_token(
         return None
 
     if len(definitions) > 1:
+        def_lines = "\n".join(
+            map(lambda n: str(n), definitions)
+        )  # f-string expression part cannot include a backslash
         msg = (
             f"multiple definitions found for name \"{n.description}\" of type '{n.type}' ({n.line}:{n.column}):\n"
-            f" {'\n'.join(map(lambda n: str(n), definitions))}"
+            f" {def_lines}"
         )
         server.show_message_log(msg, MessageType.Debug)
 
