@@ -774,9 +774,8 @@ def _raw_semantic_token(
         server.show_message_log(msg, MessageType.Debug)
 
     definition, *_ = definitions
-    if (
-        definition_type := SEMANTIC_TO_TOKEN_ID.get(definition.type, None)
-    ) is None:
+    definition_type = SEMANTIC_TO_TOKEN_ID.get(definition.type, None)
+    if definition_type is None:
         server.show_message_log(
             f"no matching semantic token for \"{n.description}\" of type '{n.type}' ({n.line}:{n.column})",
             MessageType.Debug,
