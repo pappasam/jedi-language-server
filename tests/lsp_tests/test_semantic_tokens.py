@@ -1,12 +1,38 @@
 """Tests for semantic tokens requests."""
 
-from hamcrest import assert_that, is_
+import copy
+
+import pylsp_jsonrpc
+from hamcrest import assert_that, calling, is_, raises
 
 from tests import TEST_DATA
 from tests.lsp_test_client import session
+from tests.lsp_test_client.defaults import VSCODE_DEFAULT_INITIALIZE
 from tests.lsp_test_client.utils import as_uri
 
 SEMANTIC_TEST_ROOT = TEST_DATA / "semantic_tokens"
+
+
+def initialize_session(ls_session: session.LspSession):
+    initialize_params = copy.deepcopy(VSCODE_DEFAULT_INITIALIZE)
+    initialize_params["initializationOptions"] = {
+        "semanticTokens": {"enable": True}
+    }
+    ls_session.initialize(initialize_params)
+
+
+def test_semantic_tokens_disabled():
+    with session.LspSession() as ls_session:
+        ls_session.initialize()
+
+        assert_that(
+            calling(ls_session.text_doc_semantic_tokens_full).with_args(
+                {
+                    "textDocument": {"uri": ""},
+                }
+            ),
+            raises(pylsp_jsonrpc.exceptions.JsonRpcMethodNotFound),
+        )
 
 
 def test_semantic_tokens_full_import():
@@ -15,7 +41,7 @@ def test_semantic_tokens_full_import():
     Test Data: tests/test_data/semantic_tokens/semantic_tokens_test1.py.
     """
     with session.LspSession() as ls_session:
-        ls_session.initialize()
+        initialize_session(ls_session)
         uri = as_uri(SEMANTIC_TEST_ROOT / "semantic_tokens_test1.py")
         actual = ls_session.text_doc_semantic_tokens_full(
             {
@@ -43,7 +69,7 @@ def test_semantic_tokens_full_import_from():
     Test Data: tests/test_data/semantic_tokens/semantic_tokens_test2.py.
     """
     with session.LspSession() as ls_session:
-        ls_session.initialize()
+        initialize_session(ls_session)
         uri = as_uri(SEMANTIC_TEST_ROOT / "semantic_tokens_test2.py")
         actual = ls_session.text_doc_semantic_tokens_full(
             {
@@ -72,7 +98,7 @@ def test_semantic_tokens_range_import_from():
     Test Data: tests/test_data/semantic_tokens/semantic_tokens_test2.py.
     """
     with session.LspSession() as ls_session:
-        ls_session.initialize()
+        initialize_session(ls_session)
         uri = as_uri(SEMANTIC_TEST_ROOT / "semantic_tokens_test2.py")
         actual = ls_session.text_doc_semantic_tokens_range(
             {

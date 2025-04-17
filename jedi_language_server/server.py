@@ -188,6 +188,17 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
         if server.initialization_options.hover.enable:
             server.feature(TEXT_DOCUMENT_HOVER)(hover)
 
+        if server.initialization_options.semantic_tokens.enable:
+            tokens_legend = SemanticTokensLegend(
+                token_types=SUPPORTED_SEMANTIC_TYPES, token_modifiers=[]
+            )
+            server.feature(TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL, tokens_legend)(
+                semantic_tokens_full
+            )
+            server.feature(TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE, tokens_legend)(
+                semantic_tokens_range
+            )
+
         initialize_result: InitializeResult = super().lsp_initialize(params)
         workspace_options = initialization_options.workspace
         server.project = (
@@ -809,12 +820,6 @@ def _raw_semantic_token(
 
 
 @SERVER.thread()
-@SERVER.feature(
-    TEXT_DOCUMENT_SEMANTIC_TOKENS_FULL,
-    SemanticTokensLegend(
-        token_types=SUPPORTED_SEMANTIC_TYPES, token_modifiers=[]
-    ),
-)
 def semantic_tokens_full(
     server: JediLanguageServer, params: SemanticTokensParams
 ) -> SemanticTokens:
@@ -835,12 +840,6 @@ def semantic_tokens_full(
 
 
 @SERVER.thread()
-@SERVER.feature(
-    TEXT_DOCUMENT_SEMANTIC_TOKENS_RANGE,
-    SemanticTokensLegend(
-        token_types=SUPPORTED_SEMANTIC_TYPES, token_modifiers=[]
-    ),
-)
 def semantic_tokens_range(
     server: JediLanguageServer, params: SemanticTokensRangeParams
 ) -> SemanticTokens:
