@@ -56,10 +56,10 @@ def test_semantic_tokens_full_import_from():
             "data": [
                 0, 5, 2, 0, 0,  # "from os."
                 0, 3, 4, 0, 0,  # "path import "
-                0, 12, 6, 12, 0,  # "exists"
+                0, 12, 6, 2, 0,  # "exists"
                 1, 5, 3, 0, 0,  # "from sys import"
-                0, 11, 4, 8, 0,  # "argv as "
-                0, 8, 9, 8, 0,  # "arguments"
+                0, 11, 4, 4, 0,  # "argv as "
+                0, 8, 9, 4, 0,  # "arguments"
             ]
         }
         # fmt: on
@@ -88,8 +88,8 @@ def test_semantic_tokens_range_import_from():
         expected = {
             "data": [
                 0, 4, 3, 0, 0,  # "from sys import"
-                0, 11, 4, 8, 0,  # "argv as "
-                0, 8, 9, 8, 0,  # "arguments"
+                0, 11, 4, 4, 0,  # "argv as "
+                0, 8, 9, 4, 0,  # "arguments"
             ]
         }
         # fmt: on
