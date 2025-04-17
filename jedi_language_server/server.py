@@ -7,7 +7,7 @@ Official language server spec:
 """
 
 import itertools
-from typing import Any, List, Optional, Union
+from typing import Any, List, NamedTuple, Optional, Union
 
 import cattrs
 from jedi import Project, Script, __version__
@@ -738,9 +738,27 @@ def did_change_configuration(
     """
 
 
+EncodedSemanticToken = NamedTuple(
+    "EncodedSemanticToken",
+    [
+        ("line", int),
+        ("start", int),
+        ("length", int),
+        ("tokenType", int),
+        ("tokenModifiers", int),
+    ],
+)
+"""
+Semantic token encoded into integers. Applicable for both absolute and relative positions.
+
+See the LSP spec for details:
+    <https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_semanticTokens>
+"""
+
+
 def _raw_semantic_token(
     server: JediLanguageServer, n: Name
-) -> Union[list[int], None]:
+) -> Union[EncodedSemanticToken, None]:
     """Find an appropriate semantic token for the name.
 
     This works by looking up the definition (using jedi ``goto``) of the name and
@@ -785,7 +803,9 @@ def _raw_semantic_token(
         )
         return None
 
-    return [n.line - 1, n.column, len(n.name), definition_type, 0]
+    return EncodedSemanticToken(
+        n.line - 1, n.column, len(n.name), definition_type, 0
+    )
 
 
 @SERVER.thread()
@@ -863,7 +883,7 @@ def _semantic_tokens_range(
         if token is None:
             continue
 
-        token_line, token_column = token[0], token[1]
+        token_line, token_column = token.line, token.start
         delta_column = (
             token_column - column if token_line == line else token_column
         )
@@ -871,14 +891,20 @@ def _semantic_tokens_range(
 
         line = token_line
         column = token_column
-        token[0] = delta_line
-        token[1] = delta_column
 
         # server.show_message_log(
         #     f"diff token for name {n.description} ({n.line - 1}:{n.column}): {token}",
         #     MessageType.Debug,
         # )
-        data.extend(token)
+        data.extend(
+            [
+                delta_line,
+                delta_column,
+                token.length,
+                token.tokenType,
+                token.tokenModifiers,
+            ]
+        )
 
     return SemanticTokens(data=data)
 
