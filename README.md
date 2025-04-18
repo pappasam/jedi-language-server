@@ -98,6 +98,9 @@ See: <https://github.com/pappasam/jedi-language-server/issues/50#issuecomment-78
         "ignoreFolders": [".nox", ".tox", ".venv", "__pycache__", "venv"],
         "maxSymbols": 20
       }
+    },
+    "semanticTokens": {
+      "enable": false
     }
   }
 }
@@ -411,6 +414,16 @@ Performance optimization that sets names of folders that are ignored for `worksp
 
 If you manually set this option, it overrides the default. Setting it to an empty array will result in no ignored folders.
 
+### semanticTokens.enable
+
+Improves highlighting by providing semantic token information.
+
+- type: `boolean`
+- default: `false`
+
+Disabled by default for performance reasons.
+
+
 ## Diagnostics
 
 Diagnostics are provided by Python's built-in `compile` function.
@@ -465,6 +478,7 @@ jedi-language-server aims to support Jedi's capabilities and expose them through
 - [textDocument/publishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)
 - [textDocument/references](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_references)
 - [textDocument/rename](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_rename)
+- [textDocument/semanticTokens](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_semanticTokens)
 - [textDocument/signatureHelp](https://microsoft.github.io/language-server-protocol/specification#textDocument_signatureHelp)
 - [workspace/symbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspace_symbol)
 
