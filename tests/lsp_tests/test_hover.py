@@ -9,7 +9,7 @@ from tests.lsp_test_client.utils import as_uri
 HOVER_TEST_ROOT = TEST_DATA / "hover"
 
 
-def test_hover_on_module():
+def test_hover_on_module() -> None:
     """Tests hover on the name of a imported module.
 
     Test Data: tests/test_data/hover/hover_test1.py
@@ -37,7 +37,7 @@ def test_hover_on_module():
         assert_that(actual, is_(expected))
 
 
-def test_hover_on_module_notebook():
+def test_hover_on_module_notebook() -> None:
     """Tests hover on the name of an imported module in a notebook.
 
     Test Data: tests/test_data/hover/hover_test1.ipynb
@@ -67,7 +67,7 @@ def test_hover_on_module_notebook():
         assert_that(actual, is_(expected))
 
 
-def test_hover_on_function():
+def test_hover_on_function() -> None:
     """Tests hover on the name of a function.
 
     Test Data: tests/test_data/hover/hover_test1.py
@@ -95,7 +95,7 @@ def test_hover_on_function():
         assert_that(actual, is_(expected))
 
 
-def test_hover_on_function_notebook():
+def test_hover_on_function_notebook() -> None:
     """Tests hover on the name of a function in a notebook.
 
     Test Data: tests/test_data/hover/hover_test1.ipynb
@@ -125,7 +125,7 @@ def test_hover_on_function_notebook():
         assert_that(actual, is_(expected))
 
 
-def test_hover_on_class():
+def test_hover_on_class() -> None:
     """Tests hover on the name of a class.
 
     Test Data: tests/test_data/hover/hover_test1.py
@@ -153,7 +153,7 @@ def test_hover_on_class():
         assert_that(actual, is_(expected))
 
 
-def test_hover_on_class_notebook():
+def test_hover_on_class_notebook() -> None:
     """Tests hover on the name of a class in a notebook.
 
     Test Data: tests/test_data/hover/hover_test1.ipynb
@@ -183,7 +183,7 @@ def test_hover_on_class_notebook():
         assert_that(actual, is_(expected))
 
 
-def test_hover_on_method():
+def test_hover_on_method() -> None:
     """Tests hover on the name of a class method.
 
     Test Data: tests/test_data/hover/hover_test1.py
@@ -211,7 +211,7 @@ def test_hover_on_method():
         assert_that(actual, is_(expected))
 
 
-def test_hover_on_method_notebook():
+def test_hover_on_method_notebook() -> None:
     """Tests hover on the name of a class method in a notebook.
 
     Test Data: tests/test_data/hover/hover_test1.ipynb
@@ -241,7 +241,7 @@ def test_hover_on_method_notebook():
         assert_that(actual, is_(expected))
 
 
-def test_hover_on_method_no_docstring():
+def test_hover_on_method_no_docstring() -> None:
     """Tests hover on the name of a class method without doc string.
 
     Test Data: tests/test_data/hover/hover_test1.py
@@ -269,7 +269,7 @@ def test_hover_on_method_no_docstring():
         assert_that(actual, is_(expected))
 
 
-def test_hover_on_method_no_docstring_notebook():
+def test_hover_on_method_no_docstring_notebook() -> None:
     """Tests hover on the name of a class method without doc string in a notebook.
 
     Test Data: tests/test_data/hover/hover_test1.ipynb

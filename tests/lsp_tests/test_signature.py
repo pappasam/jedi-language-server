@@ -13,7 +13,7 @@ SIGNATURE_TEST_ROOT = TEST_DATA / "signature"
 @pytest.mark.parametrize(
     ["trigger_char", "column", "active_param"], [("(", 14, 0), (",", 18, 1)]
 )
-def test_signature_help(trigger_char, column, active_param):
+def test_signature_help(trigger_char, column, active_param) -> None:
     """Tests signature help response for a function.
 
     Test Data: tests/test_data/signature/signature_test1.py
@@ -60,7 +60,7 @@ def test_signature_help(trigger_char, column, active_param):
 @pytest.mark.parametrize(
     ["trigger_char", "column", "active_param"], [("(", 14, 0), (",", 18, 1)]
 )
-def test_signature_help_notebook(trigger_char, column, active_param):
+def test_signature_help_notebook(trigger_char, column, active_param) -> None:
     """Tests signature help response for a function in a notebook.
 
     Test Data: tests/test_data/signature/signature_test1.ipynb

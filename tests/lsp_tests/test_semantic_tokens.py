@@ -13,7 +13,7 @@ from tests.lsp_test_client.utils import as_uri
 SEMANTIC_TEST_ROOT = TEST_DATA / "semantic_tokens"
 
 
-def initialize_session(ls_session: session.LspSession):
+def initialize_session(ls_session: session.LspSession) -> None:
     initialize_params = copy.deepcopy(VSCODE_DEFAULT_INITIALIZE)
     initialize_params["initializationOptions"] = {
         "semanticTokens": {"enable": True}
@@ -21,7 +21,7 @@ def initialize_session(ls_session: session.LspSession):
     ls_session.initialize(initialize_params)
 
 
-def test_semantic_tokens_disabled():
+def test_semantic_tokens_disabled() -> None:
     with session.LspSession() as ls_session:
         ls_session.initialize()
 
@@ -35,7 +35,7 @@ def test_semantic_tokens_disabled():
         )
 
 
-def test_semantic_tokens_full_import():
+def test_semantic_tokens_full_import() -> None:
     """Tests tokens for 'import name1 as name2'.
 
     Test Data: tests/test_data/semantic_tokens/semantic_tokens_test1.py.
@@ -63,7 +63,7 @@ def test_semantic_tokens_full_import():
         assert_that(actual, is_(expected))
 
 
-def test_semantic_tokens_full_import_from():
+def test_semantic_tokens_full_import_from() -> None:
     """Tests tokens for 'from name1 import name2 as name3'.
 
     Test Data: tests/test_data/semantic_tokens/semantic_tokens_test2.py.
@@ -92,7 +92,7 @@ def test_semantic_tokens_full_import_from():
         assert_that(actual, is_(expected))
 
 
-def test_semantic_tokens_range_import_from():
+def test_semantic_tokens_range_import_from() -> None:
     """Tests tokens for 'from name1 import name2 as name3'.
 
     Test Data: tests/test_data/semantic_tokens/semantic_tokens_test2.py.

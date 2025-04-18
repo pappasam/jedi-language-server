@@ -9,7 +9,7 @@ from tests.lsp_test_client.utils import as_uri
 DEFINITION_TEST_ROOT = TEST_DATA / "definition"
 
 
-def test_definition():
+def test_definition() -> None:
     """Tests definition on a function imported from module.
 
     Test Data: tests/test_data/definition/definition_test1.py
@@ -38,7 +38,7 @@ def test_definition():
         assert_that(actual, is_(expected))
 
 
-def test_definition_notebook():
+def test_definition_notebook() -> None:
     """Tests definition on a function imported from a module, in a notebook.
 
     Test Data: tests/test_data/definition/definition_test1.ipynb
@@ -68,7 +68,7 @@ def test_definition_notebook():
         assert_that(actual, is_(expected))
 
 
-def test_declaration():
+def test_declaration() -> None:
     """Tests declaration on an imported module.
 
     Test Data: tests/test_data/definition/definition_test1.py
@@ -96,7 +96,7 @@ def test_declaration():
         assert_that(actual, is_(expected))
 
 
-def test_declaration_notebook():
+def test_declaration_notebook() -> None:
     """Tests declaration on an imported module, in a notebook.
 
     Test Data: tests/test_data/definition/definition_test1.ipynb

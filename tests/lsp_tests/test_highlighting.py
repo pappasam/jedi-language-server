@@ -217,7 +217,7 @@ HIGHLIGHTING_TEST_ROOT = TEST_DATA / "highlighting"
         ),
     ],
 )
-def test_highlighting(position, expected):
+def test_highlighting(position, expected) -> None:
     """Tests highlighting on import statement.
 
     Test Data: tests/test_data/highlighting/highlighting_test1.py
@@ -467,7 +467,7 @@ def test_highlighting(position, expected):
         ),
     ],
 )
-def test_highlighting_notebook(cell, position, expected):
+def test_highlighting_notebook(cell, position, expected) -> None:
     """Tests highlighting on import statement for notebooks.
 
     Test Data: tests/test_data/highlighting/highlighting_test1.ipynb

@@ -12,7 +12,7 @@ from tests.lsp_test_client.utils import StringPattern, as_uri
 REFACTOR_TEST_ROOT = TEST_DATA / "refactoring"
 
 
-def test_lsp_rename_function():
+def test_lsp_rename_function() -> None:
     """Tests single file function rename."""
     with session.LspSession() as ls_session:
         ls_session.initialize()
@@ -82,7 +82,7 @@ def test_lsp_rename_function():
         assert_that(actual, is_(expected))
 
 
-def test_lsp_rename_function_notebook():
+def test_lsp_rename_function_notebook() -> None:
     """Tests single notebook function rename."""
     with session.LspSession() as ls_session:
         ls_session.initialize()
@@ -169,7 +169,7 @@ def test_lsp_rename_function_notebook():
         assert_that(actual, is_(expected))
 
 
-def test_lsp_rename_variable_at_line_start():
+def test_lsp_rename_variable_at_line_start() -> None:
     """Tests renaming a variable that appears at the start of a line."""
     with session.LspSession() as ls_session:
         ls_session.initialize()
@@ -204,7 +204,7 @@ def test_lsp_rename_variable_at_line_start():
         assert_that(actual, is_(expected))
 
 
-def test_lsp_rename_inserts_at_line_start():
+def test_lsp_rename_inserts_at_line_start() -> None:
     """Tests renaming a variable by inserting text at the start of a line."""
     with session.LspSession() as ls_session:
         ls_session.initialize()
@@ -240,7 +240,7 @@ def test_lsp_rename_inserts_at_line_start():
         assert_that(actual, is_(expected))
 
 
-def test_lsp_rename_last_line():
+def test_lsp_rename_last_line() -> None:
     """Tests whether rename works for end of file edge case.
 
     This example was receiving a KeyError, but now we check for end-1 to

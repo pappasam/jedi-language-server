@@ -170,7 +170,7 @@ references1 = as_uri(REFERENCES_TEST_ROOT / "references_test1.py")
         ),
     ],
 )
-def test_references(position, expected):
+def test_references(position, expected) -> None:
     """Tests references on import statement.
 
     Test Data: tests/test_data/references/references_test1.py
@@ -359,7 +359,7 @@ def test_references(position, expected):
         ),
     ],
 )
-def test_references_notebook(cell, position, expected):
+def test_references_notebook(cell, position, expected) -> None:
     """Tests references in a notebook.
 
     Test Data: tests/test_data/references/references_test1.ipynb
