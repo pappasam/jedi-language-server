@@ -99,7 +99,7 @@ class Workspace:
 
 @light_dataclass
 class SemanticTokens:
-    enable: bool = False
+    enable: bool = True
 
 
 @light_dataclass
