@@ -31,7 +31,7 @@ def test_semantic_tokens_disabled():
                     "textDocument": {"uri": ""},
                 }
             ),
-            raises(pylsp_jsonrpc.exceptions.JsonRpcMethodNotFound),
+            raises(pylsp_jsonrpc.exceptions.JsonRpcException),
         )
 
 

@@ -100,7 +100,7 @@ See: <https://github.com/pappasam/jedi-language-server/issues/50#issuecomment-78
       }
     },
     "semanticTokens": {
-      "enable": false
+      "enable": true
     }
   }
 }
@@ -419,10 +419,7 @@ If you manually set this option, it overrides the default. Setting it to an empt
 Improves highlighting by providing semantic token information.
 
 - type: `boolean`
-- default: `false`
-
-Disabled by default for performance reasons.
-
+- default: `true`
 
 ## Diagnostics
 
