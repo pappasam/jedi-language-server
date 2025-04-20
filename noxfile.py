@@ -26,16 +26,4 @@ def typecheck(session: nox.Session):
 
 @NOX_SESSION
 def tests(session: nox.Session):
-    session.run("pytest", "tests")
-
-
-@NOX_SESSION
-def coverage(session: nox.Session):
-    session.run(
-        "pytest",
-        "--cov",
-        "jedi_language_server",
-        "--cov-report",
-        "term-missing",
-        "tests",
-    )
+    session.run("slipcover", "-m", "pytest")
