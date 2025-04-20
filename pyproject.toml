@@ -58,9 +58,9 @@ mypy = "*"
 nox = "*"
 pre-commit = "*"
 pytest = "*"
-pytest-cov = "*"
 python-lsp-jsonrpc = "*"
 ruff = "*"
+slipcover = { version = "*", python = "<3.14" }
 
 [tool.poetry.scripts]
 jedi-language-server = 'jedi_language_server.cli:cli'
