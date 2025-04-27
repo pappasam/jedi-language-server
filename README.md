@@ -100,7 +100,7 @@ See: <https://github.com/pappasam/jedi-language-server/issues/50#issuecomment-78
       }
     },
     "semanticTokens": {
-      "enable": true
+      "enable": false
     }
   }
 }
@@ -199,7 +199,7 @@ A list of regular expressions. If any regular expression in ignorePatterns match
 - type: `string[]`
 - default: `[]`
 
-In general, you should prefer the default value for this option. Jedi is very good at filtering values for end users. That said, there are situations where IDE developers, or some programmers in some code bases, may want to filter some completions by name. This flexible interface is provided to accommodate these advanced use cases. If you have one of these advanced use cases, see below for some example patterns (and their corresponding regular expression).
+In general, you should prefer the default value for this option. Jedi is good at filtering values for end users. That said, there are situations where IDE developers, or some programmers in some codebases, may want to filter some completions by name. This flexible interface is provided to accommodate these advanced use cases. If you have one of these advanced use cases, see below for some example patterns (and their corresponding regular expression).
 
 #### All Private Names
 
@@ -265,7 +265,7 @@ When diagnostics are enabled, run on document open
 
 ### diagnostics.didChange
 
-When diagnostics are enabled, run on in-memory document change (eg, while you're editing, without needing to save to disk)
+When diagnostics are enabled, run on in-memory document change (e.g., while you're editing, without needing to save to disk)
 
 - type: `boolean`
 - default: `true`
@@ -416,10 +416,10 @@ If you manually set this option, it overrides the default. Setting it to an empt
 
 ### semanticTokens.enable
 
-Improves highlighting by providing semantic token information.
+Improves highlighting by providing semantic token information. Disabled by default, because feature is broken and currently under development.
 
 - type: `boolean`
-- default: `true`
+- default: `false`
 
 ## Diagnostics
 
@@ -475,7 +475,7 @@ jedi-language-server aims to support Jedi's capabilities and expose them through
 - [textDocument/publishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)
 - [textDocument/references](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_references)
 - [textDocument/rename](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_rename)
-- [textDocument/semanticTokens](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_semanticTokens)
+- [textDocument/semanticTokens](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#textDocument_semanticTokens) _(under development)_
 - [textDocument/signatureHelp](https://microsoft.github.io/language-server-protocol/specification#textDocument_signatureHelp)
 - [workspace/symbol](https://microsoft.github.io/language-server-protocol/specifications/specification-current/#workspace_symbol)
 
