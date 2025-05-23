@@ -39,8 +39,10 @@ Note: this list is non-exhaustive. If you know of a great choice not included in
 Users may choose one of the following options:
 
 - [lsp-jedi](https://github.com/fredcamps/lsp-jedi).
-- [eglot](https://github.com/joaotavora/eglot)
-
+- [eglot](https://github.com/joaotavora/eglot).
+- [lsp-bridge](https://github.com/manateelazycat/lsp-bridge).
+- [lspce](https://github.com/zbelial/lspce).
+  
 Note: this list is non-exhaustive. If you know of a great choice not included in this list, please submit a PR!
 
 ### Visual Studio Code (vscode)
