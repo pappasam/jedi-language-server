@@ -170,7 +170,7 @@ references1 = as_uri(REFERENCES_TEST_ROOT / "references_test1.py")
         ),
     ],
 )
-def test_references(position, expected):
+def test_references(position, expected) -> None:
     """Tests references on import statement.
 
     Test Data: tests/test_data/references/references_test1.py
@@ -179,8 +179,8 @@ def test_references(position, expected):
     initialize_params["workspaceFolders"] = [
         {"uri": as_uri(REFERENCES_TEST_ROOT), "name": "jedi_lsp"}
     ]
-    initialize_params["rootPath"]: str(REFERENCES_TEST_ROOT)
-    initialize_params["rootUri"]: as_uri(REFERENCES_TEST_ROOT)
+    initialize_params["rootPath"] = str(REFERENCES_TEST_ROOT)
+    initialize_params["rootUri"] = as_uri(REFERENCES_TEST_ROOT)
 
     with session.LspSession() as ls_session:
         ls_session.initialize(initialize_params)
@@ -359,7 +359,7 @@ def test_references(position, expected):
         ),
     ],
 )
-def test_references_notebook(cell, position, expected):
+def test_references_notebook(cell, position, expected) -> None:
     """Tests references in a notebook.
 
     Test Data: tests/test_data/references/references_test1.ipynb

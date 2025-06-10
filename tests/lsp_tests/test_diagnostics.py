@@ -5,6 +5,7 @@ import json
 import platform
 import tempfile
 from threading import Condition, Event
+from typing import Any
 
 from hamcrest import assert_that, is_
 
@@ -17,13 +18,13 @@ DIAGNOSTICS_TEST_ROOT = TEST_DATA / "diagnostics"
 TEMP_DIR = tempfile.gettempdir()
 
 
-def get_changes(changes_file):
+def get_changes(changes_file: str) -> Any:
     """Obtain changes from a changes file."""
     with open(changes_file, "r") as ch_file:
         return json.load(ch_file)
 
 
-def test_publish_diagnostics_on_open():
+def test_publish_diagnostics_on_open() -> None:
     """Tests publish diagnostics on open."""
     content_path = DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt"
     with open(content_path, "r") as text_file:
@@ -44,7 +45,7 @@ def test_publish_diagnostics_on_open():
             ls_session.initialize(initialize_params)
             done = Event()
 
-            def _handler(params):
+            def _handler(params: Any) -> None:
                 actual.append(params)
                 done.set()
 
@@ -99,7 +100,7 @@ def test_publish_diagnostics_on_open():
     assert_that(actual, is_(expected))
 
 
-def test_publish_diagnostics_on_open_notebook():
+def test_publish_diagnostics_on_open_notebook() -> None:
     """Tests publish diagnostics on open notebook."""
     content_path = DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt"
     with open(content_path, "r") as text_file:
@@ -113,7 +114,7 @@ def test_publish_diagnostics_on_open_notebook():
         ls_session.initialize()
         done = Condition()
 
-        def _handler(params):
+        def _handler(params: Any) -> None:
             with done:
                 actual[params["uri"]] = params
                 done.notify_all()
@@ -180,7 +181,7 @@ def test_publish_diagnostics_on_open_notebook():
     assert_that(actual, is_(expected))
 
 
-def test_publish_diagnostics_on_change():
+def test_publish_diagnostics_on_change() -> None:
     """Tests publish diagnostics on change."""
     with open(
         DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt", "r"
@@ -210,7 +211,7 @@ def test_publish_diagnostics_on_change():
             ls_session.initialize(initialize_params)
             done = Event()
 
-            def _handler(params):
+            def _handler(params: Any) -> None:
                 actual.append(params)
                 done.set()
 
@@ -288,7 +289,7 @@ def test_publish_diagnostics_on_change():
     assert_that(actual, is_(expected))
 
 
-def test_publish_diagnostics_on_change_notebook_cells_text_content():
+def test_publish_diagnostics_on_change_notebook_cells_text_content() -> None:
     """Tests publish diagnostics on changing the text content of notebook cells."""
     with open(
         DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt", "r"
@@ -313,7 +314,7 @@ def test_publish_diagnostics_on_change_notebook_cells_text_content():
         ls_session.initialize(initialize_params)
         done = Condition()
 
-        def _handler(params):
+        def _handler(params: Any) -> None:
             with done:
                 actual[params["uri"]] = params
                 done.notify_all()
@@ -416,7 +417,7 @@ def test_publish_diagnostics_on_change_notebook_cells_text_content():
     assert_that(actual, is_(expected))
 
 
-def test_publish_diagnostics_on_open_notebook_cells():
+def test_publish_diagnostics_on_open_notebook_cells() -> None:
     """Tests publish diagnostics on opening notebook cells."""
     with open(
         DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt", "r"
@@ -437,7 +438,7 @@ def test_publish_diagnostics_on_open_notebook_cells():
         ls_session.initialize(initialize_params)
         done = Condition()
 
-        def _handler(params):
+        def _handler(params: Any) -> None:
             with done:
                 actual[params["uri"]] = params
                 done.notify_all()
@@ -534,7 +535,7 @@ def test_publish_diagnostics_on_open_notebook_cells():
     assert_that(actual, is_(expected))
 
 
-def test_publish_diagnostics_on_close_notebook_cells():
+def test_publish_diagnostics_on_close_notebook_cells() -> None:
     """Tests publish diagnostics on closing notebook cells."""
     with open(
         DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt", "r"
@@ -558,7 +559,7 @@ def test_publish_diagnostics_on_close_notebook_cells():
         ls_session.initialize(initialize_params)
         done = Condition()
 
-        def _handler(params):
+        def _handler(params: Any) -> None:
             with done:
                 actual[params["uri"]] = params
                 done.notify_all()
@@ -634,7 +635,7 @@ def test_publish_diagnostics_on_close_notebook_cells():
     assert_that(actual, is_(expected))
 
 
-def test_publish_diagnostics_on_save():
+def test_publish_diagnostics_on_save() -> None:
     """Tests publish diagnostics on save."""
     with open(
         DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt", "r"
@@ -664,7 +665,7 @@ def test_publish_diagnostics_on_save():
             ls_session.initialize(initialize_params)
             done = Event()
 
-            def _handler(params):
+            def _handler(params: Any) -> None:
                 actual.append(params)
                 done.set()
 
@@ -757,7 +758,7 @@ def test_publish_diagnostics_on_save():
     assert_that(actual, is_(expected))
 
 
-def test_publish_diagnostics_on_save_notebook():
+def test_publish_diagnostics_on_save_notebook() -> None:
     """Tests publish diagnostics on saving a notebook."""
     with open(
         DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt", "r"
@@ -782,7 +783,7 @@ def test_publish_diagnostics_on_save_notebook():
         ls_session.initialize(initialize_params)
         done = Condition()
 
-        def _handler(params):
+        def _handler(params: Any) -> None:
             with done:
                 actual[params["uri"]] = params
                 done.notify_all()
@@ -893,7 +894,7 @@ def test_publish_diagnostics_on_save_notebook():
     assert_that(actual, is_(expected))
 
 
-def test_publish_diagnostics_on_close():
+def test_publish_diagnostics_on_close() -> None:
     """Tests publish diagnostics on close notebook."""
     content_path = DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt"
     with open(content_path, "r") as text_file:
@@ -920,7 +921,7 @@ def test_publish_diagnostics_on_close():
             ls_session.initialize(initialize_params)
             done = Event()
 
-            def _handler(params):
+            def _handler(params: Any) -> None:
                 actual.append(params)
                 done.set()
 
@@ -957,7 +958,7 @@ def test_publish_diagnostics_on_close():
     assert_that(actual, is_(expected))
 
 
-def test_publish_diagnostics_on_close_notebook():
+def test_publish_diagnostics_on_close_notebook() -> None:
     """Tests publish diagnostics on closing a notebook."""
     with open(
         DIAGNOSTICS_TEST_ROOT / "diagnostics_test1_contents.txt", "r"
@@ -981,7 +982,7 @@ def test_publish_diagnostics_on_close_notebook():
         ls_session.initialize(initialize_params)
         done = Condition()
 
-        def _handler(params):
+        def _handler(params: Any) -> None:
             with done:
                 actual[params["uri"]] = params
                 done.notify_all()
