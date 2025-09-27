@@ -7,6 +7,8 @@ Official language server spec:
 """
 
 import itertools
+import json
+import os
 from typing import Any, List, NamedTuple, Optional, Union
 
 import cattrs
@@ -99,6 +101,8 @@ from .initialization_options import (
     InitializationOptions,
     initialization_options_converter,
 )
+
+PYRIGHT_CONFIG = "pyrightconfig.json"
 
 
 class JediLanguageServerProtocol(LanguageServerProtocol):
@@ -201,11 +205,23 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
 
         initialize_result: InitializeResult = super().lsp_initialize(params)
         workspace_options = initialization_options.workspace
+
+        pyright_config_path = os.path.join(
+            server.workspace.root_path, PYRIGHT_CONFIG
+        )
+        try:
+            with open(pyright_config_path, "r") as f:
+                pyright_config_data = json.load(f)
+            extra_paths = pyright_config_data.get("extraPaths", [])
+        except FileNotFoundError:
+            extra_paths = []
+
+        added_sys_path = workspace_options.extra_paths + extra_paths
         server.project = (
             Project(
                 path=server.workspace.root_path,
                 environment_path=workspace_options.environment_path,
-                added_sys_path=workspace_options.extra_paths,
+                added_sys_path=added_sys_path,
                 smart_sys_path=True,
                 load_unsafe_extensions=False,
             )
