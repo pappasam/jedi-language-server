@@ -457,14 +457,14 @@ virtualenv = ">=20.10.0"
 
 [[package]]
 name = "pygls"
-version = "2.0.0a5"
+version = "2.0.0a6"
 description = "A pythonic generic language server (pronounced like 'pie glass')"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pygls-2.0.0a5-py3-none-any.whl", hash = "sha256:c728960404db64623469bea1b33df858da90ab84a69d5d0bf1d3a6183d37a4a3"},
-    {file = "pygls-2.0.0a5.tar.gz", hash = "sha256:da24333063dbb4545e38e650cad32989d52f99442404eaff12702b45cbea0738"},
+    {file = "pygls-2.0.0a6-py3-none-any.whl", hash = "sha256:0a4a5f479a1554f8b493cfc4be5061344ae724f3959c51aedbf8c92174293233"},
+    {file = "pygls-2.0.0a6.tar.gz", hash = "sha256:1a94e0252e4bab607690e7dadbe949e1132a1e878325f5ad60c4936506188e49"},
 ]
 
 [package.dependencies]
@@ -856,4 +856,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "6cda9d7eb8e70c7597fe727afed5f81958b565cb994430bc9c4897c0a99955da"
+content-hash = "54452dcac7e7324891ec53a006b2406149aa5a11cea765df811d78f6159ea7d0"
