@@ -337,7 +337,7 @@ def _cell_results(
     ):
         location = mapper.cell_range(result.range)
         if location is not None and location.uri == cell_uri:
-            return cast(T, attrs.evolve(result, range=location.range))
+            return attrs.evolve(result, range=location.range)
 
     return result
 

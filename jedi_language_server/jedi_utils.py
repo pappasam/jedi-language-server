@@ -13,7 +13,6 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import docstring_to_markdown
 import jedi.api.errors
-import jedi.inference.references
 import jedi.settings
 from jedi import Project, Script
 from jedi.api.classes import (
