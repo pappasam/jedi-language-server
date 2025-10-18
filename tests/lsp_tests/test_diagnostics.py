@@ -95,6 +95,7 @@ def test_publish_diagnostics_on_open() -> None:
                         "source": "compile",
                     }
                 ],
+                "version": 1,
             }
         ]
     assert_that(actual, is_(expected))
@@ -125,13 +126,14 @@ def test_publish_diagnostics_on_open_notebook() -> None:
 
         notebook_uri = "notebook-uri"
         cell_uris = ["cell-1", "cell-2"]
+        version = 1
         ls_session.notify_did_open_notebook_document(
             {
                 "notebookDocument": {
                     "uri": notebook_uri,
                     "notebookType": "jupyter-notebook",
                     "languageId": "python",
-                    "version": 1,
+                    "version": version,
                     "cells": [
                         {"kind": 2, "document": uri} for uri in cell_uris
                     ],
@@ -140,7 +142,7 @@ def test_publish_diagnostics_on_open_notebook() -> None:
                     {
                         "uri": uri,
                         "languageId": "python",
-                        "version": 1,
+                        "version": version,
                         "text": contents,
                     }
                     for uri in cell_uris
@@ -174,6 +176,7 @@ def test_publish_diagnostics_on_open_notebook() -> None:
                         "source": "compile",
                     }
                 ],
+                "version": version,
             }
             for index, uri in enumerate(cell_uris)
         }
@@ -284,6 +287,7 @@ def test_publish_diagnostics_on_change() -> None:
                         "source": "compile",
                     }
                 ],
+                "version": 2,
             }
         ]
     assert_that(actual, is_(expected))
@@ -411,6 +415,7 @@ def test_publish_diagnostics_on_change_notebook_cells_text_content() -> None:
                     "source": "compile",
                 }
             ],
+            "version": version,
         }
         for index, uri in enumerate(cell_uris)
     }
@@ -492,7 +497,7 @@ def test_publish_diagnostics_on_open_notebook_cells() -> None:
                                 {
                                     "uri": uri,
                                     "languageId": "python",
-                                    "version": 1,
+                                    "version": version,
                                     "text": contents,
                                 }
                                 for uri in cell_uris
@@ -529,6 +534,7 @@ def test_publish_diagnostics_on_open_notebook_cells() -> None:
                     "source": "compile",
                 }
             ],
+            "version": version,
         }
         for index, uri in enumerate(cell_uris)
     }
@@ -753,6 +759,7 @@ def test_publish_diagnostics_on_save() -> None:
                         "source": "compile",
                     }
                 ],
+                "version": 2,
             }
         ]
     assert_that(actual, is_(expected))
@@ -888,6 +895,7 @@ def test_publish_diagnostics_on_save_notebook() -> None:
                     "source": "compile",
                 }
             ],
+            "version": version,
         }
         for index, uri in enumerate(cell_uris)
     }

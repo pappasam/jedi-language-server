@@ -63,20 +63,23 @@ from lsprotocol.types import (
     InitializeParams,
     InitializeResult,
     Location,
+    LogMessageParams,
     MarkupContent,
     MarkupKind,
     MessageType,
+    NotebookCellLanguage,
+    NotebookDocumentFilterWithCells,
     NotebookDocumentSyncOptions,
-    NotebookDocumentSyncOptionsNotebookSelectorType2,
-    NotebookDocumentSyncOptionsNotebookSelectorType2CellsType,
     ParameterInformation,
     Position,
+    PublishDiagnosticsParams,
     Range,
     RenameParams,
     SemanticTokens,
     SemanticTokensLegend,
     SemanticTokensParams,
     SemanticTokensRangeParams,
+    ShowMessageParams,
     SignatureHelp,
     SignatureHelpOptions,
     SignatureInformation,
@@ -87,8 +90,8 @@ from lsprotocol.types import (
 )
 from lsprotocol.validators import INTEGER_MAX_VALUE
 from pygls.capabilities import get_capability
+from pygls.lsp.server import LanguageServer
 from pygls.protocol import LanguageServerProtocol, lsp_method
-from pygls.server import LanguageServer
 
 from . import jedi_utils, notebook_utils, pygls_utils, text_edit_utils
 from .constants import (
@@ -128,8 +131,12 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
                 "Invalid InitializationOptions, using defaults:"
                 f" {cattrs.transform_error(error)}"
             )
-            server.show_message(msg, msg_type=MessageType.Error)
-            server.show_message_log(msg, msg_type=MessageType.Error)
+            server.window_show_message(
+                ShowMessageParams(type=MessageType.Error, message=msg)
+            )
+            server.window_log_message(
+                LogMessageParams(type=MessageType.Error, message=msg)
+            )
             server.initialization_options = InitializationOptions()
 
         initialization_options = server.initialization_options
@@ -238,12 +245,8 @@ SERVER = JediLanguageServer(
     # Advertise support for Python notebook cells.
     notebook_document_sync=NotebookDocumentSyncOptions(
         notebook_selector=[
-            NotebookDocumentSyncOptionsNotebookSelectorType2(
-                cells=[
-                    NotebookDocumentSyncOptionsNotebookSelectorType2CellsType(
-                        language="python"
-                    )
-                ]
+            NotebookDocumentFilterWithCells(
+                cells=[NotebookCellLanguage(language="python")]
             )
         ]
     ),
@@ -371,6 +374,7 @@ def signature_help(
                 ParameterInformation(label=info.to_string())
                 for info in signature.params
             ],
+            active_parameter=signature.index,
         )
         for signature in signatures_jedi
     ]
@@ -789,9 +793,11 @@ def _raw_semantic_token(
         prefer_stubs=False,
     )
     if not definitions:
-        server.show_message_log(
-            f"no definitions found for name \"{n.description}\" of type '{n.type}' ({n.line}:{n.column})",
-            MessageType.Debug,
+        server.window_log_message(
+            LogMessageParams(
+                type=MessageType.Debug,
+                message=f"no definitions found for name \"{n.description}\" of type '{n.type}' ({n.line}:{n.column})",
+            )
         )
         return None
 
@@ -803,14 +809,18 @@ def _raw_semantic_token(
             f"multiple definitions found for name \"{n.description}\" of type '{n.type}' ({n.line}:{n.column}):\n"
             f" {def_lines}"
         )
-        server.show_message_log(msg, MessageType.Debug)
+        server.window_log_message(
+            LogMessageParams(type=MessageType.Debug, message=msg)
+        )
 
     definition, *_ = definitions
     definition_type = SEMANTIC_TO_TOKEN_ID.get(definition.type, None)
     if definition_type is None:
-        server.show_message_log(
-            f"no matching semantic token for \"{n.description}\" of type '{n.type}' ({n.line}:{n.column})",
-            MessageType.Debug,
+        server.window_log_message(
+            LogMessageParams(
+                type=MessageType.Debug,
+                message=f"no matching semantic token for \"{n.description}\" of type '{n.type}' ({n.line}:{n.column})",
+            )
         )
         return None
 
@@ -827,9 +837,11 @@ def semantic_tokens_full(
     document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
 
-    server.show_message_log(
-        f"semantic_tokens_full {params.text_document.uri} ",
-        MessageType.Log,
+    server.window_log_message(
+        LogMessageParams(
+            type=MessageType.Log,
+            message=f"semantic_tokens_full {params.text_document.uri} ",
+        )
     )
 
     return _semantic_tokens_range(
@@ -847,9 +859,11 @@ def semantic_tokens_range(
     document = server.workspace.get_text_document(params.text_document.uri)
     jedi_script = jedi_utils.script(server.project, document)
 
-    server.show_message_log(
-        f"semantic_tokens_range {params.text_document.uri} {params.range}",
-        MessageType.Log,
+    server.window_log_message(
+        LogMessageParams(
+            type=MessageType.Log,
+            message=f"semantic_tokens_range {params.text_document.uri} {params.range}",
+        )
     )
 
     return _semantic_tokens_range(server, jedi_script, params.range)
@@ -875,10 +889,6 @@ def _semantic_tokens_range(
 
         token = _raw_semantic_token(server, n)
 
-        # server.show_message_log(
-        #     f"raw token for name {n.description} ({n.line - 1}:{n.column}): {token}",
-        #     MessageType.Debug,
-        # )
         if token is None:
             continue
 
@@ -891,10 +901,6 @@ def _semantic_tokens_range(
         line = token_line
         column = token_column
 
-        # server.show_message_log(
-        #     f"diff token for name {n.description} ({n.line - 1}:{n.column}): {token}",
-        #     MessageType.Debug,
-        # )
         data.extend(
             [
                 delta_line,
@@ -920,7 +926,7 @@ def _publish_diagnostics(
     # canceling notifications that happen in that interval.
     # Since this function is executed after a delay, we need to check
     # whether the document still exists
-    if uri not in server.workspace.documents:
+    if uri not in server.workspace.text_documents:
         return
     if filename is None:
         filename = uri
@@ -929,7 +935,11 @@ def _publish_diagnostics(
     diagnostic = jedi_utils.lsp_python_diagnostic(filename, doc.source)
     diagnostics = [diagnostic] if diagnostic else []
 
-    server.publish_diagnostics(uri, diagnostics)
+    server.text_document_publish_diagnostics(
+        PublishDiagnosticsParams(
+            uri=uri, diagnostics=diagnostics, version=doc.version
+        )
+    )
 
 
 # TEXT_DOCUMENT_DID_SAVE
@@ -1084,7 +1094,9 @@ def did_close_notebook_default(
 
 def _clear_diagnostics(server: JediLanguageServer, uri: str) -> None:
     """Helper function to clear diagnostics for a file."""
-    server.publish_diagnostics(uri, [])
+    server.text_document_publish_diagnostics(
+        PublishDiagnosticsParams(uri=uri, diagnostics=[])
+    )
 
 
 def _publish_cell_diagnostics(server: JediLanguageServer, uri: str) -> None:

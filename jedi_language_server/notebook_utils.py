@@ -38,11 +38,12 @@ from lsprotocol.types import (
     RenameParams,
     SemanticTokensRangeParams,
     SignatureHelpParams,
+    SnippetTextEdit,
     TextDocumentEdit,
     TextDocumentPositionParams,
     TextEdit,
 )
-from pygls.server import LanguageServer
+from pygls.lsp.server import LanguageServer
 from pygls.workspace import TextDocument, Workspace
 
 
@@ -177,19 +178,6 @@ class NotebookCoordinateMapper:
                 return index
         return None
 
-    def cell_text_edit(
-        self, text_edit: Union[TextEdit, AnnotatedTextEdit]
-    ) -> Optional[DocumentTextEdit]:
-        """Convert a concatenated notebook text edit to a cell text edit."""
-        location = self.cell_range(text_edit.range)
-        if location is None:
-            return None
-
-        return DocumentTextEdit(
-            uri=location.uri,
-            text_edit=attrs.evolve(text_edit, range=location.range),
-        )
-
     def cell_text_document_edits(
         self, text_document_edit: TextDocumentEdit
     ) -> Iterable[TextDocumentEdit]:
@@ -198,15 +186,17 @@ class NotebookCoordinateMapper:
             return
 
         # Convert edits in the concatenated notebook to per-cell edits, grouped by cell URI.
-        edits_by_uri: Dict[str, List[Union[TextEdit, AnnotatedTextEdit]]] = (
-            defaultdict(list)
-        )
+        edits_by_uri: Dict[
+            str, List[Union[TextEdit, AnnotatedTextEdit, SnippetTextEdit]]
+        ] = defaultdict(list)
+
         for text_edit in text_document_edit.edits:
-            cell_text_edit = self.cell_text_edit(text_edit)
-            if cell_text_edit is not None:
-                edits_by_uri[cell_text_edit.uri].append(
-                    cell_text_edit.text_edit
-                )
+            location = self.cell_range(text_edit.range)
+            if location is None:
+                continue
+
+            new_edit = attrs.evolve(text_edit, range=location.range)
+            edits_by_uri[location.uri].append(new_edit)
 
         # Yield per-cell text document edits.
         for uri, edits in edits_by_uri.items():

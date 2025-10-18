@@ -256,7 +256,7 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
             symbol.kind = SymbolKind.Method
             parent_symbol = _name_lookup[parent]
             assert parent_symbol.children is not None
-            parent_symbol.children.append(symbol)
+            parent_symbol.children = [*parent_symbol.children, symbol]
             _name_lookup[name] = symbol
         elif parent not in _name_lookup:
             # unqualified names are not included in the tree
@@ -273,7 +273,10 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
                 grandparent_symbol.kind == SymbolKind.Class
             ):
                 assert grandparent_symbol.children is not None
-                grandparent_symbol.children.append(symbol)
+                grandparent_symbol.children = [
+                    *grandparent_symbol.children,
+                    symbol,
+                ]
         elif parent.type == "class":
             # children are added for class scopes
             if name.type == "function":
@@ -285,14 +288,15 @@ def lsp_document_symbols(names: List[Name]) -> List[DocumentSymbol]:
                 symbol.kind = SymbolKind.Property
             parent_symbol = _name_lookup[parent]
             assert parent_symbol.children is not None
-            parent_symbol.children.append(symbol)
+            parent_symbol.children = [*parent_symbol.children, symbol]
         elif parent.type == "function":
             # only show nested classes and functions to avoid excessive info
             # could be controlled by an initialization option
             if name.type in ["class", "function"]:
                 parent_symbol = _name_lookup[parent]
                 assert parent_symbol.children is not None
-                parent_symbol.children.append(symbol)
+                parent_symbol.children = [*parent_symbol.children, symbol]
+
     return results
 
 
