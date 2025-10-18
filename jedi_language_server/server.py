@@ -7,7 +7,14 @@ Official language server spec:
 """
 
 import itertools
-from typing import Any, List, NamedTuple, Optional, Union
+from collections.abc import Generator
+from typing import (
+    Any,
+    List,
+    NamedTuple,
+    Optional,
+    Union,
+)
 
 import cattrs
 from jedi import Project, Script, __version__
@@ -110,7 +117,9 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
     _server: "JediLanguageServer"
 
     @lsp_method(INITIALIZE)
-    def lsp_initialize(self, params: InitializeParams) -> InitializeResult:
+    def lsp_initialize(
+        self, params: InitializeParams
+    ) -> Generator[Any, Any, InitializeResult]:
         """Override built-in initialization.
 
         Here, we can conditionally register functions to features based
@@ -206,7 +215,7 @@ class JediLanguageServerProtocol(LanguageServerProtocol):
                 semantic_tokens_range
             )
 
-        initialize_result: InitializeResult = super().lsp_initialize(params)
+        initialize_result = yield from super().lsp_initialize(params)
         workspace_options = initialization_options.workspace
         server.project = (
             Project(
