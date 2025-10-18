@@ -258,14 +258,14 @@ testing = ["Django", "attrs", "colorama", "docopt", "pytest (<9.0.0)"]
 
 [[package]]
 name = "lsprotocol"
-version = "2024.0.0b1"
+version = "2025.0.0rc1"
 description = "Python types for Language Server Protocol."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "lsprotocol-2024.0.0b1-py3-none-any.whl", hash = "sha256:93785050ac155ae2be16b1ebfbd74c214feb3d3ef77b10399ce941e5ccef6ebd"},
-    {file = "lsprotocol-2024.0.0b1.tar.gz", hash = "sha256:d3667fb70894d361aa6c495c5c8a1b2e6a44be65ff84c21a9cbb67ebfb4830fd"},
+    {file = "lsprotocol-2025.0.0rc1-py3-none-any.whl", hash = "sha256:84704c5331de95c06fa4f2584525e99476da62582b11fae59fa2aae98a6cf580"},
+    {file = "lsprotocol-2025.0.0rc1.tar.gz", hash = "sha256:22ee3dc898f0d15b7befeb923073e46e1cd2661c01365f7f7da113d1f168c555"},
 ]
 
 [package.dependencies]
@@ -457,19 +457,20 @@ virtualenv = ">=20.10.0"
 
 [[package]]
 name = "pygls"
-version = "2.0.0a3"
+version = "2.0.0a4"
 description = "A pythonic generic language server (pronounced like 'pie glass')"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pygls-2.0.0a3-py3-none-any.whl", hash = "sha256:fa366966681057e2decaca971ed0e31edf1cb725d26d2bc9ae24b159a1f142a7"},
-    {file = "pygls-2.0.0a3.tar.gz", hash = "sha256:1f3a3d309f9733f0ba4e1bb1aa8552d6d9016356f629badbd58fccf13b0c632b"},
+    {file = "pygls-2.0.0a4-py3-none-any.whl", hash = "sha256:49995108a443f6a47b385898e0983c8ea70e69b434071682ce1c4ee180eb6d6d"},
+    {file = "pygls-2.0.0a4.tar.gz", hash = "sha256:a31da5d178d8a82a9116f535ed78ffa14f05c84403cc5ad4fdf09027eb6b0890"},
 ]
 
 [package.dependencies]
+attrs = ">=24.3.0"
 cattrs = ">=23.1.2"
-lsprotocol = "2024.0.0b1"
+lsprotocol = "2025.0.0rc1"
 
 [package.extras]
 ws = ["websockets (>=13.0)"]
@@ -855,4 +856,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "f287b1ef164f68407112b3ce70797ba81db461f755d97611f01e3f77c4fe949e"
+content-hash = "c710b87d389339df3aa9bb0baded7cde4a7f293541aa521b286b432c644cb8ea"

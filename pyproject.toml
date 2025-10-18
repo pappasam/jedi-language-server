@@ -36,7 +36,7 @@ license = { text = "MIT" }
 requires-python = ">=3.9"
 dependencies = [
   "jedi>=0.19.2,<0.20",
-  "pygls==2.0.0a3",
+  "pygls==2.0.0a4",
   "cattrs>=23.1.2",
   "docstring-to-markdown<1",
   "lsprotocol>=2023.0.1",
