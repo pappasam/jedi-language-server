@@ -82,7 +82,6 @@ ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 79
-target-version = "py39"
 unsafe-fixes = true
 
 [tool.ruff.lint]
