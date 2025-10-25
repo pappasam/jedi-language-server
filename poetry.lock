@@ -765,7 +765,7 @@ description = "Near Zero-Overhead Python Code Coverage"
 optional = false
 python-versions = "<3.15,>=3.8"
 groups = ["dev"]
-markers = "python_version < \"3.14\""
+markers = "python_version < \"3.15\""
 files = [
     {file = "slipcover-1.0.17-cp310-abi3-macosx_13_0_universal2.whl", hash = "sha256:7ad17d58f9ee843471d2fa0a8e5f104a6f6d861f77ecac977d45c411c4297814"},
     {file = "slipcover-1.0.17-cp310-abi3-macosx_14_0_universal2.whl", hash = "sha256:9ac11a3fab59aa93ab011d5865fb63cfb3965c908cb67cc4189678151189ce7d"},
@@ -796,7 +796,7 @@ description = "Pretty-print tabular data"
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
-markers = "python_version < \"3.14\""
+markers = "python_version < \"3.15\""
 files = [
     {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
     {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
