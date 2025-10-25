@@ -17,6 +17,9 @@ from tests.lsp_test_client.utils import PythonFile, as_uri
 DIAGNOSTICS_TEST_ROOT = TEST_DATA / "diagnostics"
 TEMP_DIR = tempfile.gettempdir()
 
+# number of seconds to wait to receive all notifications
+NOTIFICATION_WAIT = 2.1
+
 
 def get_changes(changes_file: str) -> Any:
     """Obtain changes from a changes file."""
@@ -71,8 +74,7 @@ def test_publish_diagnostics_on_open() -> None:
 
             assert len(symbols) > 0
 
-            # wait for a second to receive all notifications
-            done.wait(1.1)
+            done.wait(NOTIFICATION_WAIT)
 
         # Diagnostics look a little different on Windows.
         filename = (
@@ -158,9 +160,10 @@ def test_publish_diagnostics_on_open_notebook() -> None:
 
             assert len(symbols) > 0
 
-        # wait for a second to receive all notifications
         with done:
-            done.wait_for(lambda: len(actual) == len(cell_uris), 1.1)
+            done.wait_for(
+                lambda: len(actual) == len(cell_uris), NOTIFICATION_WAIT
+            )
 
         expected = {
             uri: {
@@ -263,8 +266,7 @@ def test_publish_diagnostics_on_change() -> None:
             )
             assert len(symbols) > 0
 
-            # wait for a second to receive all notifications
-            done.wait(1.1)
+            done.wait(NOTIFICATION_WAIT)
 
         # Diagnostics look a little different on Windows.
         filename = (
@@ -397,9 +399,10 @@ def test_publish_diagnostics_on_change_notebook_cells_text_content() -> None:
 
             assert len(symbols) > 0
 
-        # wait for a second to receive all notifications
         with done:
-            done.wait_for(lambda: len(actual) == len(cell_uris), 1.1)
+            done.wait_for(
+                lambda: len(actual) == len(cell_uris), NOTIFICATION_WAIT
+            )
 
     expected = {
         uri: {
@@ -516,9 +519,10 @@ def test_publish_diagnostics_on_open_notebook_cells() -> None:
 
             assert len(symbols) > 0
 
-        # wait for a second to receive all notifications
         with done:
-            done.wait_for(lambda: len(actual) == len(cell_uris), 1.1)
+            done.wait_for(
+                lambda: len(actual) == len(cell_uris), NOTIFICATION_WAIT
+            )
 
     expected = {
         uri: {
@@ -633,9 +637,10 @@ def test_publish_diagnostics_on_close_notebook_cells() -> None:
             }
         )
 
-        # wait for a second to receive all notifications
         with done:
-            done.wait_for(lambda: len(actual) == len(cell_uris), 1.1)
+            done.wait_for(
+                lambda: len(actual) == len(cell_uris), NOTIFICATION_WAIT
+            )
 
     expected = {uri: {"uri": uri, "diagnostics": []} for uri in cell_uris}
     assert_that(actual, is_(expected))
@@ -735,8 +740,7 @@ def test_publish_diagnostics_on_save() -> None:
                 }
             )
 
-            # wait for a second to receive all notifications
-            done.wait(1.1)
+            done.wait(NOTIFICATION_WAIT)
 
         # Diagnostics look a little different on Windows.
         filename = (
@@ -877,9 +881,10 @@ def test_publish_diagnostics_on_save_notebook() -> None:
             {"notebookDocument": {"uri": notebook_uri}}
         )
 
-        # wait for a second to receive all notifications
         with done:
-            done.wait_for(lambda: len(actual) == len(cell_uris), 1.1)
+            done.wait_for(
+                lambda: len(actual) == len(cell_uris), NOTIFICATION_WAIT
+            )
 
     expected = {
         uri: {
@@ -959,8 +964,7 @@ def test_publish_diagnostics_on_close() -> None:
                 {"textDocument": {"uri": uri}}
             )
 
-            # wait for a second to receive all notifications
-            done.wait(1.1)
+            done.wait(NOTIFICATION_WAIT)
 
     expected = [{"uri": uri, "diagnostics": []}]
     assert_that(actual, is_(expected))
@@ -1039,9 +1043,10 @@ def test_publish_diagnostics_on_close_notebook() -> None:
             }
         )
 
-        # wait for a second to receive all notifications
         with done:
-            done.wait_for(lambda: len(actual) == len(cell_uris), 1.1)
+            done.wait_for(
+                lambda: len(actual) == len(cell_uris), NOTIFICATION_WAIT
+            )
 
     expected = {uri: {"uri": uri, "diagnostics": []} for uri in cell_uris}
     assert_that(actual, is_(expected))
