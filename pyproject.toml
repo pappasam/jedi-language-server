@@ -4,11 +4,9 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "jedi-language-server"
-version = "0.45.1"
+version = "0.46.0"
 description = "A language server for Jedi!"
-authors = [
-  { name = "Sam Roeca", email = "samuel.roeca@gmail.com" }
-]
+authors = [{ name = "Sam Roeca", email = "samuel.roeca@gmail.com" }]
 readme = "README.md"
 keywords = [
   "python",
@@ -74,7 +72,7 @@ enable_error_code = [
   "redundant-expr",
   "truthy-bool",
   "truthy-iterable",
-  "unused-awaitable"
+  "unused-awaitable",
 ]
 warn_unreachable = true
 
