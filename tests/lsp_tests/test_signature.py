@@ -48,6 +48,7 @@ def test_signature_help(trigger_char, column, active_param) -> None:
                         {"label": "arg2: int"},
                         {"label": "arg3: list"},
                     ],
+                    "activeParameter": active_param,
                 }
             ],
             "activeSignature": 0,
@@ -96,6 +97,7 @@ def test_signature_help_notebook(trigger_char, column, active_param) -> None:
                         {"label": "arg2: int"},
                         {"label": "arg3: list"},
                     ],
+                    "activeParameter": active_param,
                 }
             ],
             "activeSignature": 0,

@@ -2,24 +2,6 @@
 requires = ["poetry-core>=2.0,<3"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.mypy]
-python_version = "3.9"
-strict = true
-files = "jedi_language_server"
-enable_error_code = [
-  "deprecated",
-  "ignore-without-code",
-  "redundant-expr",
-  "truthy-bool",
-  "truthy-iterable",
-  "unused-awaitable"
-]
-warn_unreachable = true
-
-[[tool.mypy.overrides]]
-module = "jedi.*"
-ignore_missing_imports = true
-
 [project]
 name = "jedi-language-server"
 version = "0.45.1"
@@ -54,11 +36,23 @@ license = { text = "MIT" }
 requires-python = ">=3.9"
 dependencies = [
   "jedi>=0.19.2,<0.20",
-  "pygls>=1.1.0,<2.0",
+  "pygls>=2.0.0,<3",
   "cattrs>=23.1.2",
   "docstring-to-markdown<1",
   "lsprotocol>=2023.0.1",
   "typing-extensions>=4.5.0,<5 ; python_version < '3.10'",
+]
+
+[dependency-groups]
+dev = [
+  "PyHamcrest",
+  "mypy",
+  "nox",
+  "pre-commit",
+  "pytest",
+  "python-lsp-jsonrpc",
+  "ruff",
+  "slipcover ; python_version < '3.14'",
 ]
 
 [project.urls]
@@ -67,22 +61,29 @@ source = "https://github.com/pappasam/jedi-language-server"
 changelog = "https://github.com/pappasam/jedi-language-server/blob/main/CHANGELOG.md"
 issues = "https://github.com/pappasam/jedi-language-server/issues"
 
-[tool.poetry.group.dev.dependencies]
-PyHamcrest = "*"
-mypy = "*"
-nox = "*"
-pre-commit = "*"
-pytest = "*"
-python-lsp-jsonrpc = "*"
-ruff = "*"
-slipcover = { version = "*", python = "<3.14" }
-
 [project.scripts]
 jedi-language-server = 'jedi_language_server.cli:cli'
 
+[tool.mypy]
+python_version = "3.9"
+strict = true
+files = "jedi_language_server"
+enable_error_code = [
+  "deprecated",
+  "ignore-without-code",
+  "redundant-expr",
+  "truthy-bool",
+  "truthy-iterable",
+  "unused-awaitable"
+]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = "jedi.*"
+ignore_missing_imports = true
+
 [tool.ruff]
 line-length = 79
-target-version = "py39"
 unsafe-fixes = true
 
 [tool.ruff.lint]
