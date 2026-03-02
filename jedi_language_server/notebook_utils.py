@@ -326,7 +326,12 @@ def _cell_results(
     result: T,
 ) -> T:
     if isinstance(result, list) and result and isinstance(result[0], Location):
-        return cast(T, text_document_or_cell_locations(workspace, cast(List[Location], result)))
+        return cast(
+            T,
+            text_document_or_cell_locations(
+                workspace, cast(List[Location], result)
+            ),
+        )
 
     if (
         mapper is not None
