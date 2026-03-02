@@ -7,6 +7,8 @@
 [![github-action-testing](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml/badge.svg)](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
+**MAINTENANCE MODE: we suggest that new users consider the successor to Jedi: A Mypy-Compatible Python Language Server Built in Rust** - [Zuban](https://github.com/zubanls/zuban)
+
 A [Python](https://www.python.org/) [Language Server](https://microsoft.github.io/language-server-protocol/), with additional support for [computational notebooks](https://docs.jupyter.org/en/latest/#what-is-a-notebook), powered by the latest version of [Jedi](https://jedi.readthedocs.io/en/latest/).
 
 ## Installation
@@ -42,7 +44,7 @@ Users may choose one of the following options:
 - [eglot](https://github.com/joaotavora/eglot).
 - [lsp-bridge](https://github.com/manateelazycat/lsp-bridge).
 - [lspce](https://github.com/zbelial/lspce).
-  
+
 Note: this list is non-exhaustive. If you know of a great choice not included in this list, please submit a PR!
 
 ### Visual Studio Code (vscode)
