@@ -308,15 +308,13 @@ def _notebook_params(
         notebook_position = mapper.notebook_position(
             params.text_document.uri, params.position
         )
-        # Ignore mypy error since it doesn't seem to narrow via hasattr.
-        params = attrs.evolve(params, position=notebook_position)  # type: ignore[call-arg]
+        params = attrs.evolve(params, position=notebook_position)
 
     if hasattr(params, "range"):
         notebook_range = mapper.notebook_range(
             params.text_document.uri, params.range
         )
-        # Ignore mypy error since it doesn't seem to narrow via hasattr.
-        params = attrs.evolve(params, range=notebook_range)  # type: ignore[call-arg]
+        params = attrs.evolve(params, range=notebook_range)
 
     return params
 
@@ -328,7 +326,12 @@ def _cell_results(
     result: T,
 ) -> T:
     if isinstance(result, list) and result and isinstance(result[0], Location):
-        return cast(T, text_document_or_cell_locations(workspace, result))
+        return cast(
+            T,
+            text_document_or_cell_locations(
+                workspace, cast(List[Location], result)
+            ),
+        )
 
     if (
         mapper is not None
