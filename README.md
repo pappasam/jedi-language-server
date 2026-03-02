@@ -5,7 +5,7 @@
 [![image-python-versions](https://img.shields.io/badge/python->=3.9-blue)](https://python.org/pypi/jedi-language-server)
 [![image-pypi-downloads](https://static.pepy.tech/badge/jedi-language-server)](https://pepy.tech/projects/jedi-language-server)
 [![github-action-testing](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml/badge.svg)](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml)
-[![poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 A [Python](https://www.python.org/) [Language Server](https://microsoft.github.io/language-server-protocol/), with additional support for [computational notebooks](https://docs.jupyter.org/en/latest/#what-is-a-notebook), powered by the latest version of [Jedi](https://jedi.readthedocs.io/en/latest/).
 
@@ -351,7 +351,7 @@ Non-absolute paths are relative to your project root. For example, let's say you
 ```
 ├── funky
 │   └── haha.py
-├── poetry.lock
+├── uv.lock
 ├── pyproject.toml
 ├── test.py
 ```
@@ -499,7 +499,7 @@ To build and run this project from source:
 
 Install the following tools manually:
 
-- [Poetry](https://github.com/sdispater/poetry#installation)
+- [uv](https://github.com/astral-sh/uv#installation)
 - [GNU Make](https://www.gnu.org/software/make/)
 
 #### Recommended

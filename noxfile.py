@@ -21,7 +21,7 @@ def lint(session: nox.Session) -> None:
 
 @NOX_SESSION
 def typecheck(session: nox.Session) -> None:
-    session.run("mypy", "jedi_language_server")
+    session.run("ty", "check", "jedi_language_server")
 
 
 @NOX_SESSION

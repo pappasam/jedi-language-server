@@ -120,7 +120,7 @@ def set_jedi_settings(
         )
     )
 
-    jedi.settings.case_insensitive_completion = (
+    jedi.settings.case_insensitive_completion = (  # ty: ignore[invalid-assignment]
         initialization_options.jedi_settings.case_insensitive_completion
     )
     if initialization_options.jedi_settings.debug:
