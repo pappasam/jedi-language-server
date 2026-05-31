@@ -2,7 +2,7 @@
 
 [![image-version](https://img.shields.io/pypi/v/jedi-language-server.svg)](https://python.org/pypi/jedi-language-server)
 [![image-license](https://img.shields.io/pypi/l/jedi-language-server.svg)](https://python.org/pypi/jedi-language-server)
-[![image-python-versions](https://img.shields.io/badge/python->=3.9-blue)](https://python.org/pypi/jedi-language-server)
+[![image-python-versions](https://img.shields.io/badge/python->=3.10-blue)](https://python.org/pypi/jedi-language-server)
 [![image-pypi-downloads](https://static.pepy.tech/badge/jedi-language-server)](https://pepy.tech/projects/jedi-language-server)
 [![github-action-testing](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml/badge.svg)](https://github.com/pappasam/jedi-language-server/actions/workflows/testing.yaml)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)

@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - Relax jedi: `jedi>=0.19.2,<0.21`
+- Relax jedi: `jedi>=0.19.2,<0.21`
 
 ## 0.46.0
 

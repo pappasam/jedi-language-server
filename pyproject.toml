@@ -63,7 +63,7 @@ issues = "https://github.com/pappasam/jedi-language-server/issues"
 jedi-language-server = 'jedi_language_server.cli:cli'
 
 [tool.ty.environment]
-python-version = "3.9"
+python-version = "3.10"
 
 [tool.ruff]
 line-length = 79
