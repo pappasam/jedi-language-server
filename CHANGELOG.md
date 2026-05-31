@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.47.0
+
+### Changed
+
+- Relax jedi: `jedi>=0.19.2,<0.21`
+
 ## 0.46.0
 
 ### Changed
@@ -321,11 +327,11 @@ Require importlib-metadata for Python 3.6 and 3.7. It is technically required an
 ### Added
 
 - The following CLI options:
-  - `--tcp`: use TCP server instead of stdio
-  - `--host`: host for TCP server (default 127.0.0.1)
-  - `--port`: port for TCP server (default 2087)
-  - `--log-file`: redirect logs to the given file instead of writing to stderr
-  - `-v` / `--verbose`: increase verbosity of log output
+    - `--tcp`: use TCP server instead of stdio
+    - `--host`: host for TCP server (default 127.0.0.1)
+    - `--port`: port for TCP server (default 2087)
+    - `--log-file`: redirect logs to the given file instead of writing to stderr
+    - `-v` / `--verbose`: increase verbosity of log output
 - Logging. To stderr by default, but optionally a file on the file system.
 
 ## 0.28.8
@@ -529,8 +535,8 @@ Same functions as 0.28, but different tag.
 ### Changed
 
 - Update documentSymbol query
-  - Uses native Jedi position finders (faster)
-  - Removes noisy symbols from hierarchical output. Makes document outliners prettier / more visually useful
+    - Uses native Jedi position finders (faster)
+    - Removes noisy symbols from hierarchical output. Makes document outliners prettier / more visually useful
 
 ## 0.19.5
 
@@ -604,9 +610,9 @@ Same functions as 0.28, but different tag.
 ### Fixed
 
 - Clean up snippet edge cases
-  - Only classes and functions return snippets
-  - "No parameters returned" places cursor outside of function signature
-  - Snippet generation error now does not return a snippet
+    - Only classes and functions return snippets
+    - "No parameters returned" places cursor outside of function signature
+    - Snippet generation error now does not return a snippet
 
 ## 0.17.0
 
@@ -654,7 +660,7 @@ Same functions as 0.28, but different tag.
 
 ### Changed
 
-- 5e2bc3b 2020-05-17 | Completion item documentation is in PlainText (HEAD -> hover-improve) [Sam Roeca
+- 5e2bc3b 2020-05-17 | Completion item documentation is in PlainText (HEAD -> hover-improve) \[Sam Roeca
 - 44292b9 2020-05-17 | Hover now returns MarkupContent + Range [Sam Roeca]
 - 0871c6d 2020-05-17 | Ensure that preferred parameters end in "=" [Sam Roeca]
 - d66c402 2020-05-17 | current_word_range function added to pygls_utils [Sam Roeca]
@@ -841,7 +847,7 @@ Same functions as 0.28, but different tag.
 ### Added
 
 - Support for `workspace/symbol`
-  - NOTE: currently ignores the query. Maybe something worth considering the query in future.
+    - NOTE: currently ignores the query. Maybe something worth considering the query in future.
 
 ### Fixed
 

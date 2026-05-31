@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "jedi-language-server"
-version = "0.46.0"
+version = "0.47.0"
 description = "A language server for Jedi!"
 authors = [{ name = "Sam Roeca", email = "samuel.roeca@gmail.com" }]
 readme = "README.md"
@@ -19,11 +19,11 @@ classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Software Development :: Code Generators",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Text Editors :: Integrated Development Environments (IDE)",
@@ -31,7 +31,7 @@ classifiers = [
   "Typing :: Typed",
 ]
 license = { text = "MIT" }
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
   "jedi>=0.19.2,<0.21",
   "pygls>=2.0.0,<3",
